@@ -134,10 +134,10 @@ npm run build         # Production build
 - AlphaFold API versions change — query `https://alphafold.ebi.ac.uk/api/prediction/O43556` for latest URL
 
 ## Deployment
-- **Live URL**: https://arcivus.northprot.com
-- **Method**: Cloudflare Tunnel → localhost:3000
-- **Domain**: northprot.com (Cloudflare DNS), subdomain `arcivus`
-- Run `npm run dev` on host, Cloudflare Tunnel routes traffic to port 3000
+- **Live URL**: https://arcivus.northprot.com (custom domain)
+- **Vercel URL**: https://sgce-explorer.vercel.app
+- **Method**: Vercel (static hosting) + Cloudflare DNS (A record → 76.76.21.21, DNS only)
+- **GitHub**: https://github.com/cyanprot/sgce-explorer (auto-deploy on push)
 
 ## Notes
 - The protein amino acid sequence is in `src/constants/protein-data.ts`

@@ -133,9 +133,9 @@ All structural data from [UniProt O43556](https://www.uniprot.org/uniprot/O43556
 
 ## Deployment
 
-Live at **[arcivus.northprot.com](https://arcivus.northprot.com)**
+Live at **[arcivus.northprot.com](https://arcivus.northprot.com)** | [sgce-explorer.vercel.app](https://sgce-explorer.vercel.app)
 
-Served via Cloudflare Tunnel routing to `localhost:3000`.
+Hosted on Vercel with Cloudflare DNS.
 
 ---
 
