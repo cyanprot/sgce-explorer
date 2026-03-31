@@ -1,0 +1,38 @@
+{
+  "name": "sgce-explorer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Interactive SGCE ε-Sarcoglycan protein explorer — DYT-SGCE c.108dup visualization",
+  "license": "MIT",
+  "author": "Jongmin Lee",
+  "homepage": "https://arcivus.northprot.com",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "fetch-pdb": "curl -o data/AF-O43556-F1.pdb https://alphafold.ebi.ac.uk/files/AF-O43556-F1-model_v6.pdb"
+  },
+  "dependencies": {
+    "3dmol": "^2.4.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "three": "^0.170.0",
+    "@react-three/fiber": "^8.17.0",
+    "@react-three/drei": "^9.117.0",
+    "recharts": "^2.13.0",
+    "framer-motion": "^11.11.0",
+    "zustand": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@types/three": "^0.170.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "~5.6.2",
+    "vite": "^6.0.0",
+    "tailwindcss": "^3.4.0",
+    "postcss": "^8.4.47",
+    "autoprefixer": "^10.4.20"
+  }
+}
