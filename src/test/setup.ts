@@ -17,3 +17,8 @@ if (typeof globalThis.requestAnimationFrame === "undefined") {
   };
   globalThis.cancelAnimationFrame = (id: number) => clearTimeout(id);
 }
+
+// Stub scrollIntoView (absent in jsdom, needed for SequenceViewer scroll sync)
+if (typeof Element.prototype.scrollIntoView === "undefined") {
+  Element.prototype.scrollIntoView = vi.fn();
+}

@@ -88,7 +88,7 @@ describe("ProteinStructure3D", () => {
   it("shows Extracellular label in DomainBar in WT mode", () => {
     mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
     render(<ProteinStructure3D />);
-    expect(screen.getByText("Extracellular")).toBeInTheDocument();
+    expect(screen.getAllByText("Extracellular").length).toBeGreaterThanOrEqual(1);
   });
 
   it("shows Frameshifted label in DomainBar in mutant mode", () => {
@@ -96,5 +96,31 @@ describe("ProteinStructure3D", () => {
     render(<ProteinStructure3D />);
     fireEvent.click(screen.getByText("Mutant (68 aa)"));
     expect(screen.getByText("Frameshifted")).toBeInTheDocument();
+  });
+
+  // ── SequenceViewer Integration ──
+
+  it("renders SequenceViewer with residue cells", () => {
+    mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
+    render(<ProteinStructure3D />);
+    expect(screen.getByTestId("residue-1")).toBeInTheDocument();
+    expect(screen.getByTestId("residue-437")).toBeInTheDocument();
+  });
+
+  it("passes viewMode to SequenceViewer showing mutation notation", () => {
+    mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
+    render(<ProteinStructure3D />);
+    expect(screen.getByText("p.Val37SerfsTer32")).toBeInTheDocument();
+  });
+
+  it("clicking a residue triggers 3D viewer zoomTo", async () => {
+    const $3Dmol = await import("3dmol");
+    const mockViewer = ($3Dmol as any).__mockViewer;
+    mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
+    render(<ProteinStructure3D />);
+    fireEvent.click(screen.getByTestId("residue-100"));
+    await waitFor(() => {
+      expect(mockViewer.zoomTo).toHaveBeenCalled();
+    });
   });
 });

@@ -40,7 +40,7 @@ describe("App", () => {
   it("shows mutation notation in header", () => {
     render(<App />);
     expect(screen.getByText(/c\.108dup/)).toBeInTheDocument();
-    expect(screen.getByText(/p\.Val37SerfsTer32/)).toBeInTheDocument();
+    expect(screen.getAllByText(/p\.Val37SerfsTer32/).length).toBeGreaterThanOrEqual(1);
   });
 
   it("defaults to structure tab with ProteinStructure3D content", () => {
@@ -63,6 +63,21 @@ describe("App", () => {
     expect(screen.getByText("Both alleles")).toBeInTheDocument();
     // Structure content should be gone
     expect(screen.queryAllByText(/Wild-type/)).toHaveLength(0);
+  });
+
+  it("Structure tab renders SequenceViewer with residue cells", () => {
+    render(<App />);
+    // On structure tab by default — SequenceViewer should render residues
+    expect(screen.getByTestId("residue-1")).toBeInTheDocument();
+    expect(screen.getByTestId("residue-437")).toBeInTheDocument();
+  });
+
+  it("other tabs do not render SequenceViewer", () => {
+    render(<App />);
+    fireEvent.click(screen.getByText("Central Dogma"));
+    expect(screen.queryByTestId("residue-1")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText("Imprinting"));
+    expect(screen.queryByTestId("residue-1")).not.toBeInTheDocument();
   });
 
   it("hides previous tab content when switching tabs", () => {
