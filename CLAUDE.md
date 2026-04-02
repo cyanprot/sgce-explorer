@@ -67,10 +67,17 @@ src/
 │   ├── ProteinStructure3D.tsx  # 3Dmol.js protein viewer (AlphaFold PDB, WT vs Mutant)
 │   ├── CentralDogma.tsx        # 7-step central dogma animation
 │   ├── ImprintingPanel.tsx     # Imprinting mechanism visualization
-│   ├── SequenceViewer.tsx      # Linear sequence track (TODO)
+│   ├── sequence/
+│   │   ├── index.ts            # Barrel export
+│   │   ├── SequenceViewer.tsx  # Linear sequence track container (scrollable, 437 residues)
+│   │   └── ResidueCell.tsx     # Memoized single amino acid cell
 │   └── ui/
 │       ├── ToggleButton.tsx    # Shared toggle button
 │       └── InfoCard.tsx        # Shared info card
+├── utils/
+│   ├── hexToInt.ts             # Hex color string → integer
+│   ├── isPdbData.ts            # PDB format validation
+│   └── getDomainForPosition.ts # Position (1-indexed) → domain info
 └── data/                       # PDB files (gitignored)
 ```
 
@@ -82,14 +89,14 @@ src/
 - [x] Color by domain (extracellular blue, TM amber, cytoplasmic purple)
 - [x] Highlight mutation site (Val37) and glycosylation (Asn200) as spheres
 - [x] Add WT vs Mutant toggle: show full structure vs truncated (residues 1-68 only)
-- [ ] Linked click: click residue in 3D → highlight in sequence viewer (deferred to Priority 2)
+- [x] Linked click: click residue in sequence viewer → 3D viewer zoom
 
 ### Priority 2: Sequence Viewer
-- [ ] Linear amino acid sequence track below 3D viewer
-- [ ] Color-coded by domain, scrollable
-- [ ] Mutation annotation overlay (position 37 frameshift, position 68 PTC)
-- [ ] Click interaction linked to 3D model rotation/zoom
-- [ ] Show conservation scores if available (ConSurf data)
+- [x] Linear amino acid sequence track below 3D viewer (SequenceViewer + ResidueCell)
+- [x] Color-coded by domain, scrollable (getDomainForPosition utility)
+- [x] Mutation annotation overlay (position 37 frameshift, position 68 PTC, aberrant region 38-67)
+- [x] Click interaction linked to 3D model zoom (selectedResidue → viewer.zoomTo)
+- [ ] Show conservation scores if available (ConSurf data) — deferred, external data dependency
 
 ### Priority 3: Central Dogma Animation
 - [ ] Upgrade from static SVG to animated (framer-motion)
