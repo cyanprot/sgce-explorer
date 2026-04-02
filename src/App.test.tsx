@@ -30,11 +30,12 @@ vi.mock("@/hooks/useProteinData", () => ({
 }));
 
 describe("App", () => {
-  it("renders all 3 tab buttons with correct labels", () => {
+  it("renders all 4 tab buttons with correct labels", () => {
     render(<App />);
     expect(screen.getByText("3D Structure")).toBeInTheDocument();
     expect(screen.getByText("Central Dogma")).toBeInTheDocument();
     expect(screen.getByText("Imprinting")).toBeInTheDocument();
+    expect(screen.getByText("Research")).toBeInTheDocument();
   });
 
   it("shows mutation notation in header", () => {
@@ -78,6 +79,14 @@ describe("App", () => {
     expect(screen.queryByTestId("residue-1")).not.toBeInTheDocument();
     fireEvent.click(screen.getByText("Imprinting"));
     expect(screen.queryByTestId("residue-1")).not.toBeInTheDocument();
+  });
+
+  it("switches to Research tab on click", () => {
+    render(<App />);
+    fireEvent.click(screen.getByText("Research"));
+    expect(screen.getByTestId("research-panel")).toBeInTheDocument();
+    // Structure content should be gone
+    expect(screen.queryAllByText(/Wild-type/)).toHaveLength(0);
   });
 
   it("hides previous tab content when switching tabs", () => {
