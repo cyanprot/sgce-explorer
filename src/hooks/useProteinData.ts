@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { isPdbData } from "@/utils/isPdbData";
 
 const ALPHAFOLD_URL =
   "https://alphafold.ebi.ac.uk/files/AF-O43556-F1-model_v6.pdb";
@@ -20,9 +21,6 @@ export function useProteinData(): UseProteinDataResult {
 
   useEffect(() => {
     const controller = new AbortController();
-
-    const isPdbData = (text: string) =>
-      /^(HEADER|ATOM|MODEL|REMARK)/m.test(text);
 
     async function fetchPDB() {
       try {

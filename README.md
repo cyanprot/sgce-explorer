@@ -133,7 +133,7 @@ All structural data from [UniProt O43556](https://www.uniprot.org/uniprot/O43556
 
 ## Deployment
 
-Live at **[arcivus.northprot.com](https://arcivus.northprot.com)** | [sgce-explorer.vercel.app](https://sgce-explorer.vercel.app)
+Live at **[e-sarcoglycan.arcivus.ca](https://e-sarcoglycan.arcivus.ca)** | [sgce-explorer.vercel.app](https://sgce-explorer.vercel.app)
 
 Hosted on Vercel with Cloudflare DNS.
 

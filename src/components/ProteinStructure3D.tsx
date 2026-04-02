@@ -9,9 +9,8 @@ import * as $3Dmol from "3dmol";
 import { COLORS, DOMAINS, MUTATION, PROTEIN_LENGTH, GLYCOSYLATION_SITES } from "@/constants/protein-data";
 import { ToggleButton } from "./ui/ToggleButton";
 import { useProteinData } from "@/hooks/useProteinData";
+import { hexToInt } from "@/utils/hexToInt";
 import type { ViewMode } from "@/types";
-
-const hexToInt = (hex: string) => parseInt(hex.slice(1), 16);
 
 export function ProteinStructure3D() {
   const viewerDivRef = useRef<HTMLDivElement>(null);

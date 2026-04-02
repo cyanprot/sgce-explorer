@@ -106,7 +106,7 @@ src/
 - [ ] STRING DB: protein-protein interaction network for DGC
 
 ### Priority 5: Deployment
-- [x] Cloudflare Tunnel deployment (arcivus.northprot.com → localhost:3000)
+- [x] Cloudflare Tunnel deployment (e-sarcoglycan.arcivus.ca → localhost:3000)
 - [ ] PWA support for offline access
 - [ ] Export visualizations as high-res PNG/SVG for presentations
 
@@ -134,7 +134,7 @@ npm run build         # Production build
 - AlphaFold API versions change — query `https://alphafold.ebi.ac.uk/api/prediction/O43556` for latest URL
 
 ## Deployment
-- **Live URL**: https://arcivus.northprot.com (custom domain)
+- **Live URL**: https://e-sarcoglycan.arcivus.ca (custom domain)
 - **Vercel URL**: https://sgce-explorer.vercel.app
 - **Method**: Vercel (static hosting) + Cloudflare DNS (A record → 76.76.21.21, DNS only)
 - **GitHub**: https://github.com/cyanprot/sgce-explorer (auto-deploy on push)

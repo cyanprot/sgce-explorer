@@ -58,7 +58,7 @@ export function CentralDogma() {
             const active = i === step;
             const done = i < step;
             return (
-              <g key={i} onClick={() => setStep(i)} style={{ cursor: "pointer" }}>
+              <g key={i} data-testid={`step-${i}`} onClick={() => setStep(i)} style={{ cursor: "pointer" }}>
                 {i < CENTRAL_DOGMA_STEPS.length - 1 && (
                   <line x1={x + 16} y1={30} x2={30 + ((i + 1) / (CENTRAL_DOGMA_STEPS.length - 1)) * 640 - 16} y2={30}
                     stroke={done ? COLORS.accent : COLORS.panelBorder} strokeWidth={2} />

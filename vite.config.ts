@@ -12,6 +12,6 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
-    allowedHosts: ["arcivus.northprot.com"],
+    allowedHosts: ["e-sarcoglycan.arcivus.ca"],
   },
 });

@@ -6,33 +6,42 @@
   "description": "Interactive SGCE ε-Sarcoglycan protein explorer — DYT-SGCE c.108dup visualization",
   "license": "MIT",
   "author": "Jongmin Lee",
-  "homepage": "https://arcivus.northprot.com",
+  "homepage": "https://e-sarcoglycan.arcivus.ca",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "fetch-pdb": "curl -o data/AF-O43556-F1.pdb https://alphafold.ebi.ac.uk/files/AF-O43556-F1-model_v6.pdb"
+    "fetch-pdb": "curl -o data/AF-O43556-F1.pdb https://alphafold.ebi.ac.uk/files/AF-O43556-F1-model_v6.pdb",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui"
   },
   "dependencies": {
+    "@react-three/drei": "^9.117.0",
+    "@react-three/fiber": "^8.17.0",
     "3dmol": "^2.4.2",
+    "framer-motion": "^11.11.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "three": "^0.170.0",
-    "@react-three/fiber": "^8.17.0",
-    "@react-three/drei": "^9.117.0",
     "recharts": "^2.13.0",
-    "framer-motion": "^11.11.0",
+    "three": "^0.170.0",
     "zustand": "^5.0.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@types/three": "^0.170.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "jsdom": "^29.0.1",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.0",
     "typescript": "~5.6.2",
     "vite": "^6.0.0",
-    "tailwindcss": "^3.4.0",
-    "postcss": "^8.4.47",
-    "autoprefixer": "^10.4.20"
+    "vitest": "^4.1.2"
   }
 }

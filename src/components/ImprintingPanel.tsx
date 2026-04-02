@@ -30,7 +30,7 @@ export function ImprintingPanel() {
             </text>
 
             {/* Paternal allele */}
-            <g opacity={highlight === "maternal" ? 0.2 : 1}>
+            <g data-testid="paternal-allele" opacity={highlight === "maternal" ? 0.2 : 1}>
               <text x={20} y={55} fontSize={12} fill={COLORS.active} fontWeight={700}>PATERNAL ALLELE (active)</text>
               <rect x={20} y={65} width={460} height={55} rx={8} fill={COLORS.active} opacity={0.05} stroke={COLORS.active} strokeWidth={1} />
               <rect x={150} y={75} width={120} height={16} rx={4} fill="transparent" stroke={COLORS.active} strokeWidth={1} />
@@ -51,7 +51,7 @@ export function ImprintingPanel() {
             </g>
 
             {/* Maternal allele */}
-            <g opacity={highlight === "paternal" ? 0.2 : 1}>
+            <g data-testid="maternal-allele" opacity={highlight === "paternal" ? 0.2 : 1}>
               <text x={20} y={170} fontSize={12} fill={COLORS.silenced} fontWeight={700}>MATERNAL ALLELE (silenced)</text>
               <rect x={20} y={180} width={460} height={55} rx={8} fill={COLORS.silenced} opacity={0.05} stroke={COLORS.silenced} strokeWidth={1} />
               <rect x={150} y={190} width={120} height={16} rx={4} fill={COLORS.methylation} opacity={0.15} stroke={COLORS.methylation} strokeWidth={1} />
