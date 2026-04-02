@@ -5,13 +5,11 @@ import { clearAllCache } from "@/utils/fetchCache";
 // ---------- helpers for unit tests ----------
 const mockPubMed = vi.fn();
 const mockTrials = vi.fn();
-const mockChEMBL = vi.fn();
 const mockUniProt = vi.fn();
 const mockStringDB = vi.fn();
 
 vi.mock("@/hooks/usePubMed", () => ({ usePubMed: (...a: unknown[]) => mockPubMed(...a) }));
 vi.mock("@/hooks/useClinicalTrials", () => ({ useClinicalTrials: (...a: unknown[]) => mockTrials(...a) }));
-vi.mock("@/hooks/useChEMBL", () => ({ useChEMBL: (...a: unknown[]) => mockChEMBL(...a) }));
 vi.mock("@/hooks/useUniProt", () => ({ useUniProt: (...a: unknown[]) => mockUniProt(...a) }));
 vi.mock("@/hooks/useStringDB", () => ({ useStringDB: (...a: unknown[]) => mockStringDB(...a) }));
 
@@ -19,7 +17,6 @@ function setAllIdle() {
   const idle = { data: null, loading: false, error: null };
   mockPubMed.mockReturnValue(idle);
   mockTrials.mockReturnValue(idle);
-  mockChEMBL.mockReturnValue(idle);
   mockUniProt.mockReturnValue(idle);
   mockStringDB.mockReturnValue(idle);
 }
@@ -28,7 +25,6 @@ function setAllLoading() {
   const loading = { data: null, loading: true, error: null };
   mockPubMed.mockReturnValue(loading);
   mockTrials.mockReturnValue(loading);
-  mockChEMBL.mockReturnValue(loading);
   mockUniProt.mockReturnValue(loading);
   mockStringDB.mockReturnValue(loading);
 }
@@ -44,11 +40,10 @@ describe("ResearchPanel (unit)", () => {
     expect(screen.getByTestId("research-panel")).toBeInTheDocument();
   });
 
-  it("renders all 5 card headings", () => {
+  it("renders all 4 card headings", () => {
     render(<ResearchPanel />);
     expect(screen.getByText("PubMed Literature")).toBeInTheDocument();
     expect(screen.getByText("Clinical Trials")).toBeInTheDocument();
-    expect(screen.getByText(/Pharmacology \(ChEMBL\)/)).toBeInTheDocument();
     expect(screen.getByText("UniProt Annotation")).toBeInTheDocument();
     expect(screen.getByText(/Protein Interactions \(STRING\)/)).toBeInTheDocument();
   });
@@ -74,11 +69,6 @@ describe("ResearchPanel (unit)", () => {
       loading: false,
       error: null,
     });
-    mockChEMBL.mockReturnValue({
-      data: [{ moleculeChemblId: "C1", moleculeName: "DrugX", targetChemblId: "T1", standardType: "IC50", standardValue: 50, standardUnits: "nM" }],
-      loading: false,
-      error: null,
-    });
     mockUniProt.mockReturnValue({
       data: { accession: "O43556", proteinName: "Epsilon-sarcoglycan", geneName: "SGCE", features: [], keywords: ["Membrane"], lastModified: "2024-01-01" },
       loading: false,
@@ -94,7 +84,6 @@ describe("ResearchPanel (unit)", () => {
 
     expect(screen.getByText("PubMed Title")).toBeInTheDocument();
     expect(screen.getByText("Trial Title")).toBeInTheDocument();
-    expect(screen.getByText("DrugX")).toBeInTheDocument();
     expect(screen.getByText("Epsilon-sarcoglycan")).toBeInTheDocument();
     expect(screen.getByText("SGCB")).toBeInTheDocument();
   });
@@ -103,7 +92,7 @@ describe("ResearchPanel (unit)", () => {
     setAllLoading();
     render(<ResearchPanel />);
     const loadingTexts = screen.getAllByText("Loading...");
-    expect(loadingTexts).toHaveLength(5);
+    expect(loadingTexts).toHaveLength(4);
   });
 });
 
@@ -115,7 +104,6 @@ describe("ResearchPanel (integration)", () => {
     // Dynamically re-enable the real hooks
     vi.doUnmock("@/hooks/usePubMed");
     vi.doUnmock("@/hooks/useClinicalTrials");
-    vi.doUnmock("@/hooks/useChEMBL");
     vi.doUnmock("@/hooks/useUniProt");
     vi.doUnmock("@/hooks/useStringDB");
   });
@@ -154,7 +142,6 @@ describe("ResearchPanel (integration)", () => {
     mockPubMed.mockImplementation(() => usePubMed());
     // Keep others idle
     mockTrials.mockReturnValue({ data: null, loading: false, error: null });
-    mockChEMBL.mockReturnValue({ data: null, loading: false, error: null });
     mockUniProt.mockReturnValue({ data: null, loading: false, error: null });
     mockStringDB.mockReturnValue({ data: null, loading: false, error: null });
 
@@ -169,7 +156,6 @@ describe("ResearchPanel (integration)", () => {
     const { useClinicalTrials } = await vi.importActual<typeof import("@/hooks/useClinicalTrials")>("@/hooks/useClinicalTrials");
     mockPubMed.mockReturnValue({ data: null, loading: false, error: null });
     mockTrials.mockImplementation(() => useClinicalTrials());
-    mockChEMBL.mockReturnValue({ data: null, loading: false, error: null });
     mockUniProt.mockReturnValue({ data: null, loading: false, error: null });
     mockStringDB.mockReturnValue({ data: null, loading: false, error: null });
 
@@ -180,26 +166,10 @@ describe("ResearchPanel (integration)", () => {
     });
   });
 
-  it("renders ChEMBL activities from mocked fetch", async () => {
-    const { useChEMBL } = await vi.importActual<typeof import("@/hooks/useChEMBL")>("@/hooks/useChEMBL");
-    mockPubMed.mockReturnValue({ data: null, loading: false, error: null });
-    mockTrials.mockReturnValue({ data: null, loading: false, error: null });
-    mockChEMBL.mockImplementation(() => useChEMBL());
-    mockUniProt.mockReturnValue({ data: null, loading: false, error: null });
-    mockStringDB.mockReturnValue({ data: null, loading: false, error: null });
-
-    render(<ResearchPanel />);
-
-    await waitFor(() => {
-      expect(screen.getByText("Compound X")).toBeInTheDocument();
-    });
-  });
-
   it("renders UniProt annotation from mocked fetch", async () => {
     const { useUniProt } = await vi.importActual<typeof import("@/hooks/useUniProt")>("@/hooks/useUniProt");
     mockPubMed.mockReturnValue({ data: null, loading: false, error: null });
     mockTrials.mockReturnValue({ data: null, loading: false, error: null });
-    mockChEMBL.mockReturnValue({ data: null, loading: false, error: null });
     mockUniProt.mockImplementation(() => useUniProt());
     mockStringDB.mockReturnValue({ data: null, loading: false, error: null });
 
@@ -215,7 +185,6 @@ describe("ResearchPanel (integration)", () => {
     const { useStringDB } = await vi.importActual<typeof import("@/hooks/useStringDB")>("@/hooks/useStringDB");
     mockPubMed.mockReturnValue({ data: null, loading: false, error: null });
     mockTrials.mockReturnValue({ data: null, loading: false, error: null });
-    mockChEMBL.mockReturnValue({ data: null, loading: false, error: null });
     mockUniProt.mockReturnValue({ data: null, loading: false, error: null });
     mockStringDB.mockImplementation(() => useStringDB());
 

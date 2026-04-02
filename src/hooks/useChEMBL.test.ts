@@ -90,7 +90,7 @@ describe("useChEMBL", () => {
     expect(searchCall).toBeDefined();
     const url = searchCall![0] as string;
     expect(url).toContain("target/search.json");
-    expect(url).toContain("q=sarcoglycan");
+    expect(url).toContain("q=dystroglycan");
     expect(url).toContain("format=json");
     expect(url).toContain("limit=5");
   });

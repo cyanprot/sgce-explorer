@@ -1,12 +1,10 @@
 import { usePubMed } from "@/hooks/usePubMed";
 import { useClinicalTrials } from "@/hooks/useClinicalTrials";
-import { useChEMBL } from "@/hooks/useChEMBL";
 import { useUniProt } from "@/hooks/useUniProt";
 import { useStringDB } from "@/hooks/useStringDB";
 import {
   PubMedCard,
   TrialsCard,
-  PharmacologyCard,
   ProteinCard,
   InteractionsCard,
 } from "@/components/research";
@@ -14,7 +12,6 @@ import {
 export function ResearchPanel() {
   const pubmed = usePubMed();
   const trials = useClinicalTrials();
-  const chembl = useChEMBL();
   const uniprot = useUniProt();
   const stringdb = useStringDB();
 
@@ -30,11 +27,6 @@ export function ResearchPanel() {
           trials={trials.data}
           loading={trials.loading}
           error={trials.error}
-        />
-        <PharmacologyCard
-          activities={chembl.data}
-          loading={chembl.loading}
-          error={chembl.error}
         />
         <ProteinCard
           annotation={uniprot.data}

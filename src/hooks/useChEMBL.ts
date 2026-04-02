@@ -2,7 +2,7 @@ import { useFetchData } from "@/hooks/useFetchData";
 import type { FetchState, ChEMBLActivity } from "@/types/research";
 
 const TARGET_SEARCH_URL =
-  "https://www.ebi.ac.uk/chembl/api/data/target/search.json?q=sarcoglycan&format=json&limit=5";
+  "https://www.ebi.ac.uk/chembl/api/data/target/search.json?q=dystroglycan&format=json&limit=5";
 
 function extractTargetIds(data: unknown): string[] {
   const d = data as { targets?: { target_chembl_id: string }[] };
