@@ -1,0 +1,1 @@
+export { PubMedCard } from "./PubMedCard";
