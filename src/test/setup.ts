@@ -36,3 +36,9 @@ if (typeof globalThis.matchMedia === "undefined") {
 if (typeof Element.prototype.scrollIntoView === "undefined") {
   Element.prototype.scrollIntoView = vi.fn();
 }
+
+// Clear fetch cache between tests to ensure isolation
+import { clearAllCache } from "@/utils/fetchCache";
+afterEach(() => {
+  clearAllCache();
+});

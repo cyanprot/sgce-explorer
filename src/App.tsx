@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ProteinStructure3D } from "@/components/ProteinStructure3D";
 import { CentralDogma } from "@/components/CentralDogma";
 import { ImprintingPanel } from "@/components/ImprintingPanel";
+import { ResearchPanel } from "@/components/ResearchPanel";
 import { COLORS, MUTATION } from "@/constants/protein-data";
 import type { TabId } from "@/types";
 
@@ -9,6 +10,7 @@ const TABS: { id: TabId; label: string }[] = [
   { id: "structure", label: "3D Structure" },
   { id: "dogma", label: "Central Dogma" },
   { id: "imprinting", label: "Imprinting" },
+  { id: "research", label: "Research" },
 ];
 
 export default function App() {
@@ -57,6 +59,7 @@ export default function App() {
       {tab === "structure" && <ProteinStructure3D />}
       {tab === "dogma" && <CentralDogma />}
       {tab === "imprinting" && <ImprintingPanel />}
+      {tab === "research" && <ResearchPanel />}
     </div>
   );
 }
