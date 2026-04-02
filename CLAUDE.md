@@ -57,16 +57,25 @@ src/
 ├── main.tsx                    # Entry point
 ├── App.tsx                     # Tab router + layout
 ├── index.css                   # Tailwind + global styles
-├── constants/
-│   └── protein-data.ts         # Domain boundaries, mutation, colors, sequences
 ├── types/
 │   └── index.ts                # Shared TypeScript interfaces
 ├── hooks/
 │   └── useProteinData.ts       # AlphaFold PDB fetch + parse hook
+├── constants/
+│   ├── protein-data.ts         # Domain boundaries, mutation, colors, sequences
+│   └── codon-data.ts           # CDS sequence, WT/mutant codons, NMD sub-steps, narration scripts
 ├── components/
 │   ├── ProteinStructure3D.tsx  # 3Dmol.js protein viewer (AlphaFold PDB, WT vs Mutant)
-│   ├── CentralDogma.tsx        # 7-step central dogma animation
+│   ├── CentralDogma.tsx        # Orchestrator: composes central-dogma/ sub-components
 │   ├── ImprintingPanel.tsx     # Imprinting mechanism visualization
+│   ├── central-dogma/
+│   │   ├── index.ts            # Barrel export
+│   │   ├── ProgressBar.tsx     # Animated SVG step indicators (spring circles)
+│   │   ├── StepContent.tsx     # AnimatePresence info cards (fade/slide)
+│   │   ├── CodonViewer.tsx     # WT/mutant codon strips with frameshift/PTC markers
+│   │   ├── TranslationAnimation.tsx  # Ribosome + mRNA + peptide chain (step 5)
+│   │   ├── NMDAnimation.tsx    # UPF1 recruitment + mRNA degradation (step 6)
+│   │   └── AudioNarration.tsx  # Web Speech API toggle
 │   ├── sequence/
 │   │   ├── index.ts            # Barrel export
 │   │   ├── SequenceViewer.tsx  # Linear sequence track container (scrollable, 437 residues)
@@ -99,11 +108,12 @@ src/
 - [ ] Show conservation scores if available (ConSurf data) — deferred, external data dependency
 
 ### Priority 3: Central Dogma Animation
-- [ ] Upgrade from static SVG to animated (framer-motion)
-- [ ] Ribosome translation animation: mRNA scanning, tRNA delivery, peptide bond
-- [ ] Show actual codon sequence around mutation site
-- [ ] NMD pathway: animate UPF1 recruitment, mRNA degradation
-- [ ] Add audio narration option (Web Speech API)
+- [x] Upgrade from static SVG to animated (framer-motion) — ProgressBar spring + StepContent AnimatePresence
+- [x] Ribosome translation animation: 80S ribosome scanning mRNA, peptide chain growth, frameshift marker
+- [x] Show actual codon sequence around mutation site (CodonViewer: WT/mutant, PTC at 68)
+- [x] NMD pathway: 4-step animation (PTC recognition → UPF1 → phosphorylation → degradation)
+- [x] Add audio narration option (Web Speech API) — toggle per step
+- [x] Adaptive autoplay (per-step setTimeout with STEP_DURATIONS)
 
 ### Priority 4: External Data Integration
 - [ ] PubMed API: fetch latest SGCE/DYT11 papers, show in sidebar
