@@ -29,6 +29,9 @@ Thumbs.db
 *.log
 npm-debug.log*
 
+# QC artifacts
+qc-screenshots/
+
 # Misc
 *.tgz
 .claude/

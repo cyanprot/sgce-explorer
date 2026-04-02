@@ -152,7 +152,6 @@ npm run build         # Production build
 
 ## Deployment
 - **Live URL**: https://e-sarcoglycan.arcivus.ca (custom domain)
-- **Vercel URL**: https://sgce-explorer.vercel.app
 - **Method**: Vercel (static hosting) + Cloudflare DNS (A record → 76.76.21.21, DNS only)
 - **GitHub**: https://github.com/cyanprot/sgce-explorer (auto-deploy on push)
 
