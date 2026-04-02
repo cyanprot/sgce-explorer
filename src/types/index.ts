@@ -28,6 +28,26 @@ export interface CentralDogmaStep {
   mutationNote: string;
 }
 
+export interface Codon {
+  position: number;       // 1-indexed amino acid position
+  nucleotides: string;    // 3-letter codon (e.g. "GTG")
+  aminoAcid: string;      // single-letter AA or "*" for stop
+  isFrameshifted: boolean;
+  isMutationStart: boolean;
+  isPTC: boolean;
+}
+
+export interface NMDSubStep {
+  id: string;
+  label: string;
+  detail: string;
+}
+
+export interface NarrationScript {
+  stepIndex: number;
+  text: string;
+}
+
 export type TabId = "structure" | "dogma" | "imprinting";
 export type ViewMode = "wt" | "mutant";
 export type AlleleHighlight = "both" | "paternal" | "maternal";

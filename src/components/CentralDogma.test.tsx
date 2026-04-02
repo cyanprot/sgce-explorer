@@ -81,7 +81,7 @@ describe("CentralDogma", () => {
 
     it("stops at last step and resets playing to false", () => {
       render(<CentralDogma />);
-      // Navigate to step 6 (index 5)
+      // Navigate to step 6 (index 5) — NMD step has 8000ms duration
       for (let i = 0; i < 5; i++) {
         fireEvent.click(screen.getByText("Next ▶"));
       }
@@ -89,9 +89,9 @@ describe("CentralDogma", () => {
 
       fireEvent.click(screen.getByText("▶ Play"));
 
-      // Advance to step 7
+      // Advance to step 7 (step 5 has 8000ms adaptive duration)
       act(() => {
-        vi.advanceTimersByTime(4000);
+        vi.advanceTimersByTime(8000);
       });
       expect(screen.getByText("Step 7 / 7")).toBeInTheDocument();
 

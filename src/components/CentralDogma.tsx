@@ -1,30 +1,78 @@
 /**
  * CentralDogma — 7-step animated central dogma visualization
  *
- * Current: Static SVG diagrams with step navigation
- * TODO: Upgrade to framer-motion animations (see CLAUDE.md Priority 3)
+ * Orchestrator composing sub-components:
+ * - ProgressBar: animated step indicators
+ * - StepContent: info cards with AnimatePresence transitions
+ * - CodonViewer: WT/mutant codon comparison (steps 4-6)
+ * - TranslationAnimation: ribosome scanning mRNA (step 5)
+ * - NMDAnimation: UPF1 recruitment + mRNA degradation (step 6)
+ * - AudioNarration: Web Speech API toggle
  */
-import { useState, useEffect, useRef } from "react";
-import { COLORS, MUTATION, CENTRAL_DOGMA_STEPS } from "@/constants/protein-data";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { COLORS, CENTRAL_DOGMA_STEPS } from "@/constants/protein-data";
+import { ProgressBar } from "./central-dogma/ProgressBar";
+import { StepContent } from "./central-dogma/StepContent";
+import { CodonViewer } from "./central-dogma/CodonViewer";
+import { TranslationAnimation } from "./central-dogma/TranslationAnimation";
+import { NMDAnimation } from "./central-dogma/NMDAnimation";
+import { AudioNarration } from "./central-dogma/AudioNarration";
+
+// Adaptive durations per step (ms)
+const STEP_DURATIONS = [4000, 4000, 4000, 4000, 8000, 8000, 4000];
 
 export function CentralDogma() {
   const [step, setStep] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setInterval>>();
+  const [translationProgress, setTranslationProgress] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const animFrameRef = useRef<number>();
+
+  // Schedule next autoplay step
+  const scheduleNext = useCallback((currentStep: number) => {
+    if (currentStep >= CENTRAL_DOGMA_STEPS.length - 1) {
+      setPlaying(false);
+      return;
+    }
+    timerRef.current = setTimeout(() => {
+      setStep((s) => s + 1);
+    }, STEP_DURATIONS[currentStep]);
+  }, []);
 
   useEffect(() => {
     if (playing) {
-      timerRef.current = setInterval(() => {
-        setStep((s) => {
-          if (s >= CENTRAL_DOGMA_STEPS.length - 1) {
-            setPlaying(false);
-            return s;
-          }
-          return s + 1;
-        });
-      }, 4000);
+      scheduleNext(step);
     }
-    return () => clearInterval(timerRef.current);
+    return () => clearTimeout(timerRef.current);
+  }, [playing, step, scheduleNext]);
+
+  // Translation animation progress (step 4 = ribosome translation)
+  useEffect(() => {
+    if (step !== 4) {
+      setTranslationProgress(0);
+      return;
+    }
+    const duration = 6000;
+    const startTime = performance.now();
+    const animate = (now: number) => {
+      const elapsed = now - startTime;
+      const p = Math.min(elapsed / duration, 1);
+      setTranslationProgress(p);
+      if (p < 1) {
+        animFrameRef.current = requestAnimationFrame(animate);
+      }
+    };
+    animFrameRef.current = requestAnimationFrame(animate);
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, [step]);
+
+  const handleNMDComplete = useCallback(() => {
+    // NMD animation finished — if autoplay, advance
+    if (playing) {
+      setStep((s) => Math.min(s + 1, CENTRAL_DOGMA_STEPS.length - 1));
+    }
   }, [playing]);
 
   const current = CENTRAL_DOGMA_STEPS[step];
@@ -33,61 +81,92 @@ export function CentralDogma() {
     <div className="p-6">
       {/* Playback controls */}
       <div className="flex gap-2 mb-5 items-center">
-        <button onClick={() => setStep(Math.max(0, step - 1))} className="px-4 py-2 rounded-md text-xs font-semibold border cursor-pointer"
-          style={{ background: COLORS.panel, color: COLORS.text, borderColor: COLORS.panelBorder }}>
+        <button
+          onClick={() => setStep(Math.max(0, step - 1))}
+          className="px-4 py-2 rounded-md text-xs font-semibold border cursor-pointer"
+          style={{
+            background: COLORS.panel,
+            color: COLORS.text,
+            borderColor: COLORS.panelBorder,
+          }}
+        >
           ◀ Prev
         </button>
-        <button onClick={() => setPlaying(!playing)} className="px-4 py-2 rounded-md text-xs font-semibold border cursor-pointer"
-          style={{ background: playing ? COLORS.danger : COLORS.accent, color: "#fff", borderColor: "transparent" }}>
+        <button
+          onClick={() => setPlaying(!playing)}
+          className="px-4 py-2 rounded-md text-xs font-semibold border cursor-pointer"
+          style={{
+            background: playing ? COLORS.danger : COLORS.accent,
+            color: "#fff",
+            borderColor: "transparent",
+          }}
+        >
           {playing ? "⏸ Pause" : "▶ Play"}
         </button>
-        <button onClick={() => setStep(Math.min(CENTRAL_DOGMA_STEPS.length - 1, step + 1))} className="px-4 py-2 rounded-md text-xs font-semibold border cursor-pointer"
-          style={{ background: COLORS.panel, color: COLORS.text, borderColor: COLORS.panelBorder }}>
+        <button
+          onClick={() =>
+            setStep(Math.min(CENTRAL_DOGMA_STEPS.length - 1, step + 1))
+          }
+          className="px-4 py-2 rounded-md text-xs font-semibold border cursor-pointer"
+          style={{
+            background: COLORS.panel,
+            color: COLORS.text,
+            borderColor: COLORS.panelBorder,
+          }}
+        >
           Next ▶
         </button>
         <span className="ml-3 text-xs" style={{ color: COLORS.textDim }}>
           Step {step + 1} / {CENTRAL_DOGMA_STEPS.length}
         </span>
+        <div className="ml-auto">
+          <AudioNarration stepIndex={step} />
+        </div>
       </div>
 
       {/* Step progress bar */}
-      <div className="rounded-xl p-5 mb-5 border" style={{ background: COLORS.panel, borderColor: COLORS.panelBorder }}>
-        <svg viewBox="0 0 700 60" style={{ width: "100%", maxWidth: 700 }}>
-          {CENTRAL_DOGMA_STEPS.map((_, i) => {
-            const x = 30 + (i / (CENTRAL_DOGMA_STEPS.length - 1)) * 640;
-            const active = i === step;
-            const done = i < step;
-            return (
-              <g key={i} data-testid={`step-${i}`} onClick={() => setStep(i)} style={{ cursor: "pointer" }}>
-                {i < CENTRAL_DOGMA_STEPS.length - 1 && (
-                  <line x1={x + 16} y1={30} x2={30 + ((i + 1) / (CENTRAL_DOGMA_STEPS.length - 1)) * 640 - 16} y2={30}
-                    stroke={done ? COLORS.accent : COLORS.panelBorder} strokeWidth={2} />
-                )}
-                <circle cx={x} cy={30} r={active ? 14 : 10}
-                  fill={active ? COLORS.accent : done ? COLORS.accentDim : COLORS.panel}
-                  stroke={active ? COLORS.accent : done ? COLORS.accent : COLORS.panelBorder} strokeWidth={2} />
-                <text x={x} y={34} textAnchor="middle" fontSize={10} fontWeight={700}
-                  fill={active || done ? "#fff" : COLORS.textDim}>{i + 1}</text>
-              </g>
-            );
-          })}
-        </svg>
+      <div
+        className="rounded-xl p-5 mb-5 border"
+        style={{ background: COLORS.panel, borderColor: COLORS.panelBorder }}
+      >
+        <ProgressBar activeStep={step} onStepClick={setStep} />
       </div>
 
+      {/* Codon viewer (visible at steps 4-6: translation, NMD, result) */}
+      {step >= 3 && step <= 5 && (
+        <div className="mb-5">
+          <CodonViewer />
+        </div>
+      )}
+
+      {/* Translation animation (step 5) */}
+      {step === 4 && (
+        <div
+          className="rounded-xl p-5 mb-5 border"
+          style={{
+            background: COLORS.panel,
+            borderColor: COLORS.panelBorder,
+          }}
+        >
+          <TranslationAnimation progress={translationProgress} />
+        </div>
+      )}
+
+      {/* NMD animation (step 6) */}
+      {step === 5 && (
+        <div
+          className="rounded-xl p-5 mb-5 border"
+          style={{
+            background: COLORS.panel,
+            borderColor: COLORS.panelBorder,
+          }}
+        >
+          <NMDAnimation active={step === 5} onComplete={handleNMDComplete} />
+        </div>
+      )}
+
       {/* Info cards */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="rounded-xl p-5 border" style={{ background: COLORS.panel, borderColor: COLORS.panelBorder }}>
-          <h3 className="text-base font-bold mt-0 mb-1">{current.title}</h3>
-          <p className="text-xs mb-3" style={{ color: COLORS.accent }}>{current.subtitle}</p>
-          <p className="text-sm leading-relaxed m-0" style={{ color: COLORS.textDim }}>{current.detail}</p>
-        </div>
-        <div className="rounded-xl p-5 border" style={{ background: COLORS.dangerDim, borderColor: COLORS.danger + "33" }}>
-          <h3 className="text-sm font-bold mt-0 mb-2" style={{ color: COLORS.danger }}>
-            Your mutation — {MUTATION.cNotation}
-          </h3>
-          <p className="text-sm leading-relaxed m-0">{current.mutationNote}</p>
-        </div>
-      </div>
+      <StepContent step={current} />
     </div>
   );
 }

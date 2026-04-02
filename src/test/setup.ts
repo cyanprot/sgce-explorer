@@ -18,6 +18,20 @@ if (typeof globalThis.requestAnimationFrame === "undefined") {
   globalThis.cancelAnimationFrame = (id: number) => clearTimeout(id);
 }
 
+// Stub matchMedia (absent in jsdom, needed for framer-motion's useReducedMotion)
+if (typeof globalThis.matchMedia === "undefined") {
+  globalThis.matchMedia = vi.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  }));
+}
+
 // Stub scrollIntoView (absent in jsdom, needed for SequenceViewer scroll sync)
 if (typeof Element.prototype.scrollIntoView === "undefined") {
   Element.prototype.scrollIntoView = vi.fn();
