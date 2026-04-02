@@ -4,12 +4,13 @@
  * Uses 3Dmol.js to render actual AlphaFold PDB structure
  * with domain coloring, mutation/glycosylation markers, and WT/Mutant toggle.
  */
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import * as $3Dmol from "3dmol";
 import { COLORS, DOMAINS, MUTATION, PROTEIN_LENGTH, GLYCOSYLATION_SITES } from "@/constants/protein-data";
 import { ToggleButton } from "./ui/ToggleButton";
 import { useProteinData } from "@/hooks/useProteinData";
 import { hexToInt } from "@/utils/hexToInt";
+import { SequenceViewer } from "./sequence";
 import type { ViewMode } from "@/types";
 
 export function ProteinStructure3D() {
@@ -20,6 +21,8 @@ export function ProteinStructure3D() {
   const [hoveredDomain, setHoveredDomain] = useState<string | null>(null);
   const [autoRotate, setAutoRotate] = useState(true);
   const [viewerError, setViewerError] = useState<string | null>(null);
+  const [selectedResidue, setSelectedResidue] = useState<number | null>(null);
+  const [hoveredResidue, setHoveredResidue] = useState<number | null>(null);
   const { pdbData, loading, error } = useProteinData();
 
   const showMutant = viewMode === "mutant";
@@ -196,7 +199,25 @@ export function ProteinStructure3D() {
     }
   }, [autoRotate, pdbData]);
 
-  // Effect 4: Resize
+  // Effect 4: Highlight selected residue in 3D viewer
+  useEffect(() => {
+    const viewer = viewerRef.current;
+    if (!viewer || selectedResidue == null) return;
+
+    // Zoom to selected residue and add highlight
+    viewer.zoomTo({ resi: selectedResidue } as any);
+    viewer.render();
+  }, [selectedResidue]);
+
+  const handleResidueClick = useCallback((position: number) => {
+    setSelectedResidue(position);
+  }, []);
+
+  const handleResidueHover = useCallback((position: number | null) => {
+    setHoveredResidue(position);
+  }, []);
+
+  // Effect 5: Resize
   useEffect(() => {
     const el = viewerDivRef.current;
     if (!el) return;
@@ -230,6 +251,15 @@ export function ProteinStructure3D() {
       <div className="px-6">
         <DomainBar showMutant={showMutant} />
       </div>
+
+      {/* Sequence viewer */}
+      <SequenceViewer
+        selectedResidue={selectedResidue}
+        hoveredResidue={hoveredResidue}
+        onResidueClick={handleResidueClick}
+        onResidueHover={handleResidueHover}
+        viewMode={viewMode}
+      />
 
       {/* 3D Viewport */}
       <div className="flex-1 relative" style={{ minHeight: 300 }}>
