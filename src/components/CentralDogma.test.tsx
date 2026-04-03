@@ -4,6 +4,14 @@ import { CentralDogma } from "./CentralDogma";
 import { COLORS } from "@/constants/protein-data";
 
 describe("CentralDogma", () => {
+  it("central dogma container has flex-fill layout", () => {
+    render(<CentralDogma />);
+    const container = screen.getByTestId("central-dogma");
+    expect(container.className).toMatch(/min-h-/);
+    expect(container.className).toContain("flex");
+    expect(container.className).toContain("flex-col");
+  });
+
   it("renders initial state: step 1 content, counter, and mutation card", () => {
     render(<CentralDogma />);
     expect(screen.getByText(/1\. DNA/)).toBeInTheDocument();
@@ -62,6 +70,31 @@ describe("CentralDogma", () => {
     fireEvent.click(playBtn);
     const pauseBtn = screen.getByText("⏸ Pause");
     expect(pauseBtn).toHaveStyle({ background: COLORS.warn });
+  });
+
+  describe("speed control", () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("renders speed control with default 1x", () => {
+      render(<CentralDogma />);
+      expect(screen.getByLabelText(/speed/i)).toBeInTheDocument();
+    });
+
+    it("2x speed halves step duration", () => {
+      render(<CentralDogma />);
+      fireEvent.change(screen.getByLabelText(/speed/i), { target: { value: "2" } });
+      fireEvent.click(screen.getByText("▶ Play"));
+      act(() => {
+        vi.advanceTimersByTime(2000); // 4000ms / 2x = 2000ms
+      });
+      expect(screen.getByText("Step 2 / 7")).toBeInTheDocument();
+    });
   });
 
   describe("autoplay with fake timers", () => {

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { PubMedCard } from "./PubMedCard";
 import type { PubMedArticle } from "@/types/research";
 
@@ -85,6 +85,27 @@ describe("PubMedCard", () => {
     expect(screen.getByText(/2024 Jan/)).toBeInTheDocument();
     expect(screen.getByText(/Movement Disorders/)).toBeInTheDocument();
     expect(screen.getByText(/2023 Dec/)).toBeInTheDocument();
+  });
+
+  it("renders sort control", () => {
+    render(
+      <PubMedCard articles={mockArticles} loading={false} error={null} />,
+    );
+    expect(screen.getByLabelText(/sort/i)).toBeInTheDocument();
+  });
+
+  it("relevance sort reorders articles by keyword match", () => {
+    const articles: PubMedArticle[] = [
+      { pmid: "1", title: "Unrelated protein study", authors: [], journal: "J", pubDate: "2024", doi: "" },
+      { pmid: "2", title: "SGCE sarcoglycan mutation analysis", authors: [], journal: "J", pubDate: "2023", doi: "" },
+    ];
+    render(<PubMedCard articles={articles} loading={false} error={null} />);
+    const items = screen.getAllByRole("listitem");
+    expect(items[0]).toHaveTextContent("Unrelated protein study");
+
+    fireEvent.click(screen.getByText(/Relevance/i));
+    const reordered = screen.getAllByRole("listitem");
+    expect(reordered[0]).toHaveTextContent("SGCE sarcoglycan mutation analysis");
   });
 
   it("renders DOI link when available", () => {

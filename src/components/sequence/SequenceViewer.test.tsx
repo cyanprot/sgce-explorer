@@ -114,7 +114,7 @@ describe("SequenceViewer", () => {
     expect(onHover).toHaveBeenCalledWith(null);
   });
 
-  // ── Scroll Fade ──
+  // ── Scroll Indicators ──
 
   it("renders scroll fade hint on right side", () => {
     render(<SequenceViewer {...defaultProps} />);
@@ -122,6 +122,27 @@ describe("SequenceViewer", () => {
     const parent = scrollContainer.parentElement!;
     const fade = parent.querySelector("[data-testid='scroll-fade']");
     expect(fade).not.toBeNull();
+  });
+
+  it("renders left and right scroll indicators", () => {
+    render(<SequenceViewer {...defaultProps} />);
+    expect(screen.getByTestId("scroll-indicator-left")).toBeInTheDocument();
+    expect(screen.getByTestId("scroll-indicator-right")).toBeInTheDocument();
+  });
+
+  it("left indicator is hidden at initial scroll position", () => {
+    render(<SequenceViewer {...defaultProps} />);
+    expect(screen.getByTestId("scroll-indicator-left")).toHaveClass("opacity-0");
+  });
+
+  it("left indicator appears after scrolling right", () => {
+    render(<SequenceViewer {...defaultProps} />);
+    const container = screen.getByRole("region");
+    Object.defineProperty(container, "scrollLeft", { value: 100, writable: true, configurable: true });
+    Object.defineProperty(container, "scrollWidth", { value: 2000, configurable: true });
+    Object.defineProperty(container, "clientWidth", { value: 300, configurable: true });
+    fireEvent.scroll(container);
+    expect(screen.getByTestId("scroll-indicator-left")).not.toHaveClass("opacity-0");
   });
 
   // ── Scroll Sync ──

@@ -1,5 +1,15 @@
+import { useState, useMemo } from "react";
 import { COLORS } from "@/constants/protein-data";
 import type { PubMedArticle } from "@/types/research";
+
+type SortMode = "recent" | "relevance";
+
+const RELEVANCE_KEYWORDS = ["sgce", "sarcoglycan", "myoclonus", "dystonia", "dyt11", "dyt-sgce", "imprinting"];
+
+function relevanceScore(title: string): number {
+  const lower = title.toLowerCase();
+  return RELEVANCE_KEYWORDS.reduce((score, kw) => score + (lower.includes(kw) ? 1 : 0), 0);
+}
 
 interface Props {
   articles: PubMedArticle[] | null;
@@ -13,6 +23,14 @@ function formatAuthors(authors: string[]): string {
 }
 
 export function PubMedCard({ articles, loading, error }: Props) {
+  const [sortMode, setSortMode] = useState<SortMode>("recent");
+
+  const sortedArticles = useMemo(() => {
+    if (!articles) return null;
+    if (sortMode === "recent") return articles;
+    return [...articles].sort((a, b) => relevanceScore(b.title) - relevanceScore(a.title));
+  }, [articles, sortMode]);
+
   const articleCount =
     articles && articles.length > 0 ? ` (${articles.length})` : "";
 
@@ -21,9 +39,29 @@ export function PubMedCard({ articles, loading, error }: Props) {
       className="rounded-xl p-4 border"
       style={{ background: COLORS.panel, borderColor: COLORS.panelBorder }}
     >
-      <h4 className="text-sm font-bold mb-2.5" style={{ color: COLORS.accent }}>
-        PubMed Literature{articleCount}
-      </h4>
+      <div className="flex items-center justify-between mb-2.5">
+        <h4 className="text-sm font-bold" style={{ color: COLORS.accent }}>
+          PubMed Literature{articleCount}
+        </h4>
+        {articles && articles.length > 0 && (
+          <div className="flex gap-1" role="group" aria-label="Sort articles">
+            <button
+              onClick={() => setSortMode("recent")}
+              className={`px-2 py-0.5 rounded text-[10px] font-semibold cursor-pointer border ${sortMode === "recent" ? "border-current" : "border-transparent"}`}
+              style={{ color: sortMode === "recent" ? COLORS.accent : COLORS.textDim }}
+            >
+              Recent
+            </button>
+            <button
+              onClick={() => setSortMode("relevance")}
+              className={`px-2 py-0.5 rounded text-[10px] font-semibold cursor-pointer border ${sortMode === "relevance" ? "border-current" : "border-transparent"}`}
+              style={{ color: sortMode === "relevance" ? COLORS.accent : COLORS.textDim }}
+            >
+              Relevance
+            </button>
+          </div>
+        )}
+      </div>
 
       {loading && (
         <p className="text-xs" style={{ color: COLORS.textDim }}>
@@ -37,15 +75,15 @@ export function PubMedCard({ articles, loading, error }: Props) {
         </p>
       )}
 
-      {!loading && !error && articles && articles.length === 0 && (
+      {!loading && !error && sortedArticles && sortedArticles.length === 0 && (
         <p className="text-xs" style={{ color: COLORS.textDim }}>
           No articles found
         </p>
       )}
 
-      {!loading && !error && articles && articles.length > 0 && (
+      {!loading && !error && sortedArticles && sortedArticles.length > 0 && (
         <ul className="space-y-3">
-          {articles.map((article) => (
+          {sortedArticles.map((article) => (
             <li key={article.pmid}>
               <a
                 href={`https://pubmed.ncbi.nlm.nih.gov/${article.pmid}/`}

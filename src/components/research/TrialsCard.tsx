@@ -57,7 +57,8 @@ export function TrialsCard({ trials, loading, error }: Props) {
                 href={trial.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs font-medium hover:underline"
+                className="text-xs font-medium hover:underline line-clamp-2"
+                title={trial.title}
                 style={{ color: COLORS.text }}
               >
                 {trial.title}

@@ -33,7 +33,7 @@ export default function App() {
             SGCE <span style={{ color: COLORS.accent }}>ε-Sarcoglycan</span> Explorer
           </h1>
           <span
-            className="text-xs font-mono px-2 py-0.5 rounded"
+            className="sr-only sm:not-sr-only sm:inline-flex text-xs font-mono px-2 py-0.5 rounded"
             style={{ color: COLORS.danger, background: COLORS.dangerDim }}
             aria-label={`Mutation: ${MUTATION.cNotation}, ${MUTATION.notation}`}
           >

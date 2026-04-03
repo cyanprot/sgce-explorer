@@ -24,6 +24,7 @@ const STEP_DURATIONS = [4000, 4000, 4000, 4000, 8000, 8000, 4000];
 export function CentralDogma() {
   const [step, setStep] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [speed, setSpeed] = useState(1);
   const [translationProgress, setTranslationProgress] = useState(0);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
   const animFrameRef = useRef<number>();
@@ -43,9 +44,9 @@ export function CentralDogma() {
       }
       timerRef.current = setTimeout(() => {
         setStep((s) => s + 1);
-      }, STEP_DURATIONS[currentStep]);
+      }, STEP_DURATIONS[currentStep] / speed);
     },
-    [prefersReducedMotion]
+    [prefersReducedMotion, speed]
   );
 
   useEffect(() => {
@@ -92,7 +93,7 @@ export function CentralDogma() {
   const current = CENTRAL_DOGMA_STEPS[step];
 
   return (
-    <div className="p-6">
+    <div data-testid="central-dogma" className="p-6 min-h-[calc(100vh-120px)] flex flex-col">
       {/* Playback controls */}
       <div className="flex gap-2 mb-5 items-center" role="toolbar" aria-label="Playback controls">
         <button
@@ -138,6 +139,21 @@ export function CentralDogma() {
         >
           Next ▶
         </button>
+        <select
+          aria-label="Playback speed"
+          value={speed}
+          onChange={(e) => setSpeed(Number(e.target.value))}
+          className="ml-3 px-2 py-1.5 rounded-md text-xs font-semibold border cursor-pointer"
+          style={{
+            background: COLORS.panel,
+            color: COLORS.text,
+            borderColor: COLORS.panelBorder,
+          }}
+        >
+          <option value={0.5}>0.5×</option>
+          <option value={1}>1×</option>
+          <option value={2}>2×</option>
+        </select>
         <span className="ml-3 text-xs" style={{ color: COLORS.textDim }} aria-live="polite" aria-atomic="true">
           Step {step + 1} / {CENTRAL_DOGMA_STEPS.length}
         </span>

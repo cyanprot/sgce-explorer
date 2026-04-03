@@ -235,6 +235,11 @@ export function ProteinStructure3D() {
       });
     }
 
+      // Click-to-select: clicking an atom in 3D highlights the residue in SequenceViewer
+      (viewer as any).setClickable({}, {}, (atom: any) => {
+        if (atom?.resi) setSelectedResidue(atom.resi);
+      });
+
       viewer.zoomTo();
       viewer.render();
     };
@@ -289,7 +294,7 @@ export function ProteinStructure3D() {
   }, []);
 
   return (
-    <div className="flex flex-col" style={{ height: "calc(100vh - 120px)" }}>
+    <div className="flex flex-col h-[calc(100vh-120px)] min-h-[400px] sm:min-h-[500px]">
       {/* Controls */}
       <div className="flex gap-3 px-6 py-4 flex-wrap items-center">
         <ToggleButton active={!showMutant} onClick={() => setViewMode("wt")} label={`Wild-type (${PROTEIN_LENGTH} aa)`} color={COLORS.accent} />

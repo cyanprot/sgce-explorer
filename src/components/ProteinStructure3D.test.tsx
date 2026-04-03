@@ -21,6 +21,7 @@ vi.mock("3dmol", () => {
     render: vi.fn(),
     spin: vi.fn(),
     resize: vi.fn(),
+    setClickable: vi.fn(),
   };
   return {
     createViewer: vi.fn(() => mockViewer),
@@ -287,6 +288,14 @@ describe("ProteinStructure3D", () => {
     });
   });
 
+  it("has separator between view mode and option buttons", () => {
+    mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
+    render(<ProteinStructure3D />);
+    const controlBar = screen.getByText("Wild-type (437 aa)").closest(".flex") as HTMLElement;
+    const separators = controlBar.querySelectorAll(".w-px");
+    expect(separators.length).toBeGreaterThanOrEqual(1);
+  });
+
   it("shows retry button on PDB error", () => {
     mockUseProteinData.mockReturnValue({ pdbData: null, loading: false, error: "Network error", retry: vi.fn() });
     render(<ProteinStructure3D />);
@@ -306,6 +315,54 @@ describe("ProteinStructure3D", () => {
     render(<ProteinStructure3D />);
     const retryBtn = screen.queryByText("Retry");
     if (retryBtn) expect(retryBtn).toBeDisabled();
+  });
+
+  it("viewer container uses responsive classes instead of fixed inline calc", () => {
+    mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
+    render(<ProteinStructure3D />);
+    const container = screen.getByRole("img", { name: /3D protein structure/ })
+      .closest(".flex.flex-col") as HTMLElement;
+    // Should NOT have the old problematic fixed calc as inline style
+    expect(container?.style.height).toBeFalsy();
+    // Should have responsive min-height via Tailwind class
+    expect(container?.className).toMatch(/min-h-/);
+  });
+
+  it("viewer container has min-height during loading state", () => {
+    mockUseProteinData.mockReturnValue({ pdbData: null, loading: true, error: null });
+    render(<ProteinStructure3D />);
+    const container = screen.getByRole("img", { name: /3D protein structure/ })
+      .closest(".flex.flex-col") as HTMLElement;
+    expect(container?.className).toMatch(/min-h-/);
+  });
+
+  it("clicking atom in 3D selects residue in sequence", async () => {
+    const $3Dmol = await import("3dmol");
+    const mockViewer = ($3Dmol as any).__mockViewer;
+    mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
+    render(<ProteinStructure3D />);
+
+    await waitFor(() => expect(mockViewer.setClickable).toHaveBeenCalled());
+    const callback = mockViewer.setClickable.mock.calls[0][2];
+    callback({ resi: 150 });
+
+    await waitFor(() => {
+      const cell = screen.getByTestId("residue-150");
+      expect(cell.scrollIntoView).toHaveBeenCalled();
+    });
+  });
+
+  it("clicking atom with no resi does not crash", async () => {
+    const $3Dmol = await import("3dmol");
+    const mockViewer = ($3Dmol as any).__mockViewer;
+    mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
+    render(<ProteinStructure3D />);
+
+    await waitFor(() => expect(mockViewer.setClickable).toHaveBeenCalled());
+    const callback = mockViewer.setClickable.mock.calls[0][2];
+    // Should not throw
+    expect(() => callback({})).not.toThrow();
+    expect(() => callback(null)).not.toThrow();
   });
 
   it("clicking a residue triggers 3D viewer zoomTo", async () => {

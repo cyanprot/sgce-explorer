@@ -72,6 +72,22 @@ describe("AudioNarration", () => {
     expect(mockSpeak).toHaveBeenCalled();
   });
 
+  it("shows distinct labels for enabled vs disabled state", () => {
+    render(<AudioNarration stepIndex={0} />);
+    const btn = screen.getByRole("button");
+    expect(btn).not.toHaveTextContent(/Narrating/);
+    fireEvent.click(btn);
+    expect(btn).toHaveTextContent(/Narrating/);
+  });
+
+  it("enabled state has visually distinct background", () => {
+    render(<AudioNarration stepIndex={0} />);
+    const btn = screen.getByRole("button");
+    const disabledBg = btn.style.background;
+    fireEvent.click(btn);
+    expect(btn.style.background).not.toBe(disabledBg);
+  });
+
   it("does not speak when disabled and stepIndex changes", () => {
     const { rerender } = render(<AudioNarration stepIndex={0} />);
     mockSpeak.mockClear();

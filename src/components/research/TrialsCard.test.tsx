@@ -85,6 +85,23 @@ describe("TrialsCard", () => {
     expect(badge).toHaveStyle({ color: COLORS.accent });
   });
 
+  it("long trial title gets line-clamp and title tooltip", () => {
+    const longTitle = "A".repeat(200);
+    const trial: ClinicalTrial = {
+      nctId: "NCT99999999",
+      title: longTitle,
+      status: "RECRUITING",
+      phase: "PHASE2",
+      conditions: ["DYT-SGCE"],
+      interventions: [],
+      url: "https://clinicaltrials.gov/study/NCT99999999",
+    };
+    render(<TrialsCard trials={[trial]} loading={false} error={null} />);
+    const link = screen.getByText(longTitle).closest("a")!;
+    expect(link.className).toContain("line-clamp-2");
+    expect(link).toHaveAttribute("title", longTitle);
+  });
+
   it("renders phase and conditions", () => {
     render(<TrialsCard trials={mockTrials} loading={false} error={null} />);
 

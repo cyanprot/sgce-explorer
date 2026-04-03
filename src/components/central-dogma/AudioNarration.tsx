@@ -53,11 +53,11 @@ export function AudioNarration({ stepIndex }: AudioNarrationProps) {
       className="px-3 py-1.5 rounded-md text-xs font-semibold border cursor-pointer"
       style={{
         background: enabled ? COLORS.accent : COLORS.panel,
-        color: enabled ? COLORS.text : COLORS.text,
+        color: enabled ? COLORS.bg : COLORS.textDim,
         borderColor: enabled ? COLORS.accent : COLORS.panelBorder,
       }}
     >
-      {enabled ? "Narration On" : "Narration Off"}
+      {enabled ? "🔊 Narrating" : "🔇 Narration"}
     </button>
   );
 }

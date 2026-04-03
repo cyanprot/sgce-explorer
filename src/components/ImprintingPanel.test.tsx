@@ -42,6 +42,12 @@ describe("ImprintingPanel", () => {
     expect(screen.getByText("Therapeutic implication")).toBeInTheDocument();
   });
 
+  it("first allele column has right border for visual separation", () => {
+    render(<ImprintingPanel />);
+    const svgPanel = screen.getByTestId("paternal-allele").closest(".rounded-xl") as HTMLElement;
+    expect(svgPanel?.className).toMatch(/border-r/);
+  });
+
   it("shows mutation notation c.108dup in SVG", () => {
     render(<ImprintingPanel />);
     const matches = screen.getAllByText(/c\.108dup/);

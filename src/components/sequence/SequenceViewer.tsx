@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { SEQUENCE, MUTATION, COLORS, DOMAINS } from "@/constants/protein-data";
 import { getDomainForPosition } from "@/utils/getDomainForPosition";
 import { ResidueCell } from "./ResidueCell";
@@ -20,6 +20,8 @@ export function SequenceViewer({
   viewMode,
 }: SequenceViewerProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
 
   // Scroll to selected residue when it changes externally
   useEffect(() => {
@@ -29,6 +31,21 @@ export function SequenceViewer({
     );
     el?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
   }, [selectedResidue]);
+
+  const updateScrollIndicators = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 0);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+  }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.addEventListener("scroll", updateScrollIndicators);
+    updateScrollIndicators();
+    return () => el.removeEventListener("scroll", updateScrollIndicators);
+  }, [updateScrollIndicators]);
 
   const handleMouseLeave = useCallback(() => {
     onResidueHover(null);
@@ -91,6 +108,20 @@ export function SequenceViewer({
               />
             );
           })}
+        </div>
+        <div
+          data-testid="scroll-indicator-left"
+          className={`absolute left-0 top-0 bottom-0 w-8 pointer-events-none rounded-l-md transition-opacity ${canScrollLeft ? "opacity-100" : "opacity-0"}`}
+          style={{ background: `linear-gradient(to left, transparent, ${COLORS.panel})` }}
+        >
+          <span className="absolute left-1 top-1/2 -translate-y-1/2 text-[10px]" style={{ color: COLORS.textDim }}>←</span>
+        </div>
+        <div
+          data-testid="scroll-indicator-right"
+          className={`absolute right-0 top-0 bottom-0 w-8 pointer-events-none rounded-r-md transition-opacity ${canScrollRight ? "opacity-100" : "opacity-0"}`}
+          style={{ background: `linear-gradient(to right, transparent, ${COLORS.panel})` }}
+        >
+          <span className="absolute right-1 top-1/2 -translate-y-1/2 text-[10px]" style={{ color: COLORS.textDim }}>→</span>
         </div>
         <div
           data-testid="scroll-fade"

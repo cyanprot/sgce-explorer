@@ -16,7 +16,7 @@ export function ResearchPanel() {
   const stringdb = useStringDB();
 
   return (
-    <div data-testid="research-panel" className="p-6">
+    <div data-testid="research-panel" className="p-6 min-h-[calc(100vh-120px)]">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2">
           <PubMedCard

@@ -40,6 +40,12 @@ describe("ResearchPanel (unit)", () => {
     expect(screen.getByTestId("research-panel")).toBeInTheDocument();
   });
 
+  it("research panel fills viewport height", () => {
+    render(<ResearchPanel />);
+    const panel = screen.getByTestId("research-panel");
+    expect(panel.className).toMatch(/min-h-/);
+  });
+
   it("renders all 4 card headings", () => {
     render(<ResearchPanel />);
     expect(screen.getByText("PubMed Literature")).toBeInTheDocument();

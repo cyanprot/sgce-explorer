@@ -18,6 +18,7 @@ vi.mock("3dmol", () => ({
     render: vi.fn(),
     spin: vi.fn(),
     resize: vi.fn(),
+    setClickable: vi.fn(),
   })),
 }));
 
@@ -111,6 +112,13 @@ describe("App", () => {
     expect(skipLink.getAttribute("href")).toBe("#tabpanel-structure");
     fireEvent.click(screen.getByText("Central Dogma"));
     expect(skipLink.getAttribute("href")).toBe("#tabpanel-dogma");
+  });
+
+  it("mutation badge is visually hidden on mobile but accessible", () => {
+    render(<App />);
+    const badge = screen.getByLabelText(/Mutation:/);
+    expect(badge.className).toMatch(/sr-only/);
+    expect(badge.className).toMatch(/sm:not-sr-only/);
   });
 
   it("active tab has accent-colored top border", () => {
