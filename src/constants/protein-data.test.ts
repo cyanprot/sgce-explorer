@@ -6,6 +6,8 @@ import {
   GLYCOSYLATION_SITES,
   CENTRAL_DOGMA_STEPS,
   COLORS,
+  DGC_PARTNERS,
+  SGCE_DGC_OFFSET,
 } from "@/constants/protein-data";
 
 describe("protein-data constants", () => {
@@ -91,12 +93,49 @@ describe("protein-data constants", () => {
     });
   });
 
+  describe("DGC_PARTNERS", () => {
+    it("sarcoglycan entries (SGCB, SGCG, SGCD) have uniprot and xOffset fields", () => {
+      const sarcoglycans = DGC_PARTNERS.filter((p) =>
+        ["SGCB", "SGCG", "SGCD"].includes(p.gene),
+      );
+      expect(sarcoglycans).toHaveLength(3);
+      for (const sg of sarcoglycans) {
+        expect(sg).toHaveProperty("uniprot");
+        expect(sg).toHaveProperty("xOffset");
+        expect(typeof (sg as any).uniprot).toBe("string");
+        expect(typeof (sg as any).xOffset).toBe("number");
+      }
+    });
+
+    it("xOffsets are all unique among sarcoglycan entries", () => {
+      const offsets = DGC_PARTNERS
+        .filter((p) => "xOffset" in p)
+        .map((p) => (p as any).xOffset);
+      const unique = new Set(offsets);
+      expect(unique.size).toBe(offsets.length);
+    });
+  });
+
+  describe("SGCE_DGC_OFFSET", () => {
+    it("is a number", () => {
+      expect(typeof SGCE_DGC_OFFSET).toBe("number");
+    });
+  });
+
   describe("COLORS", () => {
     it("all values are valid 6-digit hex colors", () => {
       const hexPattern = /^#[0-9a-fA-F]{6}$/;
       for (const [key, value] of Object.entries(COLORS)) {
         expect(value, `COLORS.${key}`).toMatch(hexPattern);
       }
+    });
+
+    it("does not have orphaned dna token", () => {
+      expect((COLORS as Record<string, unknown>).dna).toBeUndefined();
+    });
+
+    it("has overlay token", () => {
+      expect(COLORS.overlay).toBe("#000000");
     });
   });
 });

@@ -37,6 +37,16 @@ describe("CodonViewer", () => {
     expect(screen.queryByTestId("mut-codon-69")).not.toBeInTheDocument();
   });
 
+  it("position labels use minimum 10px font (no text-[9px])", () => {
+    render(<CodonViewer />);
+    const codon37 = screen.getByTestId("wt-codon-37");
+    const allSpans = codon37.querySelectorAll("span");
+    // No span should have text-[9px]
+    for (const span of allSpans) {
+      expect(span.className).not.toContain("text-[9px]");
+    }
+  });
+
   it("is hidden when visible prop is false", () => {
     const { container } = render(<CodonViewer visible={false} />);
     expect(container.firstChild).toBeNull();

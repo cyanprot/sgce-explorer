@@ -44,10 +44,16 @@ export const ResidueCell = React.memo(function ResidueCell({
   if (isMutationSite) classNames.push("mutation-site");
   if (isPTC) classNames.push("ptc");
 
+  const ariaLabel = `${residue}${position}${isMutationSite ? " (frameshift start)" : isPTC ? " (premature stop codon)" : isAberrant ? " (aberrant frameshift region)" : ""}`;
+
   return (
     <div
       data-testid={`residue-${position}`}
       className={classNames.join(" ")}
+      role="button"
+      tabIndex={0}
+      aria-label={ariaLabel}
+      aria-pressed={isSelected}
       style={{
         display: "inline-block",
         width: 24,
@@ -66,6 +72,7 @@ export const ResidueCell = React.memo(function ResidueCell({
         transition: "transform 0.1s, opacity 0.1s",
       }}
       onClick={() => onClick(position)}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(position); } }}
       onMouseEnter={() => onMouseEnter(position)}
       onMouseLeave={onMouseLeave}
     >

@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { COLORS, MUTATION } from "@/constants/protein-data";
+import { hexWithAlpha } from "@/utils/hexWithAlpha";
 import type { CentralDogmaStep } from "@/types";
 
 interface StepContentProps {
@@ -15,13 +16,13 @@ export function StepContent({ step }: StepContentProps) {
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -30 }}
         transition={{ duration: 0.3, ease: "easeOut" }}
-        className="grid grid-cols-2 gap-4"
+        className="grid grid-cols-1 lg:grid-cols-2 gap-4"
       >
         <div
           className="rounded-xl p-5 border"
           style={{ background: COLORS.panel, borderColor: COLORS.panelBorder }}
         >
-          <h3 className="text-base font-bold mt-0 mb-1">{step.title}</h3>
+          <h3 className="text-lg font-semibold mt-0 mb-1">{step.title}</h3>
           <p className="text-xs mb-3" style={{ color: COLORS.accent }}>
             {step.subtitle}
           </p>
@@ -36,7 +37,7 @@ export function StepContent({ step }: StepContentProps) {
           className="rounded-xl p-5 border"
           style={{
             background: COLORS.dangerDim,
-            borderColor: COLORS.danger + "33",
+            borderColor: hexWithAlpha(COLORS.danger, 0.2),
           }}
         >
           <h3

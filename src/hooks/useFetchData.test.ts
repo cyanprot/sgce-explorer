@@ -203,6 +203,80 @@ describe("useFetchData", () => {
     expect(fetchSpy).toHaveBeenCalledTimes(1);
   });
 
+  it("aborts and returns timeout error after configured timeout", async () => {
+    vi.useFakeTimers();
+    // Mock fetch that rejects with AbortError when signal is aborted
+    vi.stubGlobal("fetch", vi.fn().mockImplementation((_url: string, opts: RequestInit) => {
+      return new Promise((_resolve, reject) => {
+        opts.signal?.addEventListener("abort", () => {
+          const err = new DOMException("The operation was aborted.", "AbortError");
+          reject(err);
+        });
+      });
+    }));
+
+    const { result } = renderHook(() =>
+      useFetchData("https://api.test/slow", identity, { timeout: 100 }),
+    );
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(100);
+    });
+
+    expect(result.current.error).toBe("Request timed out");
+    expect(result.current.loading).toBe(false);
+    vi.useRealTimers();
+  });
+
+  it("default timeout is 10000ms — no abort before that", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("fetch", vi.fn().mockReturnValue(new Promise(() => {})));
+
+    const { result } = renderHook(() =>
+      useFetchData("https://api.test/slow", identity),
+    );
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(9999);
+    });
+
+    expect(result.current.loading).toBe(true);
+    expect(result.current.error).toBeNull();
+    vi.useRealTimers();
+  });
+
+  it("successful fetch before timeout does not trigger error", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal("fetch", mockFetch({ ok: true }));
+
+    const { result } = renderHook(() =>
+      useFetchData("https://api.test/fast", identity, { timeout: 5000 }),
+    );
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+
+    expect(result.current.loading).toBe(false);
+    expect(result.current.error).toBeNull();
+    expect(result.current.data).toEqual({ ok: true });
+    vi.useRealTimers();
+  });
+
+  it("returns raw text when responseType is 'text'", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: () => Promise.resolve("HEADER    PDB DATA\nATOM      1  N   MET A   1\nEND"),
+    }));
+    const { result } = renderHook(() =>
+      useFetchData("https://api.test/pdb", identity, { responseType: "text" }),
+    );
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(result.current.data).toContain("HEADER");
+    expect(result.current.error).toBeNull();
+  });
+
   it("respects custom staleTime", async () => {
     const fetchSpy = mockFetch("fresh-val");
     vi.stubGlobal("fetch", fetchSpy);

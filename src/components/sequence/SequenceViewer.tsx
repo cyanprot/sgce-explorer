@@ -53,41 +53,50 @@ export function SequenceViewer({
       </div>
 
       {/* Scrollable sequence track */}
-      <div
-        ref={scrollRef}
-        className="overflow-x-auto"
-        style={{
-          whiteSpace: "nowrap",
-          maxHeight: 80,
-          border: `1px solid ${COLORS.panelBorder}`,
-          borderRadius: 6,
-          background: COLORS.panel,
-        }}
-      >
-        {Array.from(SEQUENCE).map((residue, idx) => {
-          const position = idx + 1;
-          const domain = getDomainForPosition(position);
-          const color = domain?.color ?? COLORS.textDim;
+      <div className="relative">
+        <div
+          ref={scrollRef}
+          className="overflow-x-auto"
+          aria-label="Amino acid sequence, 437 residues. Click any residue to zoom the 3D viewer to that position."
+          role="region"
+          style={{
+            whiteSpace: "nowrap",
+            maxHeight: 80,
+            border: `1px solid ${COLORS.panelBorder}`,
+            borderRadius: 6,
+            background: COLORS.panel,
+          }}
+        >
+          {Array.from(SEQUENCE).map((residue, idx) => {
+            const position = idx + 1;
+            const domain = getDomainForPosition(position);
+            const color = domain?.color ?? COLORS.textDim;
 
-          return (
-            <ResidueCell
-              key={position}
-              residue={residue}
-              position={position}
-              color={color}
-              isSelected={selectedResidue === position}
-              isHovered={hoveredResidue === position}
-              isMutationSite={position === MUTATION.aaPosition}
-              isPTC={position === MUTATION.truncationAt}
-              isAberrant={
-                position > MUTATION.aaPosition && position < MUTATION.truncationAt
-              }
-              onClick={onResidueClick}
-              onMouseEnter={onResidueHover}
-              onMouseLeave={handleMouseLeave}
-            />
-          );
-        })}
+            return (
+              <ResidueCell
+                key={position}
+                residue={residue}
+                position={position}
+                color={color}
+                isSelected={selectedResidue === position}
+                isHovered={hoveredResidue === position}
+                isMutationSite={position === MUTATION.aaPosition}
+                isPTC={position === MUTATION.truncationAt}
+                isAberrant={
+                  position > MUTATION.aaPosition && position < MUTATION.truncationAt
+                }
+                onClick={onResidueClick}
+                onMouseEnter={onResidueHover}
+                onMouseLeave={handleMouseLeave}
+              />
+            );
+          })}
+        </div>
+        <div
+          data-testid="scroll-fade"
+          className="absolute right-0 top-0 bottom-0 w-8 pointer-events-none rounded-r-md"
+          style={{ background: `linear-gradient(to right, transparent, ${COLORS.panel})` }}
+        />
       </div>
     </div>
   );

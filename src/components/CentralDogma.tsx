@@ -28,16 +28,25 @@ export function CentralDogma() {
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
   const animFrameRef = useRef<number>();
 
-  // Schedule next autoplay step
-  const scheduleNext = useCallback((currentStep: number) => {
-    if (currentStep >= CENTRAL_DOGMA_STEPS.length - 1) {
-      setPlaying(false);
-      return;
-    }
-    timerRef.current = setTimeout(() => {
-      setStep((s) => s + 1);
-    }, STEP_DURATIONS[currentStep]);
-  }, []);
+  // Detect user's reduced-motion preference
+  const prefersReducedMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Schedule next autoplay step (disabled under reduced-motion)
+  const scheduleNext = useCallback(
+    (currentStep: number) => {
+      if (prefersReducedMotion) return;
+      if (currentStep >= CENTRAL_DOGMA_STEPS.length - 1) {
+        setPlaying(false);
+        return;
+      }
+      timerRef.current = setTimeout(() => {
+        setStep((s) => s + 1);
+      }, STEP_DURATIONS[currentStep]);
+    },
+    [prefersReducedMotion]
+  );
 
   useEffect(() => {
     if (playing) {
@@ -47,9 +56,14 @@ export function CentralDogma() {
   }, [playing, step, scheduleNext]);
 
   // Translation animation progress (step 4 = ribosome translation)
+  // Under reduced-motion, show the final frame immediately
   useEffect(() => {
     if (step !== 4) {
       setTranslationProgress(0);
+      return;
+    }
+    if (prefersReducedMotion) {
+      setTranslationProgress(1);
       return;
     }
     const duration = 6000;
@@ -66,7 +80,7 @@ export function CentralDogma() {
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [step]);
+  }, [step, prefersReducedMotion]);
 
   const handleNMDComplete = useCallback(() => {
     // NMD animation finished — if autoplay, advance
@@ -80,10 +94,12 @@ export function CentralDogma() {
   return (
     <div className="p-6">
       {/* Playback controls */}
-      <div className="flex gap-2 mb-5 items-center">
+      <div className="flex gap-2 mb-5 items-center" role="toolbar" aria-label="Playback controls">
         <button
           onClick={() => setStep(Math.max(0, step - 1))}
-          className="px-4 py-2 rounded-md text-xs font-semibold border cursor-pointer"
+          aria-label="Previous step"
+          disabled={step === 0}
+          className="px-4 py-2 rounded-md text-xs font-semibold border cursor-pointer disabled:opacity-40"
           style={{
             background: COLORS.panel,
             color: COLORS.text,
@@ -94,10 +110,14 @@ export function CentralDogma() {
         </button>
         <button
           onClick={() => setPlaying(!playing)}
-          className="px-4 py-2 rounded-md text-xs font-semibold border cursor-pointer"
+          aria-pressed={playing}
+          aria-label={playing ? "Pause autoplay" : "Start autoplay"}
+          disabled={prefersReducedMotion}
+          title={prefersReducedMotion ? "Autoplay disabled (reduced motion preference)" : undefined}
+          className="px-4 py-2 rounded-md text-xs font-semibold border cursor-pointer disabled:opacity-40"
           style={{
-            background: playing ? COLORS.danger : COLORS.accent,
-            color: "#fff",
+            background: playing ? COLORS.warn : COLORS.accent,
+            color: COLORS.text,
             borderColor: "transparent",
           }}
         >
@@ -107,7 +127,9 @@ export function CentralDogma() {
           onClick={() =>
             setStep(Math.min(CENTRAL_DOGMA_STEPS.length - 1, step + 1))
           }
-          className="px-4 py-2 rounded-md text-xs font-semibold border cursor-pointer"
+          aria-label="Next step"
+          disabled={step === CENTRAL_DOGMA_STEPS.length - 1}
+          className="px-4 py-2 rounded-md text-xs font-semibold border cursor-pointer disabled:opacity-40"
           style={{
             background: COLORS.panel,
             color: COLORS.text,
@@ -116,7 +138,7 @@ export function CentralDogma() {
         >
           Next ▶
         </button>
-        <span className="ml-3 text-xs" style={{ color: COLORS.textDim }}>
+        <span className="ml-3 text-xs" style={{ color: COLORS.textDim }} aria-live="polite" aria-atomic="true">
           Step {step + 1} / {CENTRAL_DOGMA_STEPS.length}
         </span>
         <div className="ml-auto">
@@ -132,7 +154,7 @@ export function CentralDogma() {
         <ProgressBar activeStep={step} onStepClick={setStep} />
       </div>
 
-      {/* Codon viewer (visible at steps 4-6: translation, NMD, result) */}
+      {/* Codon viewer (visible at steps 4-6, 0-indexed: 3-5) */}
       {step >= 3 && step <= 5 && (
         <div className="mb-5">
           <CodonViewer />
@@ -161,7 +183,11 @@ export function CentralDogma() {
             borderColor: COLORS.panelBorder,
           }}
         >
-          <NMDAnimation active={step === 5} onComplete={handleNMDComplete} />
+          <NMDAnimation
+            active={step === 5}
+            onComplete={handleNMDComplete}
+            skipAnimation={prefersReducedMotion}
+          />
         </div>
       )}
 

@@ -6,11 +6,15 @@
  */
 import { useState, useRef, useEffect, useCallback } from "react";
 import * as $3Dmol from "3dmol";
-import { COLORS, DOMAINS, MUTATION, PROTEIN_LENGTH, GLYCOSYLATION_SITES } from "@/constants/protein-data";
+import { COLORS, DOMAINS, MUTATION, PROTEIN_LENGTH, GLYCOSYLATION_SITES, SGCE_DGC_OFFSET } from "@/constants/protein-data";
+import { hexWithAlpha } from "@/utils/hexWithAlpha";
 import { ToggleButton } from "./ui/ToggleButton";
 import { useProteinData } from "@/hooks/useProteinData";
+import { useDGCProteins } from "@/hooks/useDGCProteins";
 import { hexToInt } from "@/utils/hexToInt";
+import { translatePdb } from "@/utils/translatePdb";
 import { SequenceViewer } from "./sequence";
+import { DGCLegend } from "./DGCLegend";
 import type { ViewMode } from "@/types";
 
 export function ProteinStructure3D() {
@@ -23,7 +27,8 @@ export function ProteinStructure3D() {
   const [viewerError, setViewerError] = useState<string | null>(null);
   const [selectedResidue, setSelectedResidue] = useState<number | null>(null);
   const [hoveredResidue, setHoveredResidue] = useState<number | null>(null);
-  const { pdbData, loading, error } = useProteinData();
+  const { pdbData, loading, error, retry } = useProteinData();
+  const dgc = useDGCProteins(showDGC);
 
   const showMutant = viewMode === "mutant";
 
@@ -76,7 +81,9 @@ export function ProteinStructure3D() {
     viewer.removeAllShapes();
     viewer.removeAllLabels();
 
-    const model = viewer.addModel(pdbData, "pdb");
+    // In DGC mode, translate ε-SG to its offset position
+    const sgcePdb = showDGC ? translatePdb(pdbData, { x: SGCE_DGC_OFFSET, y: 0, z: 0 }) : pdbData;
+    const model = viewer.addModel(sgcePdb, "pdb");
 
     const domainColorFunc = (atom: any) => {
       const resi = atom.resi;
@@ -180,13 +187,61 @@ export function ProteinStructure3D() {
       }
     }
 
+    // ε-SG label in DGC mode
+    if (showDGC) {
+      const labelText = showMutant ? "ε-SG: MISSING" : "ε-SG";
+      const labelColor = showMutant ? COLORS.danger : COLORS.extracellular;
+      viewer.addLabel(labelText, {
+        position: { x: SGCE_DGC_OFFSET, y: 30, z: 0 },
+        backgroundColor: hexToInt(labelColor) as any,
+        backgroundOpacity: 0.8,
+        fontColor: "white",
+        fontSize: 11,
+      });
+    }
+
+    // DGC partners rendering
+    if (showDGC && dgc.allLoaded) {
+      for (const partner of dgc.partners) {
+        if (!partner.pdbData) continue;
+        const translated = translatePdb(partner.pdbData, { x: partner.xOffset, y: 0, z: 0 });
+        const partnerModel = viewer.addModel(translated, "pdb");
+        partnerModel.setStyle({}, { cartoon: { color: hexToInt(partner.color) } });
+
+        // Label above each partner
+        viewer.addLabel(partner.name.replace("-Sarcoglycan", "-SG"), {
+          position: { x: partner.xOffset, y: 30, z: 0 },
+          backgroundColor: hexToInt(partner.color) as any,
+          backgroundOpacity: 0.8,
+          fontColor: "white",
+          fontSize: 11,
+        });
+      }
+
+      // Membrane plane — thin amber slab spanning all subunits
+      const tmY = 0; // approximate TM center
+      viewer.addBox({
+        center: { x: 0, y: tmY, z: 0 },
+        dimensions: { w: 80, h: 2, d: 40 },
+        color: hexToInt(COLORS.transmembrane) as any,
+        opacity: 0.15,
+      });
+      viewer.addLabel("Membrane", {
+        position: { x: 40, y: tmY, z: 0 },
+        backgroundColor: hexToInt(COLORS.transmembrane) as any,
+        backgroundOpacity: 0.6,
+        fontColor: "white",
+        fontSize: 10,
+      });
+    }
+
       viewer.zoomTo();
       viewer.render();
     };
 
     tryRender();
     return () => clearTimeout(retryTimer);
-  }, [pdbData, showMutant]);
+  }, [pdbData, showMutant, showDGC, dgc.allLoaded, dgc.partners]);
 
   // Effect 3: Spin control
   useEffect(() => {
@@ -262,9 +317,18 @@ export function ProteinStructure3D() {
       />
 
       {/* 3D Viewport */}
-      <div className="flex-1 relative" style={{ minHeight: 300 }}>
-        <div ref={viewerDivRef} className="absolute inset-0" />
-        <div className="absolute bottom-4 left-4 rounded-lg p-3 text-xs max-w-xs z-10 pointer-events-none" style={{ background: "rgba(0,0,0,0.7)" }}>
+      <div
+        className="flex-1 relative"
+        style={{ minHeight: 400 }}
+        role="img"
+        aria-label={
+          showMutant
+            ? `3D protein structure: mutant ε-sarcoglycan, truncated at residue ${MUTATION.truncationAt} of ${PROTEIN_LENGTH} (${((MUTATION.truncationAt / PROTEIN_LENGTH) * 100).toFixed(1)}%), red region shows frameshift`
+            : `3D protein structure: wild-type ε-sarcoglycan, ${PROTEIN_LENGTH} amino acids. Blue: extracellular domain, amber: transmembrane helix, purple: cytoplasmic tail`
+        }
+      >
+        <div ref={viewerDivRef} className="absolute inset-0" aria-hidden="true" />
+        <div className="absolute bottom-4 left-4 rounded-lg p-3 text-xs max-w-xs z-10 pointer-events-none" style={{ background: hexWithAlpha(COLORS.overlay, 0.7) }}>
           {showMutant ? (
             <>
               <div className="font-bold mb-1" style={{ color: COLORS.danger }}>Truncated — {MUTATION.truncationAt} aa</div>
@@ -289,9 +353,20 @@ export function ProteinStructure3D() {
             Loading AlphaFold PDB...
           </div>
         )}
+        {showDGC && <DGCLegend partners={dgc.partners} showMutant={showMutant} />}
         {(error || viewerError) && (
-          <div className="absolute top-4 left-4 text-xs px-3 py-1.5 rounded z-10" style={{ background: COLORS.dangerDim, color: COLORS.danger }}>
-            {viewerError || error}
+          <div className="absolute top-4 left-4 text-xs px-3 py-1.5 rounded z-10 flex items-center gap-2" style={{ background: COLORS.dangerDim, color: COLORS.danger }}>
+            <span>{viewerError || error}</span>
+            {error && (
+              <button
+                onClick={retry}
+                disabled={loading}
+                className="px-2 py-0.5 rounded text-xs font-semibold border cursor-pointer disabled:opacity-50"
+                style={{ borderColor: COLORS.danger, color: COLORS.danger }}
+              >
+                Retry
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -317,7 +392,7 @@ function DomainBar({ showMutant }: { showMutant: boolean }) {
       <div className="flex h-5 rounded overflow-hidden border" style={{ borderColor: COLORS.panelBorder }}>
         {domains.map((d, i) => (
           <div key={i} style={{ width: `${d.pct}%`, background: d.color }}
-            className="flex items-center justify-center text-[9px] font-bold text-white"
+            className="flex items-center justify-center text-[10px] font-bold text-white"
           >
             {d.pct > 8 ? d.label : ""}
           </div>

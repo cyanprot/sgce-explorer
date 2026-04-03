@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { isPdbData } from "@/utils/isPdbData";
 
 const ALPHAFOLD_URL =
@@ -8,6 +8,7 @@ interface UseProteinDataResult {
   pdbData: string | null;
   loading: boolean;
   error: string | null;
+  retry: () => void;
 }
 
 /**
@@ -18,6 +19,11 @@ export function useProteinData(): UseProteinDataResult {
   const [pdbData, setPdbData] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  const retry = useCallback(() => {
+    setRetryCount((c) => c + 1);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -55,7 +61,7 @@ export function useProteinData(): UseProteinDataResult {
 
     fetchPDB();
     return () => controller.abort();
-  }, []);
+  }, [retryCount]);
 
-  return { pdbData, loading, error };
+  return { pdbData, loading, error, retry };
 }

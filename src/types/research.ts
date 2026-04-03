@@ -5,8 +5,10 @@ export interface FetchState<T> {
 }
 
 export interface FetchConfig {
-  enabled?: boolean;   // default true, when false skip fetch
-  staleTime?: number;  // cache TTL in ms, default 5 * 60 * 1000
+  enabled?: boolean;        // default true, when false skip fetch
+  staleTime?: number;       // cache TTL in ms, default 5 * 60 * 1000
+  timeout?: number;         // fetch timeout in ms, default 10000
+  responseType?: "json" | "text"; // default "json"
 }
 
 export interface PubMedArticle {

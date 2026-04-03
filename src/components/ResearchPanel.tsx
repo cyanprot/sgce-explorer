@@ -18,11 +18,13 @@ export function ResearchPanel() {
   return (
     <div data-testid="research-panel" className="p-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <PubMedCard
-          articles={pubmed.data}
-          loading={pubmed.loading}
-          error={pubmed.error}
-        />
+        <div className="lg:col-span-2">
+          <PubMedCard
+            articles={pubmed.data}
+            loading={pubmed.loading}
+            error={pubmed.error}
+          />
+        </div>
         <TrialsCard
           trials={trials.data}
           loading={trials.loading}

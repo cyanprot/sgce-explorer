@@ -20,7 +20,7 @@ export const COLORS = {
   methylation: "#ef4444",
   active: "#22c55e",
   silenced: "#6b7280",
-  dna: "#6366f1",
+  overlay: "#000000",
   mrna: "#14b8a6",
   ribosome: "#d946ef",
 } as const;
@@ -63,13 +63,16 @@ export const SEQUENCE =
 
 // ── DGC Complex Partners ──
 export const DGC_PARTNERS = [
-  { name: "β-Sarcoglycan",  gene: "SGCB", color: "#06b6d4" },
-  { name: "γ-Sarcoglycan",  gene: "SGCG", color: "#a78bfa" },
-  { name: "δ-Sarcoglycan",  gene: "SGCD", color: "#fb923c" },
+  { name: "β-Sarcoglycan",  gene: "SGCB", color: "#06b6d4", uniprot: "Q16585", xOffset: -30 },
+  { name: "γ-Sarcoglycan",  gene: "SGCG", color: "#a78bfa", uniprot: "Q13326", xOffset: -10 },
+  { name: "δ-Sarcoglycan",  gene: "SGCD", color: "#fb923c", uniprot: "Q92629", xOffset:  30 },
   { name: "Dystrophin",     gene: "DMD",  color: "#f472b6" },
   { name: "Dystroglycan-α", gene: "DAG1", color: "#38bdf8" },
   { name: "Dystroglycan-β", gene: "DAG1", color: "#2dd4bf" },
 ] as const;
+
+// ε-SG positioning when in DGC complex view
+export const SGCE_DGC_OFFSET = 10; // xOffset in Å
 
 // ── Central Dogma Steps ──
 export const CENTRAL_DOGMA_STEPS: CentralDogmaStep[] = [

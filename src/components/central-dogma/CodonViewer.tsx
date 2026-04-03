@@ -1,4 +1,5 @@
 import { COLORS } from "@/constants/protein-data";
+import { hexWithAlpha } from "@/utils/hexWithAlpha";
 import { WT_CODONS, MUTANT_CODONS } from "@/constants/codon-data";
 import type { Codon } from "@/types";
 
@@ -22,7 +23,7 @@ function CodonCell({
   const border = codon.isMutationStart
     ? COLORS.danger
     : codon.isFrameshifted
-      ? COLORS.danger + "66"
+      ? hexWithAlpha(COLORS.danger, 0.4)
       : COLORS.panelBorder;
 
   return (
@@ -32,7 +33,7 @@ function CodonCell({
       style={{
         background: bg,
         borderColor: border,
-        color: codon.isPTC ? "#fff" : COLORS.text,
+        color: COLORS.text,
         minWidth: 36,
       }}
     >
@@ -40,7 +41,7 @@ function CodonCell({
         {codon.nucleotides}
       </span>
       <span className="font-bold">{codon.aminoAcid}</span>
-      <span className="text-[9px]" style={{ color: COLORS.textDim }}>
+      <span className="text-[10px]" style={{ color: COLORS.textDim }}>
         {codon.position}
       </span>
     </div>

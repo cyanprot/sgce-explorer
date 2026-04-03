@@ -8,10 +8,10 @@ interface Props {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  RECRUITING: "#22c55e",
-  ACTIVE_NOT_RECRUITING: "#3b82f6",
-  ENROLLING_BY_INVITATION: "#f59e0b",
-  COMPLETED: "#9ca3af",
+  RECRUITING: COLORS.active,
+  ACTIVE_NOT_RECRUITING: COLORS.accent,
+  ENROLLING_BY_INVITATION: COLORS.warn,
+  COMPLETED: COLORS.silenced,
 };
 
 function getStatusColor(status: string): string {

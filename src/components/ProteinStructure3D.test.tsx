@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { useProteinData } from "@/hooks/useProteinData";
+import { useDGCProteins } from "@/hooks/useDGCProteins";
 
 // Mock 3dmol before component import
 vi.mock("3dmol", () => {
@@ -15,6 +16,7 @@ vi.mock("3dmol", () => {
     removeAllLabels: vi.fn(),
     addSphere: vi.fn(),
     addLabel: vi.fn(),
+    addBox: vi.fn(),
     zoomTo: vi.fn(),
     render: vi.fn(),
     spin: vi.fn(),
@@ -32,12 +34,27 @@ vi.mock("@/hooks/useProteinData", () => ({
     pdbData: null,
     loading: true,
     error: null,
+    retry: vi.fn(),
+  })),
+}));
+
+vi.mock("@/hooks/useDGCProteins", () => ({
+  useDGCProteins: vi.fn(() => ({
+    partners: [
+      { gene: "SGCB", name: "β-Sarcoglycan", color: "#06b6d4", xOffset: -30, pdbData: null, loading: false, error: null },
+      { gene: "SGCG", name: "γ-Sarcoglycan", color: "#a78bfa", xOffset: -10, pdbData: null, loading: false, error: null },
+      { gene: "SGCD", name: "δ-Sarcoglycan", color: "#fb923c", xOffset: 30, pdbData: null, loading: false, error: null },
+    ],
+    allLoaded: false,
+    anyLoading: false,
+    retry: vi.fn(),
   })),
 }));
 
 import { ProteinStructure3D } from "@/components/ProteinStructure3D";
 
 const mockUseProteinData = useProteinData as ReturnType<typeof vi.fn>;
+const mockUseDGCProteins = useDGCProteins as ReturnType<typeof vi.fn>;
 
 describe("ProteinStructure3D", () => {
   beforeEach(() => {
@@ -85,6 +102,14 @@ describe("ProteinStructure3D", () => {
     expect(screen.getByText(/Wild-type ε-Sarcoglycan — 437 aa/)).toBeInTheDocument();
   });
 
+  it("domain bar labels use minimum 10px font", () => {
+    mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
+    render(<ProteinStructure3D />);
+    const extLabel = screen.getAllByText("Extracellular")[0];
+    expect(extLabel.className).toContain("text-[10px]");
+    expect(extLabel.className).not.toContain("text-[9px]");
+  });
+
   it("shows Extracellular label in DomainBar in WT mode", () => {
     mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
     render(<ProteinStructure3D />);
@@ -111,6 +136,176 @@ describe("ProteinStructure3D", () => {
     mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
     render(<ProteinStructure3D />);
     expect(screen.getByText("p.Val37SerfsTer32")).toBeInTheDocument();
+  });
+
+  it("DGC Complex button is enabled and toggleable", () => {
+    mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
+    render(<ProteinStructure3D />);
+    const dgcBtn = screen.getByText("DGC Complex");
+    expect(dgcBtn).not.toBeDisabled();
+    expect(dgcBtn).not.toHaveAttribute("title", "Coming soon");
+  });
+
+  it("clicking DGC toggle renders DGCLegend", () => {
+    mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
+    mockUseDGCProteins.mockReturnValue({
+      partners: [
+        { gene: "SGCB", name: "β-Sarcoglycan", color: "#06b6d4", xOffset: -30, pdbData: "ATOM  mock", loading: false, error: null },
+        { gene: "SGCG", name: "γ-Sarcoglycan", color: "#a78bfa", xOffset: -10, pdbData: "ATOM  mock", loading: false, error: null },
+        { gene: "SGCD", name: "δ-Sarcoglycan", color: "#fb923c", xOffset: 30, pdbData: "ATOM  mock", loading: false, error: null },
+      ],
+      allLoaded: true,
+      anyLoading: false,
+      retry: vi.fn(),
+    });
+    render(<ProteinStructure3D />);
+    fireEvent.click(screen.getByText("DGC Complex"));
+    expect(screen.getByText("Sarcoglycan Subcomplex")).toBeInTheDocument();
+  });
+
+  it("DGC mode: viewer.addModel called 4 times (ε + 3 partners)", async () => {
+    const $3Dmol = await import("3dmol");
+    const mockViewer = ($3Dmol as any).__mockViewer;
+    mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
+    mockUseDGCProteins.mockReturnValue({
+      partners: [
+        { gene: "SGCB", name: "β-Sarcoglycan", color: "#06b6d4", xOffset: -30, pdbData: "ATOM  mock", loading: false, error: null },
+        { gene: "SGCG", name: "γ-Sarcoglycan", color: "#a78bfa", xOffset: -10, pdbData: "ATOM  mock", loading: false, error: null },
+        { gene: "SGCD", name: "δ-Sarcoglycan", color: "#fb923c", xOffset: 30, pdbData: "ATOM  mock", loading: false, error: null },
+      ],
+      allLoaded: true,
+      anyLoading: false,
+      retry: vi.fn(),
+    });
+    render(<ProteinStructure3D />);
+    fireEvent.click(screen.getByText("DGC Complex"));
+    await waitFor(() => {
+      // ε-SG + β + γ + δ = 4 addModel calls
+      expect(mockViewer.addModel.mock.calls.length).toBeGreaterThanOrEqual(4);
+    });
+  });
+
+  it("DGC mode: viewer.addBox called for membrane plane", async () => {
+    const $3Dmol = await import("3dmol");
+    const mockViewer = ($3Dmol as any).__mockViewer;
+    mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
+    mockUseDGCProteins.mockReturnValue({
+      partners: [
+        { gene: "SGCB", name: "β-Sarcoglycan", color: "#06b6d4", xOffset: -30, pdbData: "ATOM  mock", loading: false, error: null },
+        { gene: "SGCG", name: "γ-Sarcoglycan", color: "#a78bfa", xOffset: -10, pdbData: "ATOM  mock", loading: false, error: null },
+        { gene: "SGCD", name: "δ-Sarcoglycan", color: "#fb923c", xOffset: 30, pdbData: "ATOM  mock", loading: false, error: null },
+      ],
+      allLoaded: true,
+      anyLoading: false,
+      retry: vi.fn(),
+    });
+    render(<ProteinStructure3D />);
+    fireEvent.click(screen.getByText("DGC Complex"));
+    await waitFor(() => {
+      expect(mockViewer.addBox).toHaveBeenCalled();
+    });
+  });
+
+  it("DGC mode: labels added for each subunit", async () => {
+    const $3Dmol = await import("3dmol");
+    const mockViewer = ($3Dmol as any).__mockViewer;
+    mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
+    mockUseDGCProteins.mockReturnValue({
+      partners: [
+        { gene: "SGCB", name: "β-Sarcoglycan", color: "#06b6d4", xOffset: -30, pdbData: "ATOM  mock", loading: false, error: null },
+        { gene: "SGCG", name: "γ-Sarcoglycan", color: "#a78bfa", xOffset: -10, pdbData: "ATOM  mock", loading: false, error: null },
+        { gene: "SGCD", name: "δ-Sarcoglycan", color: "#fb923c", xOffset: 30, pdbData: "ATOM  mock", loading: false, error: null },
+      ],
+      allLoaded: true,
+      anyLoading: false,
+      retry: vi.fn(),
+    });
+    render(<ProteinStructure3D />);
+    fireEvent.click(screen.getByText("DGC Complex"));
+    await waitFor(() => {
+      // At least 4 labels: one per subunit (ε, β, γ, δ)
+      expect(mockViewer.addLabel.mock.calls.length).toBeGreaterThanOrEqual(4);
+    });
+  });
+
+  it("DGC + Mutant: shows truncated ε-SG with disruption note", async () => {
+    mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
+    mockUseDGCProteins.mockReturnValue({
+      partners: [
+        { gene: "SGCB", name: "β-Sarcoglycan", color: "#06b6d4", xOffset: -30, pdbData: "ATOM  mock", loading: false, error: null },
+        { gene: "SGCG", name: "γ-Sarcoglycan", color: "#a78bfa", xOffset: -10, pdbData: "ATOM  mock", loading: false, error: null },
+        { gene: "SGCD", name: "δ-Sarcoglycan", color: "#fb923c", xOffset: 30, pdbData: "ATOM  mock", loading: false, error: null },
+      ],
+      allLoaded: true,
+      anyLoading: false,
+      retry: vi.fn(),
+    });
+    render(<ProteinStructure3D />);
+    fireEvent.click(screen.getByText("DGC Complex"));
+    fireEvent.click(screen.getByText("Mutant (68 aa)"));
+    expect(screen.getByText(/subcomplex disrupted/i)).toBeInTheDocument();
+  });
+
+  it("DGC loading: shows DGCLegend with loading states", () => {
+    mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
+    mockUseDGCProteins.mockReturnValue({
+      partners: [
+        { gene: "SGCB", name: "β-Sarcoglycan", color: "#06b6d4", xOffset: -30, pdbData: null, loading: true, error: null },
+        { gene: "SGCG", name: "γ-Sarcoglycan", color: "#a78bfa", xOffset: -10, pdbData: null, loading: true, error: null },
+        { gene: "SGCD", name: "δ-Sarcoglycan", color: "#fb923c", xOffset: 30, pdbData: null, loading: true, error: null },
+      ],
+      allLoaded: false,
+      anyLoading: true,
+      retry: vi.fn(),
+    });
+    render(<ProteinStructure3D />);
+    fireEvent.click(screen.getByText("DGC Complex"));
+    expect(screen.getByText("Sarcoglycan Subcomplex")).toBeInTheDocument();
+    expect(screen.getByTestId("sgc-loading-SGCB")).toBeInTheDocument();
+  });
+
+  it("DGC toggle off: removes partner models (removeAllModels called)", async () => {
+    const $3Dmol = await import("3dmol");
+    const mockViewer = ($3Dmol as any).__mockViewer;
+    mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
+    mockUseDGCProteins.mockReturnValue({
+      partners: [
+        { gene: "SGCB", name: "β-Sarcoglycan", color: "#06b6d4", xOffset: -30, pdbData: "ATOM  mock", loading: false, error: null },
+        { gene: "SGCG", name: "γ-Sarcoglycan", color: "#a78bfa", xOffset: -10, pdbData: "ATOM  mock", loading: false, error: null },
+        { gene: "SGCD", name: "δ-Sarcoglycan", color: "#fb923c", xOffset: 30, pdbData: "ATOM  mock", loading: false, error: null },
+      ],
+      allLoaded: true,
+      anyLoading: false,
+      retry: vi.fn(),
+    });
+    render(<ProteinStructure3D />);
+    fireEvent.click(screen.getByText("DGC Complex")); // ON
+    mockViewer.removeAllModels.mockClear();
+    fireEvent.click(screen.getByText("DGC Complex")); // OFF
+    await waitFor(() => {
+      expect(mockViewer.removeAllModels).toHaveBeenCalled();
+    });
+  });
+
+  it("shows retry button on PDB error", () => {
+    mockUseProteinData.mockReturnValue({ pdbData: null, loading: false, error: "Network error", retry: vi.fn() });
+    render(<ProteinStructure3D />);
+    expect(screen.getByText("Retry")).toBeInTheDocument();
+  });
+
+  it("retry button calls retry function", () => {
+    const retryFn = vi.fn();
+    mockUseProteinData.mockReturnValue({ pdbData: null, loading: false, error: "Network error", retry: retryFn });
+    render(<ProteinStructure3D />);
+    fireEvent.click(screen.getByText("Retry"));
+    expect(retryFn).toHaveBeenCalledTimes(1);
+  });
+
+  it("retry button is disabled while loading", () => {
+    mockUseProteinData.mockReturnValue({ pdbData: null, loading: true, error: "Network error", retry: vi.fn() });
+    render(<ProteinStructure3D />);
+    const retryBtn = screen.queryByText("Retry");
+    if (retryBtn) expect(retryBtn).toBeDisabled();
   });
 
   it("clicking a residue triggers 3D viewer zoomTo", async () => {

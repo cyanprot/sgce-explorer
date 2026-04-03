@@ -111,7 +111,7 @@ export function TranslationAnimation({
             textAnchor="middle"
             fontSize={8}
             fontWeight={700}
-            fill="#fff"
+            fill={COLORS.text}
           >
             PTC
           </text>
@@ -168,7 +168,7 @@ export function TranslationAnimation({
           textAnchor="middle"
           fontSize={8}
           fontWeight={700}
-          fill="#fff"
+          fill={COLORS.text}
         >
           80S
         </text>

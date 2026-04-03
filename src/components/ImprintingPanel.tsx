@@ -21,10 +21,15 @@ export function ImprintingPanel() {
         <ToggleButton active={highlight === "maternal"} onClick={() => setHighlight("maternal")} label="Maternal (silenced)" color={COLORS.silenced} />
       </div>
 
-      <div className="grid grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Left: SVG diagram */}
         <div className="rounded-xl p-5 border" style={{ background: COLORS.panel, borderColor: COLORS.panelBorder }}>
-          <svg viewBox="0 0 500 480" style={{ width: "100%" }}>
+          <svg
+            viewBox="0 0 500 480"
+            style={{ width: "100%" }}
+            role="img"
+            aria-label="SGCE genomic imprinting diagram at 7q21.3 showing paternal allele (active, carries mutation) and maternal allele (silenced by CpG methylation), resulting in complete loss of ε-sarcoglycan function"
+          >
             <text x={250} y={20} textAnchor="middle" fontSize={14} fill={COLORS.text} fontWeight={700}>
               SGCE Genomic Imprinting at 7q21.3
             </text>
@@ -59,7 +64,7 @@ export function ImprintingPanel() {
               {[0,1,2,3,4,5].map(i => (
                 <g key={i}>
                   <circle cx={160 + i * 20} cy={215} r={4} fill={COLORS.methylation} opacity={0.7} />
-                  <text x={160 + i * 20} y={218} textAnchor="middle" fontSize={5} fill="#fff" fontWeight={700}>Me</text>
+                  <text x={160 + i * 20} y={218} textAnchor="middle" fontSize={5} fill={COLORS.text} fontWeight={700}>Me</text>
                 </g>
               ))}
               <rect x={30} y={190} width={80} height={16} rx={4} fill={COLORS.silenced} opacity={0.2} />

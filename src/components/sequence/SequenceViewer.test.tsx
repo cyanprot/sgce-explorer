@@ -114,6 +114,16 @@ describe("SequenceViewer", () => {
     expect(onHover).toHaveBeenCalledWith(null);
   });
 
+  // ── Scroll Fade ──
+
+  it("renders scroll fade hint on right side", () => {
+    render(<SequenceViewer {...defaultProps} />);
+    const scrollContainer = screen.getByRole("region");
+    const parent = scrollContainer.parentElement!;
+    const fade = parent.querySelector("[data-testid='scroll-fade']");
+    expect(fade).not.toBeNull();
+  });
+
   // ── Scroll Sync ──
 
   it("scrolls to selected residue when selectedResidue changes", () => {

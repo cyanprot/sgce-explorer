@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import App from "@/App";
+import { COLORS } from "@/constants/protein-data";
 
 // Mock 3Dmol.js (requires WebGL, unavailable in jsdom)
 vi.mock("3dmol", () => ({
@@ -87,6 +88,35 @@ describe("App", () => {
     expect(screen.getByTestId("research-panel")).toBeInTheDocument();
     // Structure content should be gone
     expect(screen.queryAllByText(/Wild-type/)).toHaveLength(0);
+  });
+
+  it("renders skip-to-content link", () => {
+    render(<App />);
+    const skipLink = screen.getByText("Skip to content");
+    expect(skipLink.tagName).toBe("A");
+    expect(skipLink.getAttribute("href")).toMatch(/^#tabpanel-/);
+    expect(skipLink.className).toContain("sr-only");
+    expect(skipLink.className).toContain("focus:not-sr-only");
+  });
+
+  it("tab navigation has overflow-x-auto for mobile", () => {
+    render(<App />);
+    const nav = screen.getByRole("tablist");
+    expect(nav.className).toContain("overflow-x-auto");
+  });
+
+  it("skip link href updates when tab changes", () => {
+    render(<App />);
+    const skipLink = screen.getByText("Skip to content");
+    expect(skipLink.getAttribute("href")).toBe("#tabpanel-structure");
+    fireEvent.click(screen.getByText("Central Dogma"));
+    expect(skipLink.getAttribute("href")).toBe("#tabpanel-dogma");
+  });
+
+  it("active tab has accent-colored top border", () => {
+    render(<App />);
+    const activeTab = screen.getByRole("tab", { selected: true });
+    expect(activeTab).toHaveStyle({ borderTop: `2px solid ${COLORS.accent}` });
   });
 
   it("hides previous tab content when switching tabs", () => {

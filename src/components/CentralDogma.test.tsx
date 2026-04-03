@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { act } from "react";
 import { CentralDogma } from "./CentralDogma";
+import { COLORS } from "@/constants/protein-data";
 
 describe("CentralDogma", () => {
   it("renders initial state: step 1 content, counter, and mutation card", () => {
@@ -53,6 +54,14 @@ describe("CentralDogma", () => {
     expect(screen.getByText("⏸ Pause")).toBeInTheDocument();
     fireEvent.click(screen.getByText("⏸ Pause"));
     expect(screen.getByText("▶ Play")).toBeInTheDocument();
+  });
+
+  it("Play button uses COLORS.warn when playing", () => {
+    render(<CentralDogma />);
+    const playBtn = screen.getByText("▶ Play");
+    fireEvent.click(playBtn);
+    const pauseBtn = screen.getByText("⏸ Pause");
+    expect(pauseBtn).toHaveStyle({ background: COLORS.warn });
   });
 
   describe("autoplay with fake timers", () => {

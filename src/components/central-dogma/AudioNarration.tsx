@@ -48,14 +48,16 @@ export function AudioNarration({ stepIndex }: AudioNarrationProps) {
   return (
     <button
       onClick={toggle}
+      aria-pressed={enabled}
+      aria-label={enabled ? "Disable audio narration" : "Enable audio narration"}
       className="px-3 py-1.5 rounded-md text-xs font-semibold border cursor-pointer"
       style={{
         background: enabled ? COLORS.accent : COLORS.panel,
-        color: enabled ? "#fff" : COLORS.text,
+        color: enabled ? COLORS.text : COLORS.text,
         borderColor: enabled ? COLORS.accent : COLORS.panelBorder,
       }}
     >
-      {enabled ? "🔊 Narration On" : "🔇 Narration Off"}
+      {enabled ? "Narration On" : "Narration Off"}
     </button>
   );
 }

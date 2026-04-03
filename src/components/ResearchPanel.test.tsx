@@ -48,6 +48,13 @@ describe("ResearchPanel (unit)", () => {
     expect(screen.getByText(/Protein Interactions \(STRING\)/)).toBeInTheDocument();
   });
 
+  it("PubMed card spans 2 columns on large screens", () => {
+    render(<ResearchPanel />);
+    const pubmedHeading = screen.getByText("PubMed Literature");
+    const pubmedCard = pubmedHeading.closest("[class*='lg:col-span-2']");
+    expect(pubmedCard).not.toBeNull();
+  });
+
   it("renders responsive grid container", () => {
     render(<ResearchPanel />);
     const panel = screen.getByTestId("research-panel");

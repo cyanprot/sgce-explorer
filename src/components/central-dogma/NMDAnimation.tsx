@@ -6,6 +6,8 @@ import { NMD_SUB_STEPS } from "@/constants/codon-data";
 interface NMDAnimationProps {
   active: boolean;
   onComplete: () => void;
+  /** Skip timed animation and jump to final state immediately (reduced-motion) */
+  skipAnimation?: boolean;
 }
 
 const WIDTH = 680;
@@ -16,12 +18,18 @@ const SUB_STEP_DURATION = 1500;
 // EJC positions (downstream exon-exon junctions)
 const EJC_POSITIONS = [0.3, 0.45, 0.55, 0.65, 0.75, 0.85];
 
-export function NMDAnimation({ active, onComplete }: NMDAnimationProps) {
+export function NMDAnimation({ active, onComplete, skipAnimation = false }: NMDAnimationProps) {
   const [subStep, setSubStep] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval>>();
 
   useEffect(() => {
     if (!active) return;
+
+    // Under reduced-motion, jump immediately to final sub-step
+    if (skipAnimation) {
+      setSubStep(NMD_SUB_STEPS.length - 1);
+      return;
+    }
 
     setSubStep(0);
     timerRef.current = setInterval(() => {
@@ -36,7 +44,7 @@ export function NMDAnimation({ active, onComplete }: NMDAnimationProps) {
     }, SUB_STEP_DURATION);
 
     return () => clearInterval(timerRef.current);
-  }, [active, onComplete]);
+  }, [active, onComplete, skipAnimation]);
 
   if (!active) return null;
 
@@ -105,7 +113,7 @@ export function NMDAnimation({ active, onComplete }: NMDAnimationProps) {
             textAnchor="middle"
             fontSize={7}
             fontWeight={700}
-            fill="#fff"
+            fill={COLORS.text}
           >
             PTC
           </text>
@@ -126,7 +134,7 @@ export function NMDAnimation({ active, onComplete }: NMDAnimationProps) {
                 textAnchor="middle"
                 fontSize={6}
                 fontWeight={700}
-                fill="#000"
+                fill={COLORS.bg}
               >
                 EJC
               </text>
@@ -156,7 +164,7 @@ export function NMDAnimation({ active, onComplete }: NMDAnimationProps) {
               textAnchor="middle"
               fontSize={8}
               fontWeight={700}
-              fill="#fff"
+              fill={COLORS.text}
             >
               UPF1
             </text>

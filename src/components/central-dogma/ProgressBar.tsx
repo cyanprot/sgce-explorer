@@ -20,7 +20,12 @@ export function ProgressBar({ activeStep, onStepClick }: ProgressBarProps) {
             key={i}
             data-testid={`step-${i}`}
             onClick={() => onStepClick(i)}
-            style={{ cursor: "pointer" }}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onStepClick(i); } }}
+            tabIndex={0}
+            role="button"
+            aria-label={`Step ${i + 1}${i === activeStep ? " (current)" : i < activeStep ? " (completed)" : ""}`}
+            aria-pressed={i === activeStep}
+            style={{ cursor: "pointer", outline: "none" }}
           >
             {i < TOTAL - 1 && (
               <motion.line
@@ -49,7 +54,7 @@ export function ProgressBar({ activeStep, onStepClick }: ProgressBarProps) {
               textAnchor="middle"
               fontSize={10}
               fontWeight={700}
-              fill={active || done ? "#fff" : COLORS.textDim}
+              fill={active || done ? COLORS.text : COLORS.textDim}
             >
               {i + 1}
             </text>

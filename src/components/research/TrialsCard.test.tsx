@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { TrialsCard } from "./TrialsCard";
+import { COLORS } from "@/constants/protein-data";
 import type { ClinicalTrial } from "@/types/research";
 
 const mockTrials: ClinicalTrial[] = [
@@ -63,10 +64,25 @@ describe("TrialsCard", () => {
     render(<TrialsCard trials={mockTrials} loading={false} error={null} />);
 
     const recruitingBadge = screen.getByText("RECRUITING");
-    expect(recruitingBadge).toHaveStyle({ color: "#22c55e" });
+    expect(recruitingBadge).toHaveStyle({ color: COLORS.active });
 
     const completedBadge = screen.getByText("COMPLETED");
-    expect(completedBadge).toHaveStyle({ color: "#9ca3af" });
+    expect(completedBadge).toHaveStyle({ color: COLORS.silenced });
+  });
+
+  it("ACTIVE_NOT_RECRUITING uses COLORS.accent not COLORS.extracellular", () => {
+    const trial: ClinicalTrial = {
+      nctId: "NCT99999999",
+      title: "Active Not Recruiting Trial",
+      status: "ACTIVE_NOT_RECRUITING",
+      phase: "PHASE3",
+      conditions: ["DYT-SGCE"],
+      interventions: [],
+      url: "https://clinicaltrials.gov/study/NCT99999999",
+    };
+    render(<TrialsCard trials={[trial]} loading={false} error={null} />);
+    const badge = screen.getByText("ACTIVE_NOT_RECRUITING");
+    expect(badge).toHaveStyle({ color: COLORS.accent });
   });
 
   it("renders phase and conditions", () => {
