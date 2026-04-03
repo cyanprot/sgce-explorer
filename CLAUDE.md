@@ -55,19 +55,29 @@ Tech stack: Vite + React 18 + TypeScript + 3Dmol.js + Tailwind CSS.
 ```
 src/
 ├── main.tsx                    # Entry point
-├── App.tsx                     # Tab router + layout
+├── App.tsx                     # Tab router + layout (4 tabs: Structure, Central Dogma, Imprinting, Research)
 ├── index.css                   # Tailwind + global styles
 ├── types/
-│   └── index.ts                # Shared TypeScript interfaces
+│   ├── index.ts                # Shared TypeScript interfaces
+│   └── research.ts             # Research API response types
 ├── hooks/
-│   └── useProteinData.ts       # AlphaFold PDB fetch + parse hook
+│   ├── useProteinData.ts       # AlphaFold PDB fetch + parse hook
+│   ├── useFetchData.ts         # Generic fetch hook with caching (SWR-like)
+│   ├── usePubMed.ts            # PubMed E-utilities API (SGCE/DYT11 papers)
+│   ├── useClinicalTrials.ts    # ClinicalTrials.gov API v2
+│   ├── useChEMBL.ts            # ChEMBL target pharmacology (disabled — no SGCE data)
+│   ├── useUniProt.ts           # UniProt REST API (O43556 annotations)
+│   ├── useStringDB.ts          # STRING DB protein interactions
+│   └── useDGCProteins.ts       # DGC subcomplex AlphaFold PDB fetch (β/γ/δ/ε-SG)
 ├── constants/
 │   ├── protein-data.ts         # Domain boundaries, mutation, colors, sequences
 │   └── codon-data.ts           # CDS sequence, WT/mutant codons, NMD sub-steps, narration scripts
 ├── components/
-│   ├── ProteinStructure3D.tsx  # 3Dmol.js protein viewer (AlphaFold PDB, WT vs Mutant)
+│   ├── ProteinStructure3D.tsx  # 3Dmol.js protein viewer (AlphaFold PDB, WT vs Mutant + DGC subcomplex)
+│   ├── DGCLegend.tsx           # DGC subcomplex color legend
 │   ├── CentralDogma.tsx        # Orchestrator: composes central-dogma/ sub-components
 │   ├── ImprintingPanel.tsx     # Imprinting mechanism visualization
+│   ├── ResearchPanel.tsx       # Orchestrator: composes research/ cards
 │   ├── central-dogma/
 │   │   ├── index.ts            # Barrel export
 │   │   ├── ProgressBar.tsx     # Animated SVG step indicators (spring circles)
@@ -76,6 +86,13 @@ src/
 │   │   ├── TranslationAnimation.tsx  # Ribosome + mRNA + peptide chain (step 5)
 │   │   ├── NMDAnimation.tsx    # UPF1 recruitment + mRNA degradation (step 6)
 │   │   └── AudioNarration.tsx  # Web Speech API toggle
+│   ├── research/
+│   │   ├── index.ts            # Barrel export
+│   │   ├── PubMedCard.tsx      # Latest SGCE/DYT11 publications
+│   │   ├── TrialsCard.tsx      # Active clinical trials for DYT-SGCE
+│   │   ├── PharmacologyCard.tsx # ChEMBL pharmacology (disabled)
+│   │   ├── ProteinCard.tsx     # UniProt protein annotations
+│   │   └── InteractionsCard.tsx # STRING DB interaction network
 │   ├── sequence/
 │   │   ├── index.ts            # Barrel export
 │   │   ├── SequenceViewer.tsx  # Linear sequence track container (scrollable, 437 residues)
@@ -85,7 +102,10 @@ src/
 │       └── InfoCard.tsx        # Shared info card
 ├── utils/
 │   ├── hexToInt.ts             # Hex color string → integer
+│   ├── hexWithAlpha.ts         # Hex color + alpha → rgba string
 │   ├── isPdbData.ts            # PDB format validation
+│   ├── translatePdb.ts         # PDB coordinate translation (DGC subcomplex positioning)
+│   ├── fetchCache.ts           # In-memory fetch cache with TTL
 │   └── getDomainForPosition.ts # Position (1-indexed) → domain info
 └── data/                       # PDB files (gitignored)
 ```
@@ -116,16 +136,18 @@ src/
 - [x] Adaptive autoplay (per-step setTimeout with STEP_DURATIONS)
 
 ### Priority 4: External Data Integration
-- [ ] PubMed API: fetch latest SGCE/DYT11 papers, show in sidebar
-- [ ] ClinicalTrials API: show active DYT-SGCE trials
-- [ ] ChEMBL API: target pharmacology for sarcoglycan complex
-- [ ] UniProt REST API: live protein annotations
-- [ ] STRING DB: protein-protein interaction network for DGC
+- [x] PubMed API: fetch latest SGCE/DYT11 papers, show in Research tab
+- [x] ClinicalTrials API: show active DYT-SGCE trials
+- [x] ChEMBL API: target pharmacology (implemented but disabled — no SGCE data in ChEMBL)
+- [x] UniProt REST API: live protein annotations (O43556)
+- [x] STRING DB: protein-protein interaction network for DGC
+- [x] DGC subcomplex 3D visualization (β/γ/δ/ε-SG overlay in 3Dmol.js)
 
-### Priority 5: Deployment
-- [x] Cloudflare Tunnel deployment (e-sarcoglycan.arcivus.ca → localhost:3000)
+### Priority 5: Polish & Deployment
+- [x] Production deployment (Vercel + Cloudflare DNS → e-sarcoglycan.arcivus.ca)
 - [ ] PWA support for offline access
 - [ ] Export visualizations as high-res PNG/SVG for presentations
+- [ ] Favicon, meta description, `<main>` landmark, a11y contrast fixes
 
 ## Development Commands
 ```bash
@@ -137,10 +159,10 @@ npm run build         # Production build
 
 ## Key Dependencies
 - `3dmol`: Primary molecular visualization (AlphaFold PDB cartoon/ribbon rendering)
-- `@react-three/fiber` + `drei`: React Three.js bindings (currently unused, may be needed for future features)
 - `framer-motion`: Animation library for central dogma steps
 - `zustand`: Lightweight state management (shared viewer state)
-- `recharts`: Charts for any data visualization needs
+- `recharts`: Charts for data visualization
+- `vitest` + `@testing-library/react`: Testing (337 tests across 37 files)
 
 ## 3Dmol.js Integration Notes
 - 3Dmol viewer div MUST be separate from React overlay children (causes `removeChild` DOM errors)
@@ -151,9 +173,10 @@ npm run build         # Production build
 - AlphaFold API versions change — query `https://alphafold.ebi.ac.uk/api/prediction/O43556` for latest URL
 
 ## Deployment
-- **Live URL**: https://e-sarcoglycan.arcivus.ca (custom domain)
-- **Method**: Vercel (static hosting) + Cloudflare DNS (A record → 76.76.21.21, DNS only)
-- **GitHub**: https://github.com/cyanprot/sgce-explorer (auto-deploy on push)
+- **Live URL**: https://e-sarcoglycan.arcivus.ca
+- **Hosting**: Vercel (static, auto-deploy on push to main)
+- **DNS**: Cloudflare (A record → 76.76.21.21, DNS only — no proxy)
+- **GitHub**: https://github.com/cyanprot/sgce-explorer (public, MIT)
 
 ## Notes
 - The protein amino acid sequence is in `src/constants/protein-data.ts`

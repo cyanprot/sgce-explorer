@@ -7,6 +7,10 @@
   "license": "MIT",
   "author": "Jongmin Lee",
   "homepage": "https://e-sarcoglycan.arcivus.ca",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cyanprot/sgce-explorer"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
