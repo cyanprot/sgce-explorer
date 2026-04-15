@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { COLORS, MUTATION } from "@/constants/protein-data";
 import { hexWithAlpha } from "@/utils/hexWithAlpha";
 import type { CentralDogmaStep } from "@/types";
@@ -8,14 +8,15 @@ interface StepContentProps {
 }
 
 export function StepContent({ step }: StepContentProps) {
+  const reduce = useReducedMotion();
   return (
     <AnimatePresence initial={false}>
       <motion.div
         key={step.title}
-        initial={{ opacity: 0, x: 30 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -30 }}
-        transition={{ duration: 0.3, ease: "easeOut" }}
+        initial={reduce ? { opacity: 0 } : { opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={reduce ? { opacity: 0 } : { opacity: 0, y: -12 }}
+        transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
         className="grid grid-cols-1 lg:grid-cols-2 gap-4"
       >
         <div

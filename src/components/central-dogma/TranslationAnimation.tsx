@@ -30,8 +30,9 @@ export function TranslationAnimation({
 
   return (
     <svg
-      viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-      style={{ width: "100%", maxWidth: WIDTH }}
+      viewBox={`-8 0 ${WIDTH + 8} ${HEIGHT}`}
+      preserveAspectRatio="xMidYMid meet"
+      style={{ width: "100%", maxWidth: WIDTH, overflow: "visible" }}
     >
       {/* mRNA strand */}
       <g data-testid="mrna-strand">

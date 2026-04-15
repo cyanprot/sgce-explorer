@@ -42,7 +42,8 @@ describe("App", () => {
 
   it("shows mutation notation in header", () => {
     render(<App />);
-    expect(screen.getByText(/c\.108dup/)).toBeInTheDocument();
+    // Compact + full notation both render in DOM (CSS breakpoint hides one); jsdom sees both
+    expect(screen.getAllByText(/c\.108dup/).length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText(/p\.Val37SerfsTer32/).length).toBeGreaterThanOrEqual(1);
   });
 
@@ -114,11 +115,13 @@ describe("App", () => {
     expect(skipLink.getAttribute("href")).toBe("#tabpanel-dogma");
   });
 
-  it("mutation badge is visually hidden on mobile but accessible", () => {
+  it("mutation badge is visible on all viewports with accessible full notation", () => {
     render(<App />);
     const badge = screen.getByLabelText(/Mutation:/);
-    expect(badge.className).toMatch(/sr-only/);
-    expect(badge.className).toMatch(/sm:not-sr-only/);
+    // Badge is always shown (compact on mobile, full on desktop) — no sr-only wrapper
+    expect(badge.className).not.toMatch(/sr-only/);
+    expect(badge.getAttribute("aria-label")).toMatch(/c\.108dup/);
+    expect(badge.getAttribute("aria-label")).toMatch(/p\.Val37SerfsTer32/);
   });
 
   it("active tab has accent-colored top border", () => {

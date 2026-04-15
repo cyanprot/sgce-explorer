@@ -2,9 +2,9 @@ import type { ProteinDomain, MutationInfo, GlycosylationSite, CentralDogmaStep }
 
 // ── Color Palette ──
 export const COLORS = {
-  bg: "#0a0e1a",
-  panel: "#111827",
-  panelBorder: "#1e293b",
+  bg: "#0b0e19",
+  panel: "#131826",
+  panelBorder: "#1e3555",
   accent: "#60a5fa",
   accentDim: "#1e3a5f",
   danger: "#ef4444",
@@ -12,7 +12,7 @@ export const COLORS = {
   success: "#34d399",
   warn: "#fbbf24",
   text: "#e2e8f0",
-  textDim: "#94a3b8",
+  textDim: "#8aa0bd",
   extracellular: "#3b82f6",
   transmembrane: "#f59e0b",
   cytoplasmic: "#8b5cf6",

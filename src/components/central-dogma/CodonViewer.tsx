@@ -63,7 +63,7 @@ export function CodonViewer({ visible = true }: CodonViewerProps) {
         >
           Wild Type
         </h4>
-        <div className="flex gap-0.5 overflow-x-auto pb-1">
+        <div className="flex gap-0.5 overflow-x-auto no-scrollbar pb-1">
           {WT_CODONS.map((c) => (
             <CodonCell key={c.position} codon={c} prefix="wt" />
           ))}
@@ -76,7 +76,7 @@ export function CodonViewer({ visible = true }: CodonViewerProps) {
         >
           Mutant
         </h4>
-        <div className="flex gap-0.5 overflow-x-auto pb-1">
+        <div className="flex gap-0.5 overflow-x-auto no-scrollbar pb-1">
           {MUTANT_CODONS.map((c) => (
             <CodonCell key={c.position} codon={c} prefix="mut" />
           ))}

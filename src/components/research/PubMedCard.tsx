@@ -82,7 +82,7 @@ export function PubMedCard({ articles, loading, error }: Props) {
       )}
 
       {!loading && !error && sortedArticles && sortedArticles.length > 0 && (
-        <ul className="space-y-3">
+        <ul className="space-y-3 max-h-[600px] overflow-y-auto pr-1 no-scrollbar">
           {sortedArticles.map((article) => (
             <li key={article.pmid}>
               <a

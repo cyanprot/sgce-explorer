@@ -31,7 +31,7 @@ describe("ToggleButton", () => {
     const btn = screen.getByText("Inactive");
     expect(btn.style.background).toBe("transparent");
     // jsdom converts hex to rgb
-    expect(btn.style.color).toBe("rgb(148, 163, 184)");
-    expect(btn.style.borderColor).toBe("rgb(30, 41, 59)");
+    expect(btn.style.color).toBe("rgb(138, 160, 189)");
+    expect(btn.style.borderColor).toBe("rgb(30, 53, 85)");
   });
 });
