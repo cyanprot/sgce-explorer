@@ -145,9 +145,32 @@ src/
 
 ### Priority 5: Polish & Deployment
 - [x] Production deployment (Vercel + Cloudflare DNS → e-sarcoglycan.arcivus.ca)
+- [x] Arcivus brand chrome on subdomain (Nav + Footer + OKLCH tokens + 3-family fonts)
+- [x] Favicon, meta description, `<main>` landmark, mobile mutation badge visibility
+- [x] Overflow/scrollbar hygiene: shared `--app-header-h` CSS var, hidden native scrollbars on fade-UI components
 - [ ] PWA support for offline access
 - [ ] Export visualizations as high-res PNG/SVG for presentations
-- [ ] Favicon, meta description, `<main>` landmark, a11y contrast fixes
+
+## Design System
+
+The subdomain wears the same brand chrome as `arcivus.ca/explorer`. Two color systems coexist under a strict boundary:
+
+| Zone | Token source | Scope | File |
+|------|--------------|-------|------|
+| Marketing chrome (Nav, Footer, UI primitives) | OKLCH Tailwind classes (`text-ink`, `bg-surface`, `text-action`, etc.) | `src/components/layout/**`, `src/components/ui/Logo.tsx`, `src/components/ui/SocialLinks.tsx` | `tailwind.config.js` `theme.extend.colors` |
+| Explorer body (3D viewer, central dogma, imprinting, research, sequence) | Hex `COLORS` via inline style | Everything else under `src/components/` | `src/constants/protein-data.ts` |
+
+**Boundary rule**: never `import { COLORS }` inside the chrome zone; never use OKLCH classes (`text-ink`, etc.) inside the explorer-body zone. The boundary is enforced by `src/App.tsx` — Nav/Footer sit outside the dark `COLORS.bg` wrapper.
+
+**Canonical references** (load these before any design work):
+- Marketing chrome rules: `/home/cyan/projects/arcivus/.claude/skills/arcivus-design-ref/SKILL.md`
+- Explorer body rules: `.claude/skills/sci-design-ref/SKILL.md`
+
+**Nav link model**: `Explorer` is a self-link to `/` with `aria-current="page"`; all other links point to absolute `https://arcivus.ca/<route>`. No `target="_blank"`.
+
+**Fonts** (loaded via Google Fonts in `index.html`): Plus Jakarta Sans (display), Inter (body), JetBrains Mono (scientific notation).
+
+**Overflow convention**: the `<header>` height is published to `--app-header-h` via a `ResizeObserver` in `App.tsx`. Tab-panel containers read `calc(100vh - var(--app-header-h) - 80px)` (80px = fixed Nav). SequenceViewer and CodonViewer hide their native scrollbars via the `.no-scrollbar` utility in `src/index.css` — fade indicators already communicate scroll affordance.
 
 ## Development Commands
 ```bash

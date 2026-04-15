@@ -294,7 +294,7 @@ export function ProteinStructure3D() {
   }, []);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)] min-h-[400px] sm:min-h-[500px]">
+    <div className="flex flex-col h-[calc(100vh-var(--app-header-h)-80px)] min-h-[400px] sm:min-h-[500px]">
       {/* Controls */}
       <div className="flex gap-3 px-6 py-4 flex-wrap items-center">
         <ToggleButton active={!showMutant} onClick={() => setViewMode("wt")} label={`Wild-type (${PROTEIN_LENGTH} aa)`} color={COLORS.accent} />

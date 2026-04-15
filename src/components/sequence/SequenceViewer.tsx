@@ -73,7 +73,7 @@ export function SequenceViewer({
       <div className="relative">
         <div
           ref={scrollRef}
-          className="overflow-x-auto"
+          className="overflow-x-auto no-scrollbar"
           aria-label="Amino acid sequence, 437 residues. Click any residue to zoom the 3D viewer to that position."
           role="region"
           style={{

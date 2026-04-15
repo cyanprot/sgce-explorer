@@ -23,10 +23,10 @@ export function ImprintingPanel() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Left: SVG diagram */}
-        <div className="rounded-xl p-5 border lg:border-r lg:pr-5" style={{ background: COLORS.panel, borderColor: COLORS.panelBorder }}>
+        <div className="rounded-xl p-5 border lg:border-r lg:pr-5 flex items-center justify-center" style={{ background: COLORS.panel, borderColor: COLORS.panelBorder }}>
           <svg
             viewBox="0 0 500 480"
-            style={{ width: "100%" }}
+            style={{ width: "100%", maxWidth: 480, height: "auto" }}
             role="img"
             aria-label="SGCE genomic imprinting diagram at 7q21.3 showing paternal allele (active, carries mutation) and maternal allele (silenced by CpG methylation), resulting in complete loss of ε-sarcoglycan function"
           >

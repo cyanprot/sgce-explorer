@@ -46,7 +46,7 @@ describe("ProgressBar", () => {
     );
     const circles = container.querySelectorAll("circle");
     // Steps 1-6 are future
-    expect(circles[1].getAttribute("fill")).toContain("111827"); // COLORS.panel
+    expect(circles[1].getAttribute("fill")).toContain("131826"); // COLORS.panel
   });
 
   it("connecting lines between steps exist", () => {

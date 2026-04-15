@@ -93,9 +93,9 @@ export function CentralDogma() {
   const current = CENTRAL_DOGMA_STEPS[step];
 
   return (
-    <div data-testid="central-dogma" className="p-6 min-h-[calc(100vh-120px)] flex flex-col">
+    <div data-testid="central-dogma" className="p-6 min-h-[calc(100vh-var(--app-header-h)-80px)] flex flex-col">
       {/* Playback controls */}
-      <div className="flex gap-2 mb-5 items-center" role="toolbar" aria-label="Playback controls">
+      <div className="flex flex-wrap gap-2 mb-5 items-center" role="toolbar" aria-label="Playback controls">
         <button
           onClick={() => setStep(Math.max(0, step - 1))}
           aria-label="Previous step"
@@ -180,7 +180,7 @@ export function CentralDogma() {
       {/* Translation animation (step 5) */}
       {step === 4 && (
         <div
-          className="rounded-xl p-5 mb-5 border"
+          className="rounded-xl p-5 mb-5 border overflow-visible"
           style={{
             background: COLORS.panel,
             borderColor: COLORS.panelBorder,
