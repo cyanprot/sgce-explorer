@@ -2,7 +2,7 @@ import { useFetchData } from "@/hooks/useFetchData";
 import type { FetchState, ClinicalTrial } from "@/types/research";
 
 const CLINICAL_TRIALS_URL =
-  "https://clinicaltrials.gov/api/v2/studies?query.cond=DYT-SGCE+OR+myoclonus-dystonia+OR+SGCE&filter.overallStatus=RECRUITING,ACTIVE_NOT_RECRUITING,ENROLLING_BY_INVITATION,COMPLETED&pageSize=10";
+  "https://clinicaltrials.gov/api/v2/studies?query.cond=DYT-SGCE+OR+myoclonus-dystonia+OR+SGCE&filter.overallStatus=RECRUITING,ACTIVE_NOT_RECRUITING,ENROLLING_BY_INVITATION&pageSize=10";
 
 function transformStudies(data: unknown): ClinicalTrial[] {
   const d = data as {

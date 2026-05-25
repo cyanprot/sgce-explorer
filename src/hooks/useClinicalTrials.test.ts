@@ -80,9 +80,21 @@ describe("useClinicalTrials", () => {
     expect(url).toContain("DYT-SGCE");
     expect(url).toContain("myoclonus-dystonia");
     expect(url).toContain("SGCE");
-    expect(url).toContain("RECRUITING");
-    expect(url).toContain("COMPLETED");
+    expect(url).toContain("filter.overallStatus=RECRUITING,ACTIVE_NOT_RECRUITING,ENROLLING_BY_INVITATION");
+    expect(url).not.toContain("COMPLETED");
     expect(url).toContain("pageSize=10");
+  });
+
+  it("does not request completed clinical trials for active-trials card", async () => {
+    const fetchSpy = setupFetchMock();
+    vi.stubGlobal("fetch", fetchSpy);
+    renderHook(() => useClinicalTrials());
+
+    await waitFor(() => expect(fetchSpy).toHaveBeenCalled());
+    const url = fetchSpy.mock.calls[0][0] as string;
+
+    expect(url).toContain("filter.overallStatus=RECRUITING,ACTIVE_NOT_RECRUITING,ENROLLING_BY_INVITATION");
+    expect(url).not.toContain("COMPLETED");
   });
 
   it("transforms study response into ClinicalTrial array", async () => {
