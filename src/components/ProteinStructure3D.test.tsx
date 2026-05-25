@@ -375,4 +375,45 @@ describe("ProteinStructure3D", () => {
       expect(mockViewer.zoomTo).toHaveBeenCalled();
     });
   });
+
+  it("starts auto-rotate after deferred viewer creation, then stops spin before cleanup", async () => {
+    const $3Dmol = await import("3dmol");
+    const mockViewer = ($3Dmol as any).__mockViewer;
+    mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
+
+    const { unmount } = render(<ProteinStructure3D />);
+
+    await waitFor(() => expect(($3Dmol as any).createViewer).toHaveBeenCalled());
+    await waitFor(() => expect(mockViewer.spin).toHaveBeenCalledWith("y", 1));
+    mockViewer.spin.mockClear();
+    unmount();
+
+    expect(mockViewer.spin).toHaveBeenCalledWith(false);
+  });
+
+  it("does not call viewer.resize when observed viewer div has zero size", async () => {
+    const $3Dmol = await import("3dmol");
+    const mockViewer = ($3Dmol as any).__mockViewer;
+    mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
+
+    const callbacks: ResizeObserverCallback[] = [];
+    const OriginalResizeObserver = globalThis.ResizeObserver;
+    class MockResizeObserver {
+      constructor(cb: ResizeObserverCallback) { callbacks.push(cb); }
+      observe = vi.fn();
+      disconnect = vi.fn();
+    }
+    globalThis.ResizeObserver = MockResizeObserver as any;
+
+    try {
+      render(<ProteinStructure3D />);
+      await waitFor(() => expect(($3Dmol as any).createViewer).toHaveBeenCalled());
+      mockViewer.resize.mockClear();
+      callbacks[callbacks.length - 1]?.([{ contentRect: { width: 0, height: 0 } } as ResizeObserverEntry], {} as ResizeObserver);
+
+      expect(mockViewer.resize).not.toHaveBeenCalled();
+    } finally {
+      globalThis.ResizeObserver = OriginalResizeObserver;
+    }
+  });
 });

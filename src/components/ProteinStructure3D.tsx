@@ -25,6 +25,7 @@ export function ProteinStructure3D() {
   const [hoveredDomain, setHoveredDomain] = useState<string | null>(null);
   const [autoRotate, setAutoRotate] = useState(true);
   const [viewerError, setViewerError] = useState<string | null>(null);
+  const [viewerReady, setViewerReady] = useState(false);
   const [selectedResidue, setSelectedResidue] = useState<number | null>(null);
   const [hoveredResidue, setHoveredResidue] = useState<number | null>(null);
   const { pdbData, loading, error, retry } = useProteinData();
@@ -49,11 +50,20 @@ export function ProteinStructure3D() {
       }
 
       viewerRef.current = viewer;
+      setViewerReady(true);
     });
 
     return () => {
       cancelAnimationFrame(raf);
+      const viewer = viewerRef.current;
+      if (viewer) {
+        viewer.spin(false as any);
+        viewer.removeAllLabels();
+        viewer.removeAllShapes();
+        viewer.removeAllModels();
+      }
       viewerRef.current = null;
+      setViewerReady(false);
       if (el) {
         el.innerHTML = "";
       }
@@ -257,7 +267,7 @@ export function ProteinStructure3D() {
     } else {
       viewer.spin(false as any);
     }
-  }, [autoRotate, pdbData]);
+  }, [autoRotate, pdbData, viewerReady]);
 
   // Effect 4: Highlight selected residue in 3D viewer
   useEffect(() => {
@@ -282,7 +292,12 @@ export function ProteinStructure3D() {
     const el = viewerDivRef.current;
     if (!el) return;
 
-    const observer = new ResizeObserver(() => {
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      const width = entry?.contentRect.width ?? el.clientWidth;
+      const height = entry?.contentRect.height ?? el.clientHeight;
+      if (width <= 0 || height <= 0) return;
+
       const viewer = viewerRef.current;
       if (viewer) {
         viewer.resize();
