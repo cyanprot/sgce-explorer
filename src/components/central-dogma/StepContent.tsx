@@ -10,13 +10,13 @@ interface StepContentProps {
 export function StepContent({ step }: StepContentProps) {
   const reduce = useReducedMotion();
   return (
-    <AnimatePresence initial={false}>
+    <AnimatePresence initial={false} mode="popLayout">
       <motion.div
         key={step.title}
-        initial={reduce ? { opacity: 0 } : { opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={reduce ? { opacity: 0 } : { opacity: 0, y: -12 }}
-        transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: reduce ? 0 : 0.2, ease: "easeOut" }}
         className="grid grid-cols-1 lg:grid-cols-2 gap-4"
       >
         <div
