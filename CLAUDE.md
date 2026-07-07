@@ -110,46 +110,15 @@ src/
 └── data/                       # PDB files (gitignored)
 ```
 
-## Improvement Roadmap (for Claude Code)
+## Status (as of 2026-05-13)
 
-### Priority 1: Real Structure Data
-- [x] Replace procedural Three.js curves with actual AlphaFold PDB coordinates
-- [x] Use 3Dmol.js `$3Dmol.createViewer()` to render ribbon/cartoon/surface views
-- [x] Color by domain (extracellular blue, TM amber, cytoplasmic purple)
-- [x] Highlight mutation site (Val37) and glycosylation (Asn200) as spheres
-- [x] Add WT vs Mutant toggle: show full structure vs truncated (residues 1-68 only)
-- [x] Linked click: click residue in sequence viewer → 3D viewer zoom
+Priorities 1–4 complete. Priority 5 mostly complete (production deployed, brand chrome applied, overflow hygiene done).
 
-### Priority 2: Sequence Viewer
-- [x] Linear amino acid sequence track below 3D viewer (SequenceViewer + ResidueCell)
-- [x] Color-coded by domain, scrollable (getDomainForPosition utility)
-- [x] Mutation annotation overlay (position 37 frameshift, position 68 PTC, aberrant region 38-67)
-- [x] Click interaction linked to 3D model zoom (selectedResidue → viewer.zoomTo)
-- [ ] Show conservation scores if available (ConSurf data) — deferred, external data dependency
+### Deferred
 
-### Priority 3: Central Dogma Animation
-- [x] Upgrade from static SVG to animated (framer-motion) — ProgressBar spring + StepContent AnimatePresence
-- [x] Ribosome translation animation: 80S ribosome scanning mRNA, peptide chain growth, frameshift marker
-- [x] Show actual codon sequence around mutation site (CodonViewer: WT/mutant, PTC at 68)
-- [x] NMD pathway: 4-step animation (PTC recognition → UPF1 → phosphorylation → degradation)
-- [x] Add audio narration option (Web Speech API) — toggle per step
-- [x] Adaptive autoplay (per-step setTimeout with STEP_DURATIONS)
-
-### Priority 4: External Data Integration
-- [x] PubMed API: fetch latest SGCE/DYT11 papers, show in Research tab
-- [x] ClinicalTrials API: show active DYT-SGCE trials
-- [x] ChEMBL API: target pharmacology (implemented but disabled — no SGCE data in ChEMBL)
-- [x] UniProt REST API: live protein annotations (O43556)
-- [x] STRING DB: protein-protein interaction network for DGC
-- [x] DGC subcomplex 3D visualization (β/γ/δ/ε-SG overlay in 3Dmol.js)
-
-### Priority 5: Polish & Deployment
-- [x] Production deployment (Vercel + Cloudflare DNS → e-sarcoglycan.arcivus.ca)
-- [x] Arcivus brand chrome on subdomain (Nav + Footer + OKLCH tokens + 3-family fonts)
-- [x] Favicon, meta description, `<main>` landmark, mobile mutation badge visibility
-- [x] Overflow/scrollbar hygiene: shared `--app-header-h` CSS var, hidden native scrollbars on fade-UI components
-- [ ] PWA support for offline access
-- [ ] Export visualizations as high-res PNG/SVG for presentations
+- **Conservation scores overlay** (Priority 2) — external data dependency (ConSurf). Not blocking.
+- **PWA / offline support** (Priority 5) — out of scope unless field-use is requested.
+- **High-res PNG/SVG export** (Priority 5) — useful for presentations; revisit when needed.
 
 ## Design System
 

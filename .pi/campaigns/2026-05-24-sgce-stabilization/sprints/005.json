@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "sprint_id": "005",
+  "campaign_id": "2026-05-24-sgce-stabilization",
+  "feature": "Dependency and audit hygiene",
+  "deliverables": [
+    "Non-breaking `npm audit fix` applied if it stays within current major stack constraints.",
+    "Unused runtime dependencies are confirmed by source import search before removal.",
+    "Final package state passes tests/build/audit or documents any unavoidable advisory."
+  ],
+  "success_criteria": [
+    "`npm run test` passes.",
+    "`npm run build` passes.",
+    "`npm audit --audit-level=moderate` passes or any remaining issue is explicitly documented with a blocker reason.",
+    "No dependency is removed if `rg` finds source imports for it."
+  ],
+  "testable_behaviors": [
+    "Application behavior is unchanged after dependency cleanup.",
+    "Security audit baseline is cleaner than the starting state."
+  ],
+  "scope_boundaries": [
+    "Do not perform major React/Vite/Tailwind migrations in this plan.",
+    "Do not remove `3dmol` or test/build core dependencies.",
+    "Do not accept breaking audit fixes without a separate migration plan."
+  ],
+  "evaluation_method": "unit+build+audit"
+}

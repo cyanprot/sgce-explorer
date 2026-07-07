@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "sprint_id": "003",
+  "campaign_id": "2026-05-24-sgce-stabilization",
+  "feature": "ClinicalTrials active-status semantics",
+  "deliverables": [
+    "ClinicalTrials.gov query excludes `COMPLETED` when the card represents active trials.",
+    "Hook test asserts active-only status filter."
+  ],
+  "success_criteria": [
+    "A failing-first test confirms the URL does not contain `COMPLETED`.",
+    "`npm run test -- src/hooks/useClinicalTrials.test.ts src/components/research/TrialsCard.test.tsx src/components/ResearchPanel.test.tsx` passes.",
+    "`npm run build` passes."
+  ],
+  "testable_behaviors": [
+    "Research tab ClinicalTrials card fetches recruiting, active-not-recruiting, and enrolling-by-invitation studies only."
+  ],
+  "scope_boundaries": [
+    "Do not add a completed-trials toggle in this sprint.",
+    "Do not change PubMed, UniProt, or STRING query behavior."
+  ],
+  "evaluation_method": "unit"
+}

@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "sprint_id": "004",
+  "campaign_id": "2026-05-24-sgce-stabilization",
+  "feature": "Explorer design token boundary cleanup",
+  "deliverables": [
+    "DGCLegend uses `COLORS`/inline styles for explorer-body semantic colors instead of Tailwind color utilities.",
+    "Residue focus color is bridged through a CSS variable instead of an unannotated hardcoded outline color.",
+    "Tests/static grep verify no drift-prone Tailwind color utilities remain in DGCLegend."
+  ],
+  "success_criteria": [
+    "`npm run test -- src/components/DGCLegend.test.tsx src/components/sequence/SequenceViewer.test.tsx` passes.",
+    "`rg -n \"text-(emerald|red|white)|border-white\" src/components/DGCLegend.tsx` returns no matches.",
+    "`npm run build` passes."
+  ],
+  "testable_behaviors": [
+    "DGC legend loaded/error/mutant states render with the canonical explorer color tokens."
+  ],
+  "scope_boundaries": [
+    "Do not refactor the entire design system.",
+    "Do not import `COLORS` into Arcivus chrome components under `src/components/layout` or `src/components/ui/Logo.tsx`/`SocialLinks.tsx`."
+  ],
+  "evaluation_method": "unit+static"
+}

@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "sprint_id": "001",
+  "campaign_id": "2026-05-24-sgce-stabilization",
+  "feature": "Local AlphaFold PDB setup consistency",
+  "deliverables": [
+    "`npm run fetch-pdb` writes to `public/data/AF-O43556-F1.pdb`, the path Vite serves as `/data/AF-O43556-F1.pdb`.",
+    "Package script verification and relevant hook/build checks pass."
+  ],
+  "success_criteria": [
+    "A Node assertion confirms `package.json` fetch-pdb includes `public/data/AF-O43556-F1.pdb`.",
+    "`npm run fetch-pdb` creates a PDB file larger than 100 KB at `public/data/AF-O43556-F1.pdb`.",
+    "`npm run test -- src/hooks/useProteinData.test.ts src/utils/isPdbData.test.ts` passes.",
+    "`npm run build` passes."
+  ],
+  "testable_behaviors": [
+    "Fresh local setup can populate the local PDB asset used by the app before falling back to AlphaFold remote fetch."
+  ],
+  "scope_boundaries": [
+    "Do not change AlphaFold accession or SGCE scientific data.",
+    "Do not force-add gitignored PDB binary unless user approves offline bundling."
+  ],
+  "evaluation_method": "unit+build"
+}
