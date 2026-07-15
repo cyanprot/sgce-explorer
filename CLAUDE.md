@@ -124,6 +124,9 @@ Priorities 1–4 complete. Priority 5 mostly complete (production deployed, bran
 
 The subdomain wears the same brand chrome as `arcivus.ca/explorer`. Two color systems coexist under a strict boundary:
 
+**Brand ownership**: the marketing chrome here (social URLs, brand colors, logo, wordmark) is **mirrored downstream from `arcivus` — that repo is the brand source of truth**. Do not originate brand changes here; edit `arcivus` first, then copy the value over. This repo is canonical only for its science/domain data (protein, PDB, e-sarcoglycan content).
+
+
 | Zone | Token source | Scope | File |
 |------|--------------|-------|------|
 | Marketing chrome (Nav, Footer, UI primitives) | OKLCH Tailwind classes (`text-ink`, `bg-surface`, `text-action`, etc.) | `src/components/layout/**`, `src/components/ui/Logo.tsx`, `src/components/ui/SocialLinks.tsx` | `tailwind.config.js` `theme.extend.colors` |
