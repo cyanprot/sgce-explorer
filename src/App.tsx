@@ -5,7 +5,8 @@ import { ImprintingPanel } from "@/components/ImprintingPanel";
 import { ResearchPanel } from "@/components/ResearchPanel";
 import Nav from "@/components/layout/Nav";
 import Footer from "@/components/layout/Footer";
-import { COLORS, MUTATION } from "@/constants/protein-data";
+import { COLORS } from "@/constants/protein-data";
+import { useVariantStore } from "@/store/variantStore";
 import type { TabId } from "@/types";
 
 const TABS: { id: TabId; label: string }[] = [
@@ -19,6 +20,7 @@ export default function App() {
   const [tab, setTab] = useState<TabId>("structure");
   const headerRef = useRef<HTMLElement>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const variant = useVariantStore((s) => s.selected);
 
   // WAI-ARIA tabs: Left/Right/Home/End move focus + selection (automatic activation).
   const onTabKeyDown = (e: React.KeyboardEvent, idx: number) => {
@@ -78,11 +80,11 @@ export default function App() {
               <span
                 className="inline-flex text-xs font-mono px-2 py-0.5 rounded"
                 style={{ color: COLORS.danger, background: COLORS.dangerDim }}
-                aria-label={`Mutation: ${MUTATION.cNotation}, ${MUTATION.notation}`}
+                aria-label={`Mutation: ${variant.cNotation}, ${variant.notation}`}
               >
-                <span className="sm:hidden">{MUTATION.cNotation}</span>
+                <span className="sm:hidden">{variant.cNotation}</span>
                 <span className="hidden sm:inline">
-                  {MUTATION.cNotation} · {MUTATION.notation}
+                  {variant.cNotation} · {variant.notation}
                 </span>
               </span>
             </div>

@@ -168,7 +168,7 @@ export function deriveConsequence(
 const DISPLAY_START = 25; // context before mutation
 const DISPLAY_END = 75;   // context after PTC
 
-function buildWTCodons(start = DISPLAY_START, end = DISPLAY_END): Codon[] {
+export function buildWTCodons(start = DISPLAY_START, end = DISPLAY_END): Codon[] {
   const codons: Codon[] = [];
   for (let i = start; i <= end; i++) {
     const ntStart = (i - 1) * 3;

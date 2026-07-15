@@ -1,6 +1,8 @@
+import { useMemo } from "react";
 import { COLORS } from "@/constants/protein-data";
 import { hexWithAlpha } from "@/utils/hexWithAlpha";
-import { WT_CODONS, MUTANT_CODONS } from "@/constants/codon-data";
+import { WT_CODONS, buildMutantCodons } from "@/constants/codon-data";
+import { useVariantStore } from "@/store/variantStore";
 import type { Codon } from "@/types";
 
 interface CodonViewerProps {
@@ -49,6 +51,9 @@ function CodonCell({
 }
 
 export function CodonViewer({ visible = true }: CodonViewerProps) {
+  const variant = useVariantStore((s) => s.selected);
+  const mutantCodons = useMemo(() => buildMutantCodons(variant), [variant]);
+
   if (!visible) return null;
 
   return (
@@ -77,7 +82,7 @@ export function CodonViewer({ visible = true }: CodonViewerProps) {
           Mutant
         </h4>
         <div className="flex gap-0.5 overflow-x-auto no-scrollbar pb-1">
-          {MUTANT_CODONS.map((c) => (
+          {mutantCodons.map((c) => (
             <CodonCell key={c.position} codon={c} prefix="mut" />
           ))}
         </div>
