@@ -115,7 +115,7 @@ export const CENTRAL_DOGMA_STEPS: CentralDogmaStep[] = [
   {
     title: "7. Result — No Functional ε-Sarcoglycan",
     subtitle: "DGC complex lacks ε-SG → myoclonus-dystonia",
-    detail: "Without ε-sarcoglycan, the sarcoglycan subcomplex cannot assemble at the neuronal membrane. This disrupts DGC signaling in striatal neurons → DYT-SGCE.",
+    detail: "Without ε-sarcoglycan, the sarcoglycan subcomplex cannot assemble properly. How this produces myoclonus-dystonia is not fully established — a leading hypothesis is disrupted DGC-related signaling in striatal neurons.",
     mutationNote: "Imprinting (no maternal backup) + frameshift (no paternal protein) = COMPLETE LOSS OF FUNCTION. Gene replacement therapy (AAV-SGCE cDNA) is the logical strategy.",
   },
 ];
