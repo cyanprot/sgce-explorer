@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback, useState } from "react";
-import { SEQUENCE, MUTATION, COLORS, DOMAINS } from "@/constants/protein-data";
+import { SEQUENCE, COLORS, DOMAINS } from "@/constants/protein-data";
 import { getDomainForPosition } from "@/utils/getDomainForPosition";
+import { useVariantStore } from "@/store/variantStore";
 import { ResidueCell } from "./ResidueCell";
 import type { ViewMode } from "@/types";
 
@@ -22,6 +23,8 @@ export function SequenceViewer({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const variant = useVariantStore((s) => s.selected);
+  const ptc = useVariantStore((s) => s.consequence.ptcPosition);
 
   // Scroll to selected residue when it changes externally
   useEffect(() => {
@@ -65,7 +68,7 @@ export function SequenceViewer({
           </span>
         ))}
         <span className="ml-auto font-mono" style={{ color: COLORS.danger }}>
-          {MUTATION.notation}
+          {variant.notation}
         </span>
       </div>
 
@@ -97,10 +100,10 @@ export function SequenceViewer({
                 color={color}
                 isSelected={selectedResidue === position}
                 isHovered={hoveredResidue === position}
-                isMutationSite={position === MUTATION.aaPosition}
-                isPTC={position === MUTATION.truncationAt}
+                isMutationSite={position === variant.aaPosition}
+                isPTC={ptc != null && position === ptc}
                 isAberrant={
-                  position > MUTATION.aaPosition && position < MUTATION.truncationAt
+                  ptc != null && position > variant.aaPosition && position < ptc
                 }
                 onClick={onResidueClick}
                 onMouseEnter={onResidueHover}

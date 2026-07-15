@@ -5,13 +5,15 @@
  * and why paternal mutation = complete loss of function.
  */
 import { useState } from "react";
-import { COLORS, MUTATION } from "@/constants/protein-data";
+import { COLORS } from "@/constants/protein-data";
+import { useVariantStore } from "@/store/variantStore";
 import { ToggleButton } from "./ui/ToggleButton";
 import { InfoCard } from "./ui/InfoCard";
 import type { AlleleHighlight } from "@/types";
 
 export function ImprintingPanel() {
   const [highlight, setHighlight] = useState<AlleleHighlight>("both");
+  const variant = useVariantStore((s) => s.selected);
 
   return (
     <div className="p-6">
@@ -47,7 +49,7 @@ export function ImprintingPanel() {
               <text x={70} y={87} textAnchor="middle" fontSize={9} fill={COLORS.active} fontWeight={600}>← PEG10</text>
               <rect x={290} y={75} width={180} height={16} rx={4} fill={COLORS.danger} opacity={0.4} stroke={COLORS.danger} strokeWidth={1} />
               <text x={380} y={87} textAnchor="middle" fontSize={9} fill={COLORS.danger} fontWeight={700}>SGCE →</text>
-              <text x={380} y={110} textAnchor="middle" fontSize={8} fill={COLORS.danger}>★ {MUTATION.cNotation} HERE</text>
+              <text x={380} y={110} textAnchor="middle" fontSize={8} fill={COLORS.danger}>★ {variant.cNotation} HERE</text>
               <text x={30} y={128} fontSize={8} fill={COLORS.textDim}>
                 <tspan fill={COLORS.active}>H3K4me2</tspan> · <tspan fill={COLORS.active}>H3K9ac</tspan> → transcriptionally active
               </text>
@@ -86,7 +88,7 @@ export function ImprintingPanel() {
             {/* Paternal path */}
             <rect x={30} y={310} width={130} height={45} rx={6} fill={COLORS.active} opacity={0.1} stroke={COLORS.active} strokeWidth={1} />
             <text x={95} y={328} textAnchor="middle" fontSize={9} fill={COLORS.active} fontWeight={600}>Paternal allele</text>
-            <text x={95} y={342} textAnchor="middle" fontSize={8} fill={COLORS.danger}>{MUTATION.cNotation} mutant</text>
+            <text x={95} y={342} textAnchor="middle" fontSize={8} fill={COLORS.danger}>{variant.cNotation} mutant</text>
             <text x={180} y={335} fontSize={16} fill={COLORS.textDim}>→</text>
             <rect x={200} y={310} width={100} height={45} rx={6} fill={COLORS.danger} opacity={0.1} stroke={COLORS.danger} strokeWidth={1} />
             <text x={250} y={328} textAnchor="middle" fontSize={9} fill={COLORS.danger} fontWeight={600}>Frameshift</text>

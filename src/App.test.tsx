@@ -1,6 +1,8 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import App from "@/App";
 import { COLORS } from "@/constants/protein-data";
+import { useVariantStore } from "@/store/variantStore";
+import { VARIANT_CATALOG } from "@/constants/variant-catalog";
 
 // Mock 3Dmol.js (requires WebGL, unavailable in jsdom)
 vi.mock("3dmol", () => ({
@@ -32,9 +34,24 @@ vi.mock("@/hooks/useProteinData", () => ({
 }));
 
 describe("App", () => {
-  it("renders all 4 tab buttons with correct labels", () => {
+  beforeEach(() => {
+    // Deep-linking reflects state into the shared jsdom URL; reset between tests.
+    window.history.replaceState(null, "", "/");
+    useVariantStore.getState().resetToPatient();
+  });
+
+  it("hydrates tab and selected variant from the URL (deep link)", () => {
+    const target = VARIANT_CATALOG.find((v) => !v.isPatient && v.edit)!;
+    window.history.replaceState(null, "", `/?tab=variants&v=${encodeURIComponent(target.id)}`);
+    render(<App />);
+    expect(screen.getByText("Known SGCE Variants")).toBeInTheDocument();
+    expect(useVariantStore.getState().selected.id).toBe(target.id);
+  });
+
+  it("renders all 5 tab buttons with correct labels", () => {
     render(<App />);
     expect(screen.getByText("3D Structure")).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Variants" })).toBeInTheDocument();
     expect(screen.getByText("Central Dogma")).toBeInTheDocument();
     expect(screen.getByText("Imprinting")).toBeInTheDocument();
     expect(screen.getByText("Research")).toBeInTheDocument();
@@ -117,7 +134,7 @@ describe("App", () => {
 
   it("mutation badge is visible on all viewports with accessible full notation", () => {
     render(<App />);
-    const badge = screen.getByLabelText(/Mutation:/);
+    const badge = screen.getByLabelText(/Selected variant:/);
     // Badge is always shown (compact on mobile, full on desktop) — no sr-only wrapper
     expect(badge.className).not.toMatch(/sr-only/);
     expect(badge.getAttribute("aria-label")).toMatch(/c\.108dup/);

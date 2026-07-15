@@ -10,8 +10,9 @@ dist/
 .env
 .env.*
 
-# Data (PDB fetched via npm run fetch-pdb, screenshots are dev artifacts)
-data/
+# Data — root-anchored so it only ignores the fetched PDB dir, NOT src/data/
+# (src/data/variant-catalog.json is a committed build-time snapshot).
+/data/
 public/data/*.pdb
 
 # OS

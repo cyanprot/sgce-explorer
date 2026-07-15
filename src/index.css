@@ -29,6 +29,15 @@ body {
   z-index: 1;
 }
 
+/* Central-dogma step selector: SVG <g> has no default focus box, so a
+   dedicated ring circle is revealed on keyboard focus. */
+.dogma-step {
+  outline: none;
+}
+.dogma-step:focus-visible .dogma-step__ring {
+  stroke: #60a5fa;
+}
+
 .no-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;

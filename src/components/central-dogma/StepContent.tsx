@@ -1,5 +1,6 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { COLORS, MUTATION } from "@/constants/protein-data";
+import { COLORS } from "@/constants/protein-data";
+import { useVariantStore } from "@/store/variantStore";
 import { hexWithAlpha } from "@/utils/hexWithAlpha";
 import type { CentralDogmaStep } from "@/types";
 
@@ -9,6 +10,7 @@ interface StepContentProps {
 
 export function StepContent({ step }: StepContentProps) {
   const reduce = useReducedMotion();
+  const variant = useVariantStore((s) => s.selected);
   return (
     <AnimatePresence initial={false} mode="popLayout">
       <motion.div
@@ -45,7 +47,7 @@ export function StepContent({ step }: StepContentProps) {
             className="text-sm font-bold mt-0 mb-2"
             style={{ color: COLORS.danger }}
           >
-            Your mutation — {MUTATION.cNotation}
+            Your mutation — {variant.cNotation}
           </h3>
           <p className="text-sm leading-relaxed m-0">{step.mutationNote}</p>
         </div>

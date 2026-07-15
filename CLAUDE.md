@@ -55,7 +55,7 @@ Tech stack: Vite + React 18 + TypeScript + 3Dmol.js + Tailwind CSS.
 ```
 src/
 ├── main.tsx                    # Entry point
-├── App.tsx                     # Tab router + layout (4 tabs: Structure, Central Dogma, Imprinting, Research)
+├── App.tsx                     # Tab router + layout (5 tabs: Structure, Variants, Central Dogma, Imprinting, Research) + URL deep-linking (?tab=&v=)
 ├── index.css                   # Tailwind + global styles
 ├── types/
 │   ├── index.ts                # Shared TypeScript interfaces
@@ -68,10 +68,17 @@ src/
 │   ├── useChEMBL.ts            # ChEMBL target pharmacology (disabled — no SGCE data)
 │   ├── useUniProt.ts           # UniProt REST API (O43556 annotations)
 │   ├── useStringDB.ts          # STRING DB protein interactions
-│   └── useDGCProteins.ts       # DGC subcomplex AlphaFold PDB fetch (β/γ/δ/ε-SG)
+│   ├── useDGCProteins.ts       # DGC subcomplex AlphaFold PDB fetch (β/γ/δ/ε-SG)
+│   └── useVariants.ts          # Filtered view over the variant catalog (query/consequence/significance)
+├── store/
+│   └── variantStore.ts         # zustand: selected Variant + derived consequence (default: patient c.108dup)
+├── data/
+│   └── variant-catalog.json    # Build-time snapshot: 603 SGCE variants (UniProt). Regen: npm run fetch-variants
 ├── constants/
-│   ├── protein-data.ts         # Domain boundaries, mutation, colors, sequences
-│   └── codon-data.ts           # CDS sequence, WT/mutant codons, NMD sub-steps, narration scripts
+│   ├── protein-data.ts         # Domains, MUTATION (a Variant), colors, sequence, DGC partners
+│   ├── codon-data.ts           # Full NM_003919.3 CDS, exon map, deriveConsequence() engine, codon strips, NMD, narration
+│   ├── variant-catalog.ts      # Patient-merged typed Variant[] + stats
+│   └── variant-display.ts      # Significance/consequence colors + labels
 ├── components/
 │   ├── ProteinStructure3D.tsx  # 3Dmol.js protein viewer (AlphaFold PDB, WT vs Mutant + DGC subcomplex)
 │   ├── DGCLegend.tsx           # DGC subcomplex color legend
@@ -97,6 +104,13 @@ src/
 │   │   ├── index.ts            # Barrel export
 │   │   ├── SequenceViewer.tsx  # Linear sequence track container (scrollable, 437 residues)
 │   │   └── ResidueCell.tsx     # Memoized single amino acid cell
+│   ├── variants/
+│   │   ├── index.ts            # Barrel export
+│   │   ├── VariantsPanel.tsx   # Orchestrator for the Variants tab (lollipop + filters + list + detail)
+│   │   ├── LollipopMap.tsx     # Needle map of all variants along residues 1-437 (domain bands, sig color)
+│   │   ├── VariantFilters.tsx  # Search + consequence + significance filters
+│   │   ├── VariantList.tsx     # Filterable variant rows (sig badges, live-engine flag, capped 200)
+│   │   └── VariantDetail.tsx   # Selected-variant detail: derived consequence, domain, citations
 │   └── ui/
 │       ├── ToggleButton.tsx    # Shared toggle button
 │       └── InfoCard.tsx        # Shared info card
@@ -110,15 +124,17 @@ src/
 └── data/                       # PDB files (gitignored)
 ```
 
-## Status (as of 2026-05-13)
+## Status (as of 2026-07-15)
 
-Priorities 1–4 complete. Priority 5 mostly complete (production deployed, brand chrome applied, overflow hygiene done).
+Priorities 1–5 complete. **Multi-variant feature complete** (branch `feat/multi-variant`): the app is no longer hardcoded to a single mutation. A `Variant` model + `deriveConsequence()` engine over the full CDS drives every tab from a zustand-selected variant; a build-time catalog of 603 known SGCE variants (UniProt) powers a Variants tab (lollipop + filter + list + detail) with URL deep-linking. Foundation work alongside: dead-dep removal, a11y (focus ring, roving tabs, dvh), HGVS off-by-one fix (67 aa / 31 novel / 15.3%), striatal-DGC hedge.
 
 ### Deferred
 
-- **Conservation scores overlay** (Priority 2) — external data dependency (ConSurf). Not blocking.
-- **PWA / offline support** (Priority 5) — out of scope unless field-use is requested.
-- **High-res PNG/SVG export** (Priority 5) — useful for presentations; revisit when needed.
+- **Code-splitting** — bundle is ~1.16 MB (311 KB gzip) since the 603-variant catalog JSON ships in the main chunk; App imports it for deep-link hydration, so lazy-loading the Variants tab alone won't defer it. Revisit with a manualChunks/hydration split if size matters.
+- **Isoform framing** — the "+exon 11b brain isoform" narrative vs UniProt's 3-isoform annotation needs a literature check before editing (low harm as-is).
+- **Browse-only variants** — frameshift/indel catalog entries lack an exact CDS edit (not in the UniProt protein feed), so the engine can't recompute them; enrich from ClinVar c. notation to make them engine-ready.
+- **Conservation scores overlay** (Priority 2) — external data dependency (ConSurf). Newly valuable for missense interpretation.
+- **PWA / offline support**, **High-res PNG/SVG export** — revisit when field-use / presentations require.
 
 ## Design System
 
@@ -130,7 +146,7 @@ The subdomain wears the same brand chrome as `arcivus.ca/explorer`. Two color sy
 | Zone | Token source | Scope | File |
 |------|--------------|-------|------|
 | Marketing chrome (Nav, Footer, UI primitives) | OKLCH Tailwind classes (`text-ink`, `bg-surface`, `text-action`, etc.) | `src/components/layout/**`, `src/components/ui/Logo.tsx`, `src/components/ui/SocialLinks.tsx` | `tailwind.config.js` `theme.extend.colors` |
-| Explorer body (3D viewer, central dogma, imprinting, research, sequence) | Hex `COLORS` via inline style | Everything else under `src/components/` | `src/constants/protein-data.ts` |
+| Explorer body (3D viewer, central dogma, imprinting, research, sequence, variants) | Hex `COLORS` via inline style | Everything else under `src/components/` | `src/constants/protein-data.ts` (+ `variant-display.ts` for significance/consequence colors) |
 
 **Boundary rule**: never `import { COLORS }` inside the chrome zone; never use OKLCH classes (`text-ink`, etc.) inside the explorer-body zone. The boundary is enforced by `src/App.tsx` — Nav/Footer sit outside the dark `COLORS.bg` wrapper.
 
@@ -142,12 +158,13 @@ The subdomain wears the same brand chrome as `arcivus.ca/explorer`. Two color sy
 
 **Fonts** (loaded via Google Fonts in `index.html`): Plus Jakarta Sans (display), Inter (body), JetBrains Mono (scientific notation).
 
-**Overflow convention**: the `<header>` height is published to `--app-header-h` via a `ResizeObserver` in `App.tsx`. Tab-panel containers read `calc(100vh - var(--app-header-h) - 80px)` (80px = fixed Nav). SequenceViewer and CodonViewer hide their native scrollbars via the `.no-scrollbar` utility in `src/index.css` — fade indicators already communicate scroll affordance.
+**Overflow convention**: the `<header>` height is published to `--app-header-h` via a `ResizeObserver` in `App.tsx`. Tab-panel containers read `calc(100dvh - var(--app-header-h) - 80px)` (80px = fixed Nav; `dvh` stays stable under mobile browser chrome). SequenceViewer and CodonViewer hide their native scrollbars via the `.no-scrollbar` utility in `src/index.css` — fade indicators already communicate scroll affordance.
 
 ## Development Commands
 ```bash
 npm install           # Install dependencies
 npm run fetch-pdb     # Download AlphaFold PDB structure
+npm run fetch-variants # Rebuild the variant catalog from UniProt -> src/data/variant-catalog.json
 npm run dev           # Start dev server (localhost:3000)
 npm run build         # Production build
 npm test              # vitest run (unit/component)
@@ -157,9 +174,10 @@ npm run test:coverage # vitest run with coverage
 ## Key Dependencies
 - `3dmol`: Primary molecular visualization (AlphaFold PDB cartoon/ribbon rendering)
 - `framer-motion`: Animation library for central dogma steps
-- `zustand`: Lightweight state management (shared viewer state)
-- `recharts`: Charts for data visualization
-- `vitest` + `@testing-library/react`: Testing (337 tests across 37 files)
+- `zustand`: State management — the selected-variant store (`src/store/variantStore.ts`) drives all tabs
+- `vitest` + `@testing-library/react`: Testing (362 tests across 40 files)
+
+Note: `three`/`@react-three/*`/`recharts` were removed (unused). 3Dmol.js is the only viz lib.
 
 ## 3Dmol.js Integration Notes
 - 3Dmol viewer div MUST be separate from React overlay children (causes `removeChild` DOM errors)

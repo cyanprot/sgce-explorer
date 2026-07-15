@@ -93,7 +93,7 @@ export function CentralDogma() {
   const current = CENTRAL_DOGMA_STEPS[step];
 
   return (
-    <div data-testid="central-dogma" className="p-6 min-h-[calc(100vh-var(--app-header-h)-80px)] flex flex-col">
+    <div data-testid="central-dogma" className="p-6 min-h-[calc(100dvh-var(--app-header-h)-80px)] flex flex-col">
       {/* Playback controls */}
       <div className="flex flex-wrap gap-2 mb-5 items-center" role="toolbar" aria-label="Playback controls">
         <button

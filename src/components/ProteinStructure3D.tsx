@@ -6,7 +6,8 @@
  */
 import { useState, useRef, useEffect, useCallback } from "react";
 import * as $3Dmol from "3dmol";
-import { COLORS, DOMAINS, MUTATION, PROTEIN_LENGTH, GLYCOSYLATION_SITES, SGCE_DGC_OFFSET } from "@/constants/protein-data";
+import { COLORS, DOMAINS, PROTEIN_LENGTH, GLYCOSYLATION_SITES, SGCE_DGC_OFFSET } from "@/constants/protein-data";
+import { useVariantStore } from "@/store/variantStore";
 import { hexWithAlpha } from "@/utils/hexWithAlpha";
 import { ToggleButton } from "./ui/ToggleButton";
 import { useProteinData } from "@/hooks/useProteinData";
@@ -30,6 +31,8 @@ export function ProteinStructure3D() {
   const [hoveredResidue, setHoveredResidue] = useState<number | null>(null);
   const { pdbData, loading, error, retry } = useProteinData();
   const dgc = useDGCProteins(showDGC);
+  const variant = useVariantStore((s) => s.selected);
+  const consequence = useVariantStore((s) => s.consequence);
 
   const showMutant = viewMode === "mutant";
 
@@ -103,40 +106,44 @@ export function ProteinStructure3D() {
     };
 
     if (showMutant) {
+      const ptc = consequence.ptcPosition;
       // Hide everything first
       viewer.setStyle({}, { cartoon: { hidden: true } });
-      // Show residues 1-37 (WT region before frameshift)
+      // Show residues 1..aaPosition (WT region before the change)
       viewer.setStyle(
-        { resi: `1-${MUTATION.aaPosition}` } as any,
+        { resi: `1-${variant.aaPosition}` } as any,
         { cartoon: { color: hexToInt(COLORS.extracellular) } }
       );
-      // Show residues 38-68 (frameshifted region)
-      viewer.setStyle(
-        { resi: `${MUTATION.aaPosition + 1}-${MUTATION.truncationAt}` } as any,
-        { cartoon: { color: hexToInt(COLORS.mutant) } }
-      );
 
-      // STOP marker at truncation site
-      const stopAtoms = model.selectedAtoms({ resi: MUTATION.truncationAt, atom: "CA" });
-      if (stopAtoms.length > 0) {
-        const pos = { x: stopAtoms[0].x!, y: stopAtoms[0].y!, z: stopAtoms[0].z! };
-        viewer.addSphere({
-          center: pos,
-          radius: 2.0,
-          color: hexToInt(COLORS.danger) as any,
-          opacity: 0.7,
-        });
-        viewer.addLabel(`STOP (pos ${MUTATION.truncationAt})`, {
-          position: pos,
-          backgroundColor: hexToInt(COLORS.danger) as any,
-          backgroundOpacity: 0.8,
-          fontColor: "white",
-          fontSize: 12,
-        });
+      if (ptc != null) {
+        // Show the aberrant region up to the premature stop
+        viewer.setStyle(
+          { resi: `${variant.aaPosition + 1}-${ptc}` } as any,
+          { cartoon: { color: hexToInt(COLORS.mutant) } }
+        );
+
+        // STOP marker at truncation site
+        const stopAtoms = model.selectedAtoms({ resi: ptc, atom: "CA" });
+        if (stopAtoms.length > 0) {
+          const pos = { x: stopAtoms[0].x!, y: stopAtoms[0].y!, z: stopAtoms[0].z! };
+          viewer.addSphere({
+            center: pos,
+            radius: 2.0,
+            color: hexToInt(COLORS.danger) as any,
+            opacity: 0.7,
+          });
+          viewer.addLabel(`STOP (pos ${ptc})`, {
+            position: pos,
+            backgroundColor: hexToInt(COLORS.danger) as any,
+            backgroundOpacity: 0.8,
+            fontColor: "white",
+            fontSize: 12,
+          });
+        }
       }
 
-      // Mutation site marker (Val37)
-      const mutAtoms = model.selectedAtoms({ resi: MUTATION.aaPosition, atom: "CA" });
+      // Mutation site marker
+      const mutAtoms = model.selectedAtoms({ resi: variant.aaPosition, atom: "CA" });
       if (mutAtoms.length > 0) {
         const pos = { x: mutAtoms[0].x!, y: mutAtoms[0].y!, z: mutAtoms[0].z! };
         viewer.addSphere({
@@ -145,7 +152,7 @@ export function ProteinStructure3D() {
           color: hexToInt(COLORS.warn) as any,
           opacity: 0.7,
         });
-        viewer.addLabel(`Val${MUTATION.aaPosition} (frameshift)`, {
+        viewer.addLabel(`Res ${variant.aaPosition} (${consequence.truncated ? "frameshift" : "mutation"})`, {
           position: pos,
           backgroundColor: hexToInt(COLORS.warn) as any,
           backgroundOpacity: 0.8,
@@ -157,8 +164,8 @@ export function ProteinStructure3D() {
       // WT: full structure with domain coloring
       viewer.setStyle({}, { cartoon: { colorfunc: domainColorFunc } });
 
-      // Mutation site marker (Val37)
-      const mutAtoms = model.selectedAtoms({ resi: MUTATION.aaPosition, atom: "CA" });
+      // Mutation site marker
+      const mutAtoms = model.selectedAtoms({ resi: variant.aaPosition, atom: "CA" });
       if (mutAtoms.length > 0) {
         const pos = { x: mutAtoms[0].x!, y: mutAtoms[0].y!, z: mutAtoms[0].z! };
         viewer.addSphere({
@@ -167,7 +174,7 @@ export function ProteinStructure3D() {
           color: hexToInt(COLORS.danger) as any,
           opacity: 0.7,
         });
-        viewer.addLabel(`Val${MUTATION.aaPosition} (mutation)`, {
+        viewer.addLabel(`Res ${variant.aaPosition} (mutation)`, {
           position: pos,
           backgroundColor: hexToInt(COLORS.danger) as any,
           backgroundOpacity: 0.8,
@@ -256,7 +263,7 @@ export function ProteinStructure3D() {
 
     tryRender();
     return () => clearTimeout(retryTimer);
-  }, [pdbData, showMutant, showDGC, dgc.allLoaded, dgc.partners]);
+  }, [pdbData, showMutant, showDGC, dgc.allLoaded, dgc.partners, variant, consequence]);
 
   // Effect 3: Spin control
   useEffect(() => {
@@ -309,11 +316,11 @@ export function ProteinStructure3D() {
   }, []);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-var(--app-header-h)-80px)] min-h-[400px] sm:min-h-[500px]">
+    <div className="flex flex-col h-[calc(100dvh-var(--app-header-h)-80px)] min-h-[400px] sm:min-h-[500px]">
       {/* Controls */}
       <div className="flex gap-3 px-6 py-4 flex-wrap items-center">
         <ToggleButton active={!showMutant} onClick={() => setViewMode("wt")} label={`Wild-type (${PROTEIN_LENGTH} aa)`} color={COLORS.accent} />
-        <ToggleButton active={showMutant} onClick={() => setViewMode("mutant")} label={`Mutant (${MUTATION.truncationAt} aa)`} color={COLORS.danger} />
+        <ToggleButton active={showMutant} onClick={() => setViewMode("mutant")} label={`Mutant (${consequence.truncatedLength ?? consequence.mutantProteinLength} aa)`} color={COLORS.danger} />
         <div className="w-px h-6" style={{ background: COLORS.panelBorder }} />
         <ToggleButton active={showDGC} onClick={() => setShowDGC(!showDGC)} label="DGC Complex" color={COLORS.cytoplasmic} />
         <ToggleButton active={autoRotate} onClick={() => setAutoRotate(!autoRotate)} label="Auto-rotate" color={COLORS.success} />
@@ -343,7 +350,7 @@ export function ProteinStructure3D() {
         role="img"
         aria-label={
           showMutant
-            ? `3D protein structure: mutant ε-sarcoglycan, truncated at residue ${MUTATION.truncationAt} of ${PROTEIN_LENGTH} (${((MUTATION.truncationAt / PROTEIN_LENGTH) * 100).toFixed(1)}%), red region shows frameshift`
+            ? `3D protein structure: mutant ε-sarcoglycan, ${consequence.truncated ? `truncated at residue ${consequence.ptcPosition} of ${PROTEIN_LENGTH}` : `${consequence.mutantProteinLength} of ${PROTEIN_LENGTH} residues`} (${(consequence.fractionOfWT * 100).toFixed(1)}%), red region shows the altered residues`
             : `3D protein structure: wild-type ε-sarcoglycan, ${PROTEIN_LENGTH} amino acids. Blue: extracellular domain, amber: transmembrane helix, purple: cytoplasmic tail`
         }
       >
@@ -351,10 +358,11 @@ export function ProteinStructure3D() {
         <div className="absolute bottom-4 left-4 rounded-lg p-3 text-xs max-w-xs z-10 pointer-events-none" style={{ background: hexWithAlpha(COLORS.overlay, 0.7) }}>
           {showMutant ? (
             <>
-              <div className="font-bold mb-1" style={{ color: COLORS.danger }}>Truncated — {MUTATION.truncationAt} aa</div>
+              <div className="font-bold mb-1" style={{ color: COLORS.danger }}>{consequence.truncated ? `Truncated — ${consequence.truncatedLength} aa` : `Mutant — ${consequence.mutantProteinLength} aa`}</div>
               <div style={{ color: COLORS.textDim }} className="leading-relaxed">
-                {MUTATION.cNotation} → frameshift at Val{MUTATION.aaPosition} → PTC at pos {MUTATION.truncationAt}.
-                Only {((MUTATION.truncationAt / PROTEIN_LENGTH) * 100).toFixed(1)}% of WT. No TM/cyto domain → NMD + degradation.
+                {variant.cNotation} → {variant.consequence} at residue {variant.aaPosition}
+                {consequence.ptcPosition != null ? ` → PTC at pos ${consequence.ptcPosition}` : ""}.
+                {" "}{(consequence.fractionOfWT * 100).toFixed(1)}% of WT.{consequence.nmdPredicted ? " NMD + degradation." : ""}
               </div>
             </>
           ) : (
@@ -363,7 +371,7 @@ export function ProteinStructure3D() {
               <div style={{ color: COLORS.textDim }} className="leading-relaxed">
                 Type I TM glycoprotein. DGC sarcoglycan subcomplex member.
                 <span style={{ color: COLORS.success }}> ● </span>Asn200 glycosylation
-                <span style={{ color: COLORS.danger }}> ◆ </span>Val{MUTATION.aaPosition} mutation site
+                <span style={{ color: COLORS.danger }}> ◆ </span>Res {variant.aaPosition} mutation site
               </div>
             </>
           )}
@@ -396,10 +404,13 @@ export function ProteinStructure3D() {
 
 // ── Domain Bar sub-component ──
 function DomainBar({ showMutant }: { showMutant: boolean }) {
+  const variant = useVariantStore((s) => s.selected);
+  const consequence = useVariantStore((s) => s.consequence);
+  const truncLen = consequence.truncatedLength ?? consequence.mutantProteinLength;
   const domains = showMutant
     ? [
-        { pct: (MUTATION.aaPosition / MUTATION.truncationAt) * 100, color: COLORS.extracellular, label: "WT" },
-        { pct: ((MUTATION.truncationAt - MUTATION.aaPosition) / MUTATION.truncationAt) * 100, color: COLORS.mutant, label: "Frameshifted" },
+        { pct: ((variant.aaPosition - 1) / truncLen) * 100, color: COLORS.extracellular, label: "WT" },
+        { pct: (consequence.novelAaCount / truncLen) * 100, color: COLORS.mutant, label: "Frameshifted" },
       ]
     : [
         { pct: (317 / 437) * 100, color: COLORS.extracellular, label: "Extracellular" },
@@ -422,7 +433,7 @@ function DomainBar({ showMutant }: { showMutant: boolean }) {
         <span>1</span>
         {!showMutant && <span>317|318</span>}
         {!showMutant && <span>338|339</span>}
-        <span>{showMutant ? MUTATION.truncationAt : PROTEIN_LENGTH}</span>
+        <span>{showMutant ? truncLen : PROTEIN_LENGTH}</span>
       </div>
     </>
   );

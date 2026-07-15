@@ -18,6 +18,7 @@ export function ProgressBar({ activeStep, onStepClick }: ProgressBarProps) {
         return (
           <g
             key={i}
+            className="dogma-step"
             data-testid={`step-${i}`}
             onClick={() => onStepClick(i)}
             onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onStepClick(i); } }}
@@ -25,8 +26,18 @@ export function ProgressBar({ activeStep, onStepClick }: ProgressBarProps) {
             role="button"
             aria-label={`Step ${i + 1}${i === activeStep ? " (current)" : i < activeStep ? " (completed)" : ""}`}
             aria-pressed={i === activeStep}
-            style={{ cursor: "pointer", outline: "none" }}
+            style={{ cursor: "pointer" }}
           >
+            {/* keyboard focus ring (see .dogma-step:focus-visible in index.css) */}
+            <circle
+              className="dogma-step__ring"
+              cx={x}
+              cy={30}
+              r={18}
+              fill="none"
+              stroke="transparent"
+              strokeWidth={2.5}
+            />
             {i < TOTAL - 1 && (
               <motion.line
                 x1={x + 16}
@@ -40,6 +51,7 @@ export function ProgressBar({ activeStep, onStepClick }: ProgressBarProps) {
               />
             )}
             <motion.circle
+              className="dogma-step__dot"
               cx={x}
               cy={30}
               fill={active ? COLORS.accent : done ? COLORS.accentDim : COLORS.panel}
