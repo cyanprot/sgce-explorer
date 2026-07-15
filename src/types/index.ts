@@ -99,6 +99,6 @@ export interface NarrationScript {
   text: string;
 }
 
-export type TabId = "structure" | "dogma" | "imprinting" | "research";
+export type TabId = "structure" | "variants" | "dogma" | "imprinting" | "research";
 export type ViewMode = "wt" | "mutant";
 export type AlleleHighlight = "both" | "paternal" | "maternal";

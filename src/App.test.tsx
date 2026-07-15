@@ -32,9 +32,10 @@ vi.mock("@/hooks/useProteinData", () => ({
 }));
 
 describe("App", () => {
-  it("renders all 4 tab buttons with correct labels", () => {
+  it("renders all 5 tab buttons with correct labels", () => {
     render(<App />);
     expect(screen.getByText("3D Structure")).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Variants" })).toBeInTheDocument();
     expect(screen.getByText("Central Dogma")).toBeInTheDocument();
     expect(screen.getByText("Imprinting")).toBeInTheDocument();
     expect(screen.getByText("Research")).toBeInTheDocument();
@@ -117,7 +118,7 @@ describe("App", () => {
 
   it("mutation badge is visible on all viewports with accessible full notation", () => {
     render(<App />);
-    const badge = screen.getByLabelText(/Mutation:/);
+    const badge = screen.getByLabelText(/Selected variant:/);
     // Badge is always shown (compact on mobile, full on desktop) — no sr-only wrapper
     expect(badge.className).not.toMatch(/sr-only/);
     expect(badge.getAttribute("aria-label")).toMatch(/c\.108dup/);

@@ -3,6 +3,7 @@ import { ProteinStructure3D } from "@/components/ProteinStructure3D";
 import { CentralDogma } from "@/components/CentralDogma";
 import { ImprintingPanel } from "@/components/ImprintingPanel";
 import { ResearchPanel } from "@/components/ResearchPanel";
+import { VariantsPanel } from "@/components/variants";
 import Nav from "@/components/layout/Nav";
 import Footer from "@/components/layout/Footer";
 import { COLORS } from "@/constants/protein-data";
@@ -11,6 +12,7 @@ import type { TabId } from "@/types";
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "structure", label: "3D Structure" },
+  { id: "variants", label: "Variants" },
   { id: "dogma", label: "Central Dogma" },
   { id: "imprinting", label: "Imprinting" },
   { id: "research", label: "Research" },
@@ -77,16 +79,22 @@ export default function App() {
               <h1 className="text-2xl font-bold tracking-tight m-0">
                 SGCE <span style={{ color: COLORS.accent }}>ε-Sarcoglycan</span> Explorer
               </h1>
-              <span
-                className="inline-flex text-xs font-mono px-2 py-0.5 rounded"
-                style={{ color: COLORS.danger, background: COLORS.dangerDim }}
-                aria-label={`Mutation: ${variant.cNotation}, ${variant.notation}`}
+              <button
+                onClick={() => setTab("variants")}
+                className="inline-flex items-center gap-1 text-xs font-mono px-2 py-0.5 rounded cursor-pointer"
+                style={{
+                  color: variant.isPatient ? COLORS.danger : COLORS.accent,
+                  background: variant.isPatient ? COLORS.dangerDim : COLORS.accentDim,
+                }}
+                aria-label={`Selected variant: ${variant.cNotation}, ${variant.notation}. Click to browse all variants.`}
+                title="Browse all SGCE variants"
               >
-                <span className="sm:hidden">{variant.cNotation}</span>
+                <span className="sm:hidden">{variant.cNotation || variant.notation}</span>
                 <span className="hidden sm:inline">
-                  {variant.cNotation} · {variant.notation}
+                  {variant.cNotation ? `${variant.cNotation} · ` : ""}{variant.notation}
                 </span>
-              </span>
+                <span aria-hidden="true">▾</span>
+              </button>
             </div>
             <p className="text-xs mb-4" style={{ color: COLORS.textDim }}>
               Interactive visualization — DYT-SGCE with maternal imprinting → complete loss of function
@@ -128,6 +136,14 @@ export default function App() {
               hidden={tab !== "structure"}
             >
               {tab === "structure" && <ProteinStructure3D />}
+            </div>
+            <div
+              id="tabpanel-variants"
+              role="tabpanel"
+              aria-labelledby="tab-variants"
+              hidden={tab !== "variants"}
+            >
+              {tab === "variants" && <VariantsPanel onViewStructure={() => setTab("structure")} />}
             </div>
             <div
               id="tabpanel-dogma"
