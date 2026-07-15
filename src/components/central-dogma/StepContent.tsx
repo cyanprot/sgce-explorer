@@ -1,6 +1,5 @@
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { COLORS } from "@/constants/protein-data";
-import { useVariantStore } from "@/store/variantStore";
+import { COLORS, MUTATION } from "@/constants/protein-data";
 import { hexWithAlpha } from "@/utils/hexWithAlpha";
 import type { CentralDogmaStep } from "@/types";
 
@@ -8,9 +7,12 @@ interface StepContentProps {
   step: CentralDogmaStep;
 }
 
+// The central-dogma walkthrough narrates the patient's disease mechanism, so the
+// step prose (CENTRAL_DOGMA_STEPS) is fixed to c.108dup. Pin the mutation badge to
+// the same variant rather than the store selection, so header and body never disagree.
 export function StepContent({ step }: StepContentProps) {
   const reduce = useReducedMotion();
-  const variant = useVariantStore((s) => s.selected);
+  const variant = MUTATION;
   return (
     <AnimatePresence initial={false} mode="popLayout">
       <motion.div

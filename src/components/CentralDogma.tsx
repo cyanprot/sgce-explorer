@@ -10,7 +10,8 @@
  * - AudioNarration: Web Speech API toggle
  */
 import { useState, useEffect, useRef, useCallback } from "react";
-import { COLORS, CENTRAL_DOGMA_STEPS } from "@/constants/protein-data";
+import { COLORS, CENTRAL_DOGMA_STEPS, MUTATION } from "@/constants/protein-data";
+import { useVariantStore } from "@/store/variantStore";
 import { ProgressBar } from "./central-dogma/ProgressBar";
 import { StepContent } from "./central-dogma/StepContent";
 import { CodonViewer } from "./central-dogma/CodonViewer";
@@ -91,9 +92,23 @@ export function CentralDogma() {
   }, [playing]);
 
   const current = CENTRAL_DOGMA_STEPS[step];
+  const selected = useVariantStore((s) => s.selected);
+  const offPatient = !selected.isPatient;
 
   return (
     <div data-testid="central-dogma" className="p-6 min-h-[calc(100dvh-var(--app-header-h)-80px)] flex flex-col">
+      {offPatient && (
+        <div
+          className="rounded-lg px-4 py-2 mb-4 text-xs border"
+          style={{ background: COLORS.accentDim, borderColor: COLORS.panelBorder, color: COLORS.text }}
+          role="note"
+        >
+          This walkthrough follows the patient's variant{" "}
+          <span className="font-mono">{MUTATION.cNotation}</span> ({MUTATION.notation}).
+          Your current selection <span className="font-mono">{selected.cNotation || selected.notation}</span> is
+          shown in the Structure and Variants tabs.
+        </div>
+      )}
       {/* Playback controls */}
       <div className="flex flex-wrap gap-2 mb-5 items-center" role="toolbar" aria-label="Playback controls">
         <button

@@ -57,6 +57,9 @@ export function ProgressBar({ activeStep, onStepClick }: ProgressBarProps) {
               fill={active ? COLORS.accent : done ? COLORS.accentDim : COLORS.panel}
               stroke={active ? COLORS.accent : done ? COLORS.accent : COLORS.panelBorder}
               strokeWidth={2}
+              // Seed r so framer-motion never animates from an undefined radius
+              // (otherwise SVG logs `<circle> attribute r: Expected length, "undefined"`).
+              initial={{ r: active ? 14 : 10 }}
               animate={{ r: active ? 14 : 10 }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
             />

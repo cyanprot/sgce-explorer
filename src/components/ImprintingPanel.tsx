@@ -5,15 +5,17 @@
  * and why paternal mutation = complete loss of function.
  */
 import { useState } from "react";
-import { COLORS } from "@/constants/protein-data";
-import { useVariantStore } from "@/store/variantStore";
+import { COLORS, MUTATION } from "@/constants/protein-data";
 import { ToggleButton } from "./ui/ToggleButton";
 import { InfoCard } from "./ui/InfoCard";
 import type { AlleleHighlight } from "@/types";
 
+// The imprinting mechanism + consequence flow describe the patient's frameshift
+// (c.108dup -> PTC -> NMD -> complete LoF). Pin to the patient variant rather than
+// the store selection, so a selected missense/benign isn't shown on a frameshift path.
 export function ImprintingPanel() {
   const [highlight, setHighlight] = useState<AlleleHighlight>("both");
-  const variant = useVariantStore((s) => s.selected);
+  const variant = MUTATION;
 
   return (
     <div className="p-6">

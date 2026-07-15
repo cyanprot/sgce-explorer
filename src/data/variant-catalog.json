@@ -71,7 +71,7 @@
   },
   {
     "id": "L3F",
-    "cNotation": "c.9G>C",
+    "cNotation": "",
     "notation": "p.L3F",
     "cdsPosition": 9,
     "aaPosition": 3,
@@ -209,7 +209,7 @@
   },
   {
     "id": "W6C",
-    "cNotation": "c.18G>C",
+    "cNotation": "",
     "notation": "p.W6C",
     "cdsPosition": 18,
     "aaPosition": 6,
@@ -249,7 +249,7 @@
   },
   {
     "id": "W7*",
-    "cNotation": "c.20G>A",
+    "cNotation": "",
     "notation": "p.W7*",
     "cdsPosition": 20,
     "aaPosition": 7,
@@ -276,7 +276,7 @@
   },
   {
     "id": "W7C",
-    "cNotation": "c.21G>C",
+    "cNotation": "",
     "notation": "p.W7C",
     "cdsPosition": 21,
     "aaPosition": 7,
@@ -323,7 +323,7 @@
   },
   {
     "id": "W7R",
-    "cNotation": "c.19T>A",
+    "cNotation": "",
     "notation": "p.W7R",
     "cdsPosition": 19,
     "aaPosition": 7,
@@ -347,7 +347,7 @@
   },
   {
     "id": "E8D",
-    "cNotation": "c.24G>C",
+    "cNotation": "",
     "notation": "p.E8D",
     "cdsPosition": 24,
     "aaPosition": 8,
@@ -464,7 +464,7 @@
   },
   {
     "id": "D11E",
-    "cNotation": "c.33C>A",
+    "cNotation": "",
     "notation": "p.D11E",
     "cdsPosition": 33,
     "aaPosition": 11,
@@ -599,7 +599,7 @@
   },
   {
     "id": "W15*",
-    "cNotation": "c.44G>A",
+    "cNotation": "",
     "notation": "p.W15*",
     "cdsPosition": 44,
     "aaPosition": 15,
@@ -738,7 +738,7 @@
   },
   {
     "id": "G21R",
-    "cNotation": "c.61G>A",
+    "cNotation": "",
     "notation": "p.G21R",
     "cdsPosition": 61,
     "aaPosition": 21,
@@ -965,7 +965,7 @@
   },
   {
     "id": "T30S",
-    "cNotation": "c.88A>T",
+    "cNotation": "",
     "notation": "p.T30S",
     "cdsPosition": 88,
     "aaPosition": 30,
@@ -1144,7 +1144,7 @@
   },
   {
     "id": "Y38*",
-    "cNotation": "c.114C>A",
+    "cNotation": "",
     "notation": "p.Y38*",
     "cdsPosition": 114,
     "aaPosition": 38,
@@ -1294,7 +1294,7 @@
     ]
   },
   {
-    "id": "K43fs",
+    "id": "K43fs_rs1804394258",
     "cNotation": "",
     "notation": "p.?43",
     "cdsPosition": 127,
@@ -1575,7 +1575,7 @@
   },
   {
     "id": "N49K",
-    "cNotation": "c.147T>A",
+    "cNotation": "",
     "notation": "p.N49K",
     "cdsPosition": 147,
     "aaPosition": 49,
@@ -1668,7 +1668,7 @@
   },
   {
     "id": "Y51*",
-    "cNotation": "c.153C>A",
+    "cNotation": "",
     "notation": "p.Y51*",
     "cdsPosition": 153,
     "aaPosition": 51,
@@ -1691,7 +1691,7 @@
   },
   {
     "id": "S53*",
-    "cNotation": "c.158C>A",
+    "cNotation": "",
     "notation": "p.S53*",
     "cdsPosition": 158,
     "aaPosition": 53,
@@ -1828,7 +1828,7 @@
   },
   {
     "id": "F58L",
-    "cNotation": "c.172T>C",
+    "cNotation": "",
     "notation": "p.F58L",
     "cdsPosition": 172,
     "aaPosition": 58,
@@ -1998,7 +1998,7 @@
     ]
   },
   {
-    "id": "E65fs",
+    "id": "E65fs_rs2116972578",
     "cNotation": "",
     "notation": "p.?65",
     "cdsPosition": 193,
@@ -2085,7 +2085,7 @@
   },
   {
     "id": "Y66*",
-    "cNotation": "c.198T>A",
+    "cNotation": "",
     "notation": "p.Y66*",
     "cdsPosition": 198,
     "aaPosition": 66,
@@ -2128,7 +2128,7 @@
   },
   {
     "id": "G69R",
-    "cNotation": "c.205G>A",
+    "cNotation": "",
     "notation": "p.G69R",
     "cdsPosition": 205,
     "aaPosition": 69,
@@ -2151,7 +2151,7 @@
   },
   {
     "id": "E70D",
-    "cNotation": "c.210A>C",
+    "cNotation": "",
     "notation": "p.E70D",
     "cdsPosition": 210,
     "aaPosition": 70,
@@ -2197,7 +2197,7 @@
   },
   {
     "id": "F71L",
-    "cNotation": "c.211T>C",
+    "cNotation": "",
     "notation": "p.F71L",
     "cdsPosition": 211,
     "aaPosition": 71,
@@ -2440,7 +2440,7 @@
   },
   {
     "id": "E79D",
-    "cNotation": "c.237G>C",
+    "cNotation": "",
     "notation": "p.E79D",
     "cdsPosition": 237,
     "aaPosition": 79,
@@ -2527,7 +2527,7 @@
   },
   {
     "id": "N82K",
-    "cNotation": "c.246T>A",
+    "cNotation": "",
     "notation": "p.N82K",
     "cdsPosition": 246,
     "aaPosition": 82,
@@ -2570,7 +2570,7 @@
     ]
   },
   {
-    "id": "I85fs",
+    "id": "I85fs_rs2485169694",
     "cNotation": "",
     "notation": "p.?85",
     "cdsPosition": 253,
@@ -2630,7 +2630,7 @@
   },
   {
     "id": "F87L",
-    "cNotation": "c.259T>C",
+    "cNotation": "",
     "notation": "p.F87L",
     "cdsPosition": 259,
     "aaPosition": 87,
@@ -2739,7 +2739,7 @@
   },
   {
     "id": "N90K",
-    "cNotation": "c.270T>A",
+    "cNotation": "",
     "notation": "p.N90K",
     "cdsPosition": 270,
     "aaPosition": 90,
@@ -2760,7 +2760,7 @@
   },
   {
     "id": "L91*",
-    "cNotation": "c.272T>A",
+    "cNotation": "",
     "notation": "p.L91*",
     "cdsPosition": 272,
     "aaPosition": 91,
@@ -2804,7 +2804,7 @@
   },
   {
     "id": "M92L",
-    "cNotation": "c.274A>C",
+    "cNotation": "",
     "notation": "p.M92L",
     "cdsPosition": 274,
     "aaPosition": 92,
@@ -2918,7 +2918,7 @@
   },
   {
     "id": "D96E",
-    "cNotation": "c.288C>A",
+    "cNotation": "",
     "notation": "p.D96E",
     "cdsPosition": 288,
     "aaPosition": 96,
@@ -3021,7 +3021,7 @@
   },
   {
     "id": "W100*",
-    "cNotation": "c.299G>A",
+    "cNotation": "",
     "notation": "p.W100*",
     "cdsPosition": 299,
     "aaPosition": 100,
@@ -3064,7 +3064,7 @@
   },
   {
     "id": "W100C",
-    "cNotation": "c.300G>C",
+    "cNotation": "",
     "notation": "p.W100C",
     "cdsPosition": 300,
     "aaPosition": 100,
@@ -3087,7 +3087,7 @@
   },
   {
     "id": "W100R",
-    "cNotation": "c.298T>A",
+    "cNotation": "",
     "notation": "p.W100R",
     "cdsPosition": 298,
     "aaPosition": 100,
@@ -3363,7 +3363,7 @@
   },
   {
     "id": "S110R",
-    "cNotation": "c.328A>C",
+    "cNotation": "",
     "notation": "p.S110R",
     "cdsPosition": 328,
     "aaPosition": 110,
@@ -3383,7 +3383,7 @@
   },
   {
     "id": "G112R",
-    "cNotation": "c.334G>A",
+    "cNotation": "",
     "notation": "p.G112R",
     "cdsPosition": 334,
     "aaPosition": 112,
@@ -3519,7 +3519,7 @@
   },
   {
     "id": "E121D",
-    "cNotation": "c.363A>C",
+    "cNotation": "",
     "notation": "p.E121D",
     "cdsPosition": 363,
     "aaPosition": 121,
@@ -3585,7 +3585,7 @@
   },
   {
     "id": "G124R",
-    "cNotation": "c.370G>A",
+    "cNotation": "",
     "notation": "p.G124R",
     "cdsPosition": 370,
     "aaPosition": 124,
@@ -3836,7 +3836,7 @@
   },
   {
     "id": "Y134*",
-    "cNotation": "c.402C>A",
+    "cNotation": "",
     "notation": "p.Y134*",
     "cdsPosition": 402,
     "aaPosition": 134,
@@ -4057,7 +4057,7 @@
   },
   {
     "id": "T138S",
-    "cNotation": "c.412A>T",
+    "cNotation": "",
     "notation": "p.T138S",
     "cdsPosition": 412,
     "aaPosition": 138,
@@ -4082,7 +4082,7 @@
   },
   {
     "id": "F139L",
-    "cNotation": "c.415T>C",
+    "cNotation": "",
     "notation": "p.F139L",
     "cdsPosition": 415,
     "aaPosition": 139,
@@ -4140,7 +4140,7 @@
   },
   {
     "id": "R143S",
-    "cNotation": "c.429G>C",
+    "cNotation": "",
     "notation": "p.R143S",
     "cdsPosition": 429,
     "aaPosition": 143,
@@ -4256,7 +4256,7 @@
     ]
   },
   {
-    "id": "I147fs",
+    "id": "I147fs_rs1584663596",
     "cNotation": "",
     "notation": "p.?147",
     "cdsPosition": 439,
@@ -4320,7 +4320,7 @@
     ]
   },
   {
-    "id": "I148fs",
+    "id": "I148del_rs2485134515",
     "cNotation": "",
     "notation": "p.?148",
     "cdsPosition": 442,
@@ -4429,7 +4429,7 @@
     ]
   },
   {
-    "id": "I150fs",
+    "id": "I150fs_rs2116918021",
     "cNotation": "",
     "notation": "p.?150",
     "cdsPosition": 448,
@@ -4540,7 +4540,7 @@
   },
   {
     "id": "E154D",
-    "cNotation": "c.462A>C",
+    "cNotation": "",
     "notation": "p.E154D",
     "cdsPosition": 462,
     "aaPosition": 154,
@@ -4623,7 +4623,7 @@
     ]
   },
   {
-    "id": "P157fs",
+    "id": "P157fs_rs1554353106",
     "cNotation": "",
     "notation": "p.?157",
     "cdsPosition": 469,
@@ -4737,7 +4737,7 @@
     ]
   },
   {
-    "id": "A162fs",
+    "id": "A162fs_rs2485109812",
     "cNotation": "",
     "notation": "p.?162",
     "cdsPosition": 484,
@@ -4822,7 +4822,7 @@
   },
   {
     "id": "F164L",
-    "cNotation": "c.490T>C",
+    "cNotation": "",
     "notation": "p.F164L",
     "cdsPosition": 490,
     "aaPosition": 164,
@@ -4843,7 +4843,7 @@
     ]
   },
   {
-    "id": "F165fs",
+    "id": "F165fs_rs2116882526",
     "cNotation": "",
     "notation": "p.?165",
     "cdsPosition": 493,
@@ -4972,7 +4972,7 @@
   },
   {
     "id": "N168K",
-    "cNotation": "c.504T>A",
+    "cNotation": "",
     "notation": "p.N168K",
     "cdsPosition": 504,
     "aaPosition": 168,
@@ -5016,7 +5016,7 @@
   },
   {
     "id": "M169I",
-    "cNotation": "c.507G>A",
+    "cNotation": "",
     "notation": "p.M169I",
     "cdsPosition": 507,
     "aaPosition": 169,
@@ -5038,7 +5038,7 @@
   },
   {
     "id": "M169L",
-    "cNotation": "c.505A>C",
+    "cNotation": "",
     "notation": "p.M169L",
     "cdsPosition": 505,
     "aaPosition": 169,
@@ -5098,7 +5098,7 @@
   },
   {
     "id": "V171L",
-    "cNotation": "c.511G>C",
+    "cNotation": "",
     "notation": "p.V171L",
     "cdsPosition": 511,
     "aaPosition": 171,
@@ -5137,7 +5137,7 @@
     ]
   },
   {
-    "id": "M174fs",
+    "id": "M174fs_rs2116882157",
     "cNotation": "",
     "notation": "p.?174",
     "cdsPosition": 520,
@@ -5376,7 +5376,7 @@
   },
   {
     "id": "G181R",
-    "cNotation": "c.541G>A",
+    "cNotation": "",
     "notation": "p.G181R",
     "cdsPosition": 541,
     "aaPosition": 181,
@@ -5415,7 +5415,7 @@
     ]
   },
   {
-    "id": "F183fs",
+    "id": "F183fs_rs1554352952",
     "cNotation": "",
     "notation": "p.?183",
     "cdsPosition": 547,
@@ -5434,7 +5434,7 @@
   },
   {
     "id": "F183L",
-    "cNotation": "c.547T>C",
+    "cNotation": "",
     "notation": "p.F183L",
     "cdsPosition": 547,
     "aaPosition": 183,
@@ -5508,7 +5508,7 @@
     ]
   },
   {
-    "id": "G185fs",
+    "id": "G185fs_rs1584638555",
     "cNotation": "",
     "notation": "p.?185",
     "cdsPosition": 553,
@@ -5617,7 +5617,7 @@
     ]
   },
   {
-    "id": "W191fs",
+    "id": "W191fs_rs2116881558",
     "cNotation": "",
     "notation": "p.?191",
     "cdsPosition": 571,
@@ -5676,7 +5676,7 @@
     ]
   },
   {
-    "id": "E194fs",
+    "id": "E194fs_rs2485108635",
     "cNotation": "",
     "notation": "p.?194",
     "cdsPosition": 580,
@@ -5689,7 +5689,21 @@
     "xrefs": [
       "ClinGen:CA2580077865",
       "ClinVar:RCV003034993",
-      "dbSNP:rs2485108635",
+      "dbSNP:rs2485108635"
+    ]
+  },
+  {
+    "id": "E194fs_rs2116881481",
+    "cNotation": "",
+    "notation": "p.?194",
+    "cdsPosition": 580,
+    "aaPosition": 194,
+    "consequence": "frameshift",
+    "significance": "pathogenic",
+    "wildType": "E",
+    "mutatedType": "",
+    "source": "UniProt",
+    "xrefs": [
       "ClinGen:CA2573142501",
       "ClinVar:RCV001965458",
       "dbSNP:rs2116881481"
@@ -5927,7 +5941,7 @@
     ]
   },
   {
-    "id": "T202fs",
+    "id": "T202fs_rs2116881189",
     "cNotation": "",
     "notation": "p.?202",
     "cdsPosition": 604,
@@ -5965,7 +5979,7 @@
     ]
   },
   {
-    "id": "A204fs",
+    "id": "A204fs_rs1584637958",
     "cNotation": "",
     "notation": "p.?204",
     "cdsPosition": 610,
@@ -6048,7 +6062,7 @@
     ]
   },
   {
-    "id": "R207fs",
+    "id": "R207fs_rs863223285",
     "cNotation": "",
     "notation": "p.?207",
     "cdsPosition": 619,
@@ -6061,7 +6075,21 @@
     "xrefs": [
       "ClinGen:CA278863",
       "ClinVar:RCV000006135",
-      "dbSNP:rs863223285",
+      "dbSNP:rs863223285"
+    ]
+  },
+  {
+    "id": "R207fs_rs1554352819",
+    "cNotation": "",
+    "notation": "p.?207",
+    "cdsPosition": 619,
+    "aaPosition": 207,
+    "consequence": "frameshift",
+    "significance": "pathogenic",
+    "wildType": "R",
+    "mutatedType": "",
+    "source": "UniProt",
+    "xrefs": [
       "ClinGen:CA658657698",
       "ClinVar:RCV000516288",
       "ClinVar:RCV000534756",
@@ -6069,7 +6097,7 @@
     ]
   },
   {
-    "id": "G208fs",
+    "id": "G208fs_rs2116880618",
     "cNotation": "",
     "notation": "p.?208",
     "cdsPosition": 622,
@@ -6107,7 +6135,7 @@
   },
   {
     "id": "R210S",
-    "cNotation": "c.630G>C",
+    "cNotation": "",
     "notation": "p.R210S",
     "cdsPosition": 630,
     "aaPosition": 210,
@@ -6150,7 +6178,7 @@
     ]
   },
   {
-    "id": "P214fs",
+    "id": "P214fs_rs2485107870",
     "cNotation": "",
     "notation": "p.?214",
     "cdsPosition": 640,
@@ -6233,7 +6261,7 @@
   },
   {
     "id": "D217E",
-    "cNotation": "c.651C>A",
+    "cNotation": "",
     "notation": "p.D217E",
     "cdsPosition": 651,
     "aaPosition": 217,
@@ -6319,7 +6347,7 @@
     ]
   },
   {
-    "id": "E220fs",
+    "id": "E220fs_rs2116880537",
     "cNotation": "",
     "notation": "p.?220",
     "cdsPosition": 658,
@@ -6337,7 +6365,7 @@
   },
   {
     "id": "E220D",
-    "cNotation": "c.660G>C",
+    "cNotation": "",
     "notation": "p.E220D",
     "cdsPosition": 660,
     "aaPosition": 220,
@@ -6422,7 +6450,7 @@
     ]
   },
   {
-    "id": "V222fs",
+    "id": "V222fs_rs1562812370",
     "cNotation": "",
     "notation": "p.?222",
     "cdsPosition": 664,
@@ -6465,7 +6493,7 @@
     ]
   },
   {
-    "id": "Y223fs",
+    "id": "Y223fs_rs1057519246",
     "cNotation": "",
     "notation": "p.?223",
     "cdsPosition": 667,
@@ -6701,7 +6729,7 @@
     ]
   },
   {
-    "id": "P231fs",
+    "id": "P231fs_rs1562812136",
     "cNotation": "",
     "notation": "p.?231",
     "cdsPosition": 691,
@@ -6763,7 +6791,7 @@
     ]
   },
   {
-    "id": "C235fs",
+    "id": "C235fs_rs2116724268",
     "cNotation": "",
     "notation": "p.?235",
     "cdsPosition": 703,
@@ -6776,7 +6804,21 @@
     "xrefs": [
       "ClinGen:CA2573142510",
       "ClinVar:RCV001969833",
-      "dbSNP:rs2116724268",
+      "dbSNP:rs2116724268"
+    ]
+  },
+  {
+    "id": "C235fs_rs2484974735",
+    "cNotation": "",
+    "notation": "p.?235",
+    "cdsPosition": 703,
+    "aaPosition": 235,
+    "consequence": "frameshift",
+    "significance": "pathogenic",
+    "wildType": "C",
+    "mutatedType": "",
+    "source": "UniProt",
+    "xrefs": [
       "ClinGen:CA2580077902",
       "ClinVar:RCV002468787",
       "dbSNP:rs2484974735"
@@ -6784,7 +6826,7 @@
   },
   {
     "id": "C235S",
-    "cNotation": "c.703T>A",
+    "cNotation": "",
     "notation": "p.C235S",
     "cdsPosition": 703,
     "aaPosition": 235,
@@ -6808,7 +6850,7 @@
   },
   {
     "id": "L236*",
-    "cNotation": "c.707T>A",
+    "cNotation": "",
     "notation": "p.L236*",
     "cdsPosition": 707,
     "aaPosition": 236,
@@ -6899,7 +6941,7 @@
     ]
   },
   {
-    "id": "E238fs",
+    "id": "E238fs_rs1562811980",
     "cNotation": "",
     "notation": "p.?238",
     "cdsPosition": 712,
@@ -7033,7 +7075,7 @@
   },
   {
     "id": "E240D",
-    "cNotation": "c.720A>C",
+    "cNotation": "",
     "notation": "p.E240D",
     "cdsPosition": 720,
     "aaPosition": 240,
@@ -7096,7 +7138,7 @@
     ]
   },
   {
-    "id": "N241fs",
+    "id": "N241fs_rs1554345179",
     "cNotation": "",
     "notation": "p.?241",
     "cdsPosition": 721,
@@ -7135,7 +7177,7 @@
     ]
   },
   {
-    "id": "P242fs",
+    "id": "P242fs_rs2116723835",
     "cNotation": "",
     "notation": "p.?242",
     "cdsPosition": 724,
@@ -7199,7 +7241,7 @@
   },
   {
     "id": "Q243H",
-    "cNotation": "c.729G>C",
+    "cNotation": "",
     "notation": "p.Q243H",
     "cdsPosition": 729,
     "aaPosition": 243,
@@ -7243,7 +7285,7 @@
   },
   {
     "id": "N244K",
-    "cNotation": "c.732T>A",
+    "cNotation": "",
     "notation": "p.N244K",
     "cdsPosition": 732,
     "aaPosition": 244,
@@ -7263,7 +7305,7 @@
     ]
   },
   {
-    "id": "Q245fs",
+    "id": "Q245fs_rs2484973932",
     "cNotation": "",
     "notation": "p.?245",
     "cdsPosition": 733,
@@ -7304,7 +7346,7 @@
   },
   {
     "id": "R247S",
-    "cNotation": "c.741A>C",
+    "cNotation": "",
     "notation": "p.R247S",
     "cdsPosition": 741,
     "aaPosition": 247,
@@ -7346,7 +7388,7 @@
     ]
   },
   {
-    "id": "C248fs",
+    "id": "C248fs_rs2484973845",
     "cNotation": "",
     "notation": "p.?248",
     "cdsPosition": 742,
@@ -7364,7 +7406,7 @@
   },
   {
     "id": "C248S",
-    "cNotation": "c.742T>A",
+    "cNotation": "",
     "notation": "p.C248S",
     "cdsPosition": 742,
     "aaPosition": 248,
@@ -7634,7 +7676,7 @@
     ]
   },
   {
-    "id": "I256fs",
+    "id": "I256fs_rs1554345124",
     "cNotation": "",
     "notation": "p.?256",
     "cdsPosition": 766,
@@ -7723,7 +7765,7 @@
   },
   {
     "id": "C258S",
-    "cNotation": "c.772T>A",
+    "cNotation": "",
     "notation": "p.C258S",
     "cdsPosition": 772,
     "aaPosition": 258,
@@ -7746,7 +7788,7 @@
   },
   {
     "id": "D259E",
-    "cNotation": "c.777T>A",
+    "cNotation": "",
     "notation": "p.D259E",
     "cdsPosition": 777,
     "aaPosition": 259,
@@ -7833,7 +7875,7 @@
     ]
   },
   {
-    "id": "K261fs",
+    "id": "K261fs_rs1189469219",
     "cNotation": "",
     "notation": "p.?261",
     "cdsPosition": 781,
@@ -7850,7 +7892,7 @@
     ]
   },
   {
-    "id": "F262fs",
+    "id": "F262fs_rs1189469219",
     "cNotation": "",
     "notation": "p.?262",
     "cdsPosition": 784,
@@ -7868,7 +7910,7 @@
     ]
   },
   {
-    "id": "R263fs",
+    "id": "R263fs_rs1584546238",
     "cNotation": "",
     "notation": "p.?263",
     "cdsPosition": 787,
@@ -7990,7 +8032,7 @@
     ]
   },
   {
-    "id": "Q265fs",
+    "id": "Q265fs_rs1554345077",
     "cNotation": "",
     "notation": "p.?265",
     "cdsPosition": 793,
@@ -8030,7 +8072,7 @@
     ]
   },
   {
-    "id": "Y267fs",
+    "id": "Y267fs_rs1799563986",
     "cNotation": "",
     "notation": "p.?267",
     "cdsPosition": 799,
@@ -8072,7 +8114,7 @@
     ]
   },
   {
-    "id": "I268fs",
+    "id": "I268fs_rs2116722561",
     "cNotation": "",
     "notation": "p.?268",
     "cdsPosition": 802,
@@ -8130,7 +8172,7 @@
   },
   {
     "id": "D269E",
-    "cNotation": "c.807C>A",
+    "cNotation": "",
     "notation": "p.D269E",
     "cdsPosition": 807,
     "aaPosition": 269,
@@ -8150,7 +8192,7 @@
   },
   {
     "id": "W270*",
-    "cNotation": "c.809G>A",
+    "cNotation": "",
     "notation": "p.W270*",
     "cdsPosition": 809,
     "aaPosition": 270,
@@ -8177,7 +8219,7 @@
   },
   {
     "id": "W270R",
-    "cNotation": "c.808T>A",
+    "cNotation": "",
     "notation": "p.W270R",
     "cdsPosition": 808,
     "aaPosition": 270,
@@ -8196,7 +8238,7 @@
     ]
   },
   {
-    "id": "C271fs",
+    "id": "C271fs_rs2484972450",
     "cNotation": "",
     "notation": "p.?271",
     "cdsPosition": 811,
@@ -8371,7 +8413,7 @@
     ]
   },
   {
-    "id": "T279fs",
+    "id": "T279fs_rs863223283",
     "cNotation": "",
     "notation": "p.?279",
     "cdsPosition": 835,
@@ -8500,7 +8542,7 @@
     ]
   },
   {
-    "id": "S283fs",
+    "id": "S283fs_rs2484945647",
     "cNotation": "",
     "notation": "p.?283",
     "cdsPosition": 847,
@@ -8517,7 +8559,7 @@
     ]
   },
   {
-    "id": "T284fs",
+    "id": "T284fs_rs2116695873",
     "cNotation": "",
     "notation": "p.?284",
     "cdsPosition": 850,
@@ -8729,7 +8771,7 @@
   },
   {
     "id": "G291R",
-    "cNotation": "c.871G>A",
+    "cNotation": "",
     "notation": "p.G291R",
     "cdsPosition": 871,
     "aaPosition": 291,
@@ -8774,7 +8816,7 @@
   },
   {
     "id": "E292D",
-    "cNotation": "c.876G>C",
+    "cNotation": "",
     "notation": "p.E292D",
     "cdsPosition": 876,
     "aaPosition": 292,
@@ -8818,7 +8860,7 @@
   },
   {
     "id": "G293R",
-    "cNotation": "c.877G>A",
+    "cNotation": "",
     "notation": "p.G293R",
     "cdsPosition": 877,
     "aaPosition": 293,
@@ -8837,7 +8879,7 @@
     ]
   },
   {
-    "id": "I294fs",
+    "id": "I294fs_rs1562805960",
     "cNotation": "",
     "notation": "p.?294",
     "cdsPosition": 880,
@@ -8880,7 +8922,7 @@
     ]
   },
   {
-    "id": "L295fs",
+    "id": "L295fs_rs863223284",
     "cNotation": "",
     "notation": "p.?295",
     "cdsPosition": 883,
@@ -9104,7 +9146,7 @@
   },
   {
     "id": "G299R",
-    "cNotation": "c.895G>A",
+    "cNotation": "",
     "notation": "p.G299R",
     "cdsPosition": 895,
     "aaPosition": 299,
@@ -9149,7 +9191,7 @@
     ]
   },
   {
-    "id": "E300fs",
+    "id": "E300fs_rs2484944771",
     "cNotation": "",
     "notation": "p.?300",
     "cdsPosition": 898,
@@ -9162,10 +9204,38 @@
     "xrefs": [
       "ClinGen:CA2739278359",
       "ClinVar:RCV003616775",
-      "dbSNP:rs2484944771",
+      "dbSNP:rs2484944771"
+    ]
+  },
+  {
+    "id": "E300fs_rs2484944161",
+    "cNotation": "",
+    "notation": "p.?300",
+    "cdsPosition": 898,
+    "aaPosition": 300,
+    "consequence": "frameshift",
+    "significance": "pathogenic",
+    "wildType": "E",
+    "mutatedType": "",
+    "source": "UniProt",
+    "xrefs": [
       "ClinGen:CA2580077893",
       "ClinVar:RCV002979306",
-      "dbSNP:rs2484944161",
+      "dbSNP:rs2484944161"
+    ]
+  },
+  {
+    "id": "E300fs_rs2484944679",
+    "cNotation": "",
+    "notation": "p.?300",
+    "cdsPosition": 898,
+    "aaPosition": 300,
+    "consequence": "frameshift",
+    "significance": "pathogenic",
+    "wildType": "E",
+    "mutatedType": "",
+    "source": "UniProt",
+    "xrefs": [
       "ClinGen:CA2580615938",
       "ClinVar:RCV002468785",
       "dbSNP:rs2484944679"
@@ -9213,7 +9283,7 @@
   },
   {
     "id": "Y301*",
-    "cNotation": "c.903C>A",
+    "cNotation": "",
     "notation": "p.Y301*",
     "cdsPosition": 903,
     "aaPosition": 301,
@@ -9265,7 +9335,7 @@
   },
   {
     "id": "K302N",
-    "cNotation": "c.906A>C",
+    "cNotation": "",
     "notation": "p.K302N",
     "cdsPosition": 906,
     "aaPosition": 302,
@@ -9332,7 +9402,7 @@
     ]
   },
   {
-    "id": "P304fs",
+    "id": "P304fs_rs2116694965",
     "cNotation": "",
     "notation": "p.?304",
     "cdsPosition": 910,
@@ -9392,7 +9462,7 @@
   },
   {
     "id": "D306E",
-    "cNotation": "c.918T>A",
+    "cNotation": "",
     "notation": "p.D306E",
     "cdsPosition": 918,
     "aaPosition": 306,
@@ -9478,7 +9548,7 @@
   },
   {
     "id": "K309N",
-    "cNotation": "c.927A>C",
+    "cNotation": "",
     "notation": "p.K309N",
     "cdsPosition": 927,
     "aaPosition": 309,
@@ -9542,7 +9612,7 @@
   },
   {
     "id": "R311S",
-    "cNotation": "c.933A>C",
+    "cNotation": "",
     "notation": "p.R311S",
     "cdsPosition": 933,
     "aaPosition": 311,
@@ -9565,7 +9635,7 @@
     ]
   },
   {
-    "id": "D312fs",
+    "id": "D312fs_rs2484943954",
     "cNotation": "",
     "notation": "p.?312",
     "cdsPosition": 934,
@@ -9608,7 +9678,7 @@
   },
   {
     "id": "D312E",
-    "cNotation": "c.936C>A",
+    "cNotation": "",
     "notation": "p.D312E",
     "cdsPosition": 936,
     "aaPosition": 312,
@@ -9671,7 +9741,7 @@
   },
   {
     "id": "Y314*",
-    "cNotation": "c.942C>A",
+    "cNotation": "",
     "notation": "p.Y314*",
     "cdsPosition": 942,
     "aaPosition": 314,
@@ -9765,7 +9835,7 @@
     ]
   },
   {
-    "id": "D316fs",
+    "id": "D316fs_rs2484943705",
     "cNotation": "",
     "notation": "p.?316",
     "cdsPosition": 946,
@@ -9961,7 +10031,7 @@
     ]
   },
   {
-    "id": "S325fs",
+    "id": "S325fs_rs1584531843",
     "cNotation": "",
     "notation": "p.?325",
     "cdsPosition": 973,
@@ -10591,7 +10661,7 @@
     ]
   },
   {
-    "id": "K348fs",
+    "id": "K348fs_rs2484932535",
     "cNotation": "",
     "notation": "p.?348",
     "cdsPosition": 1042,
@@ -10786,7 +10856,7 @@
     ]
   },
   {
-    "id": "T353fs",
+    "id": "T353fs_rs758213105",
     "cNotation": "",
     "notation": "p.?353",
     "cdsPosition": 1057,
@@ -11052,7 +11122,7 @@
   },
   {
     "id": "S362R",
-    "cNotation": "c.1084A>C",
+    "cNotation": "",
     "notation": "p.S362R",
     "cdsPosition": 1084,
     "aaPosition": 362,
@@ -11226,7 +11296,7 @@
   },
   {
     "id": "K369N",
-    "cNotation": "c.1107G>C",
+    "cNotation": "",
     "notation": "p.K369N",
     "cdsPosition": 1107,
     "aaPosition": 369,
@@ -11330,7 +11400,7 @@
   },
   {
     "id": "D373E",
-    "cNotation": "c.1119C>A",
+    "cNotation": "",
     "notation": "p.D373E",
     "cdsPosition": 1119,
     "aaPosition": 373,
@@ -11350,7 +11420,7 @@
   },
   {
     "id": "M374I",
-    "cNotation": "c.1122G>A",
+    "cNotation": "",
     "notation": "p.M374I",
     "cdsPosition": 1122,
     "aaPosition": 374,
@@ -11421,7 +11491,7 @@
   },
   {
     "id": "N377K",
-    "cNotation": "c.1131T>A",
+    "cNotation": "",
     "notation": "p.N377K",
     "cdsPosition": 1131,
     "aaPosition": 377,
@@ -11441,7 +11511,7 @@
   },
   {
     "id": "R378S",
-    "cNotation": "c.1134A>C",
+    "cNotation": "",
     "notation": "p.R378S",
     "cdsPosition": 1134,
     "aaPosition": 378,
@@ -11510,7 +11580,7 @@
   },
   {
     "id": "E379D",
-    "cNotation": "c.1137G>C",
+    "cNotation": "",
     "notation": "p.E379D",
     "cdsPosition": 1137,
     "aaPosition": 379,
@@ -11647,7 +11717,7 @@
   },
   {
     "id": "W382R",
-    "cNotation": "c.1144T>A",
+    "cNotation": "",
     "notation": "p.W382R",
     "cdsPosition": 1144,
     "aaPosition": 382,
@@ -11709,7 +11779,7 @@
     ]
   },
   {
-    "id": "L384fs",
+    "id": "L384fs_rs2484923103",
     "cNotation": "",
     "notation": "p.?384",
     "cdsPosition": 1150,
@@ -11900,7 +11970,7 @@
     ]
   },
   {
-    "id": "P388fs",
+    "id": "P388fs_rs2484922818",
     "cNotation": "",
     "notation": "p.?388",
     "cdsPosition": 1162,
@@ -11918,7 +11988,7 @@
   },
   {
     "id": "V389L",
-    "cNotation": "c.1165G>C",
+    "cNotation": "",
     "notation": "p.V389L",
     "cdsPosition": 1165,
     "aaPosition": 389,
@@ -11946,7 +12016,7 @@
   },
   {
     "id": "F390L",
-    "cNotation": "c.1168T>C",
+    "cNotation": "",
     "notation": "p.F390L",
     "cdsPosition": 1168,
     "aaPosition": 390,
@@ -11966,7 +12036,7 @@
   },
   {
     "id": "H391Q",
-    "cNotation": "c.1173C>A",
+    "cNotation": "",
     "notation": "p.H391Q",
     "cdsPosition": 1173,
     "aaPosition": 391,
@@ -12038,7 +12108,7 @@
   },
   {
     "id": "G395R",
-    "cNotation": "c.1183G>A",
+    "cNotation": "",
     "notation": "p.G395R",
     "cdsPosition": 1183,
     "aaPosition": 395,
@@ -12105,7 +12175,7 @@
   },
   {
     "id": "E396D",
-    "cNotation": "c.1188A>C",
+    "cNotation": "",
     "notation": "p.E396D",
     "cdsPosition": 1188,
     "aaPosition": 396,
@@ -12314,7 +12384,7 @@
     ]
   },
   {
-    "id": "T403fs",
+    "id": "T403fs_rs1798791092",
     "cNotation": "",
     "notation": "p.?403",
     "cdsPosition": 1207,
@@ -12331,7 +12401,7 @@
     ]
   },
   {
-    "id": "D404fs",
+    "id": "D404fs_rs886039595",
     "cNotation": "",
     "notation": "p.?404",
     "cdsPosition": 1210,
@@ -12485,7 +12555,7 @@
   },
   {
     "id": "M411I",
-    "cNotation": "c.1233G>A",
+    "cNotation": "",
     "notation": "p.M411I",
     "cdsPosition": 1233,
     "aaPosition": 411,
@@ -12661,7 +12731,7 @@
   },
   {
     "id": "L420F",
-    "cNotation": "c.1260G>C",
+    "cNotation": "",
     "notation": "p.L420F",
     "cdsPosition": 1260,
     "aaPosition": 420,
@@ -12790,7 +12860,7 @@
   },
   {
     "id": "T424S",
-    "cNotation": "c.1270A>T",
+    "cNotation": "",
     "notation": "p.T424S",
     "cdsPosition": 1270,
     "aaPosition": 424,
@@ -12813,7 +12883,7 @@
   },
   {
     "id": "Q425H",
-    "cNotation": "c.1275G>C",
+    "cNotation": "",
     "notation": "p.Q425H",
     "cdsPosition": 1275,
     "aaPosition": 425,
@@ -13000,7 +13070,7 @@
     ]
   },
   {
-    "id": "G433fs",
+    "id": "G433fs_rs2116568066",
     "cNotation": "",
     "notation": "p.?433",
     "cdsPosition": 1297,
@@ -13060,7 +13130,7 @@
   },
   {
     "id": "W435R",
-    "cNotation": "c.1303T>A",
+    "cNotation": "",
     "notation": "p.W435R",
     "cdsPosition": 1303,
     "aaPosition": 435,
@@ -13189,46 +13259,6 @@
     "xrefs": [
       "TOPMed:rs1314679593",
       "gnomAD:rs1314679593"
-    ]
-  },
-  {
-    "id": "*438C",
-    "cNotation": "c.1314A>C",
-    "notation": "p.*438C",
-    "cdsPosition": 1314,
-    "aaPosition": 438,
-    "consequence": "missense",
-    "significance": "unclassified",
-    "wildType": "*",
-    "mutatedType": "C",
-    "edit": {
-      "kind": "sub",
-      "cdsStart": 1314,
-      "altBase": "C"
-    },
-    "source": "UniProt",
-    "xrefs": [
-      "gnomAD:rs1339034409"
-    ]
-  },
-  {
-    "id": "*438S",
-    "cNotation": "c.1313G>C",
-    "notation": "p.*438S",
-    "cdsPosition": 1313,
-    "aaPosition": 438,
-    "consequence": "missense",
-    "significance": "unclassified",
-    "wildType": "*",
-    "mutatedType": "S",
-    "edit": {
-      "kind": "sub",
-      "cdsStart": 1313,
-      "altBase": "C"
-    },
-    "source": "UniProt",
-    "xrefs": [
-      "Ensembl:rs1796770897"
     ]
   }
 ]

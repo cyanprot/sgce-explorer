@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { VARIANT_CATALOG, CATALOG_STATS } from "./variant-catalog";
-import { deriveConsequence } from "./codon-data";
+import { deriveConsequence, WT_PROTEIN_LENGTH } from "./codon-data";
 
 describe("variant-catalog", () => {
   it("has a substantial number of variants", () => {
@@ -40,5 +40,29 @@ describe("variant-catalog", () => {
     expect(CATALOG_STATS.total).toBe(VARIANT_CATALOG.length);
     expect(CATALOG_STATS.engineReady).toBeGreaterThan(0);
     expect(CATALOG_STATS.pathogenic).toBeGreaterThan(0);
+  });
+
+  it("all ids are unique (distinct variants never collapse into one row)", () => {
+    const ids = VARIANT_CATALOG.map((v) => v.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("no aaPosition exceeds the protein length (stop-lost events dropped)", () => {
+    for (const v of VARIANT_CATALOG) {
+      expect(v.aaPosition).toBeLessThanOrEqual(WT_PROTEIN_LENGTH);
+    }
+  });
+
+  it("distinct frameshifts at one residue keep distinct ids", () => {
+    // Group frameshift ids by residue; each group must have as many unique ids as entries.
+    const byPos = new Map<number, string[]>();
+    for (const v of VARIANT_CATALOG.filter((x) => x.consequence === "frameshift")) {
+      const arr = byPos.get(v.aaPosition) ?? [];
+      arr.push(v.id);
+      byPos.set(v.aaPosition, arr);
+    }
+    for (const [, ids] of byPos) {
+      expect(new Set(ids).size).toBe(ids.length);
+    }
   });
 });
