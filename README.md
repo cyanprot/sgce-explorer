@@ -30,6 +30,13 @@ This tool visualizes how a single-nucleotide duplication leads to complete loss 
 - Scrollable with mutation annotation overlay (frameshift at 37, PTC at 68, aberrant region 38-67)
 - **Bidirectional 3D sync** — click residue in sequence &rarr; 3D viewer zooms to that position
 
+### Variant Browser
+- **599 catalogued SGCE variants** (UniProt) mapped on a lollipop needle plot across residues 1&ndash;437 with domain bands
+- Filter by search / consequence class / clinical significance; selecting any variant drives every tab via a shared store
+- **Consequence engine** — recomputes truncation, PTC position, and NMD prediction live from the NM_003919.3 CDS for engine-ready variants
+- Honest three-state mutant rendering: computed-truncation, full-length, or browse-only (no fabricated geometry)
+- Patient index variant (**c.108dup**) leads the catalog; selected variant is **URL deep-linked** (`?tab=&v=`) for shareable states
+
 ### Central Dogma Animation
 - **7-step animated walkthrough**: DNA &rarr; Imprinting &rarr; Transcription &rarr; Splicing &rarr; Translation &rarr; NMD &rarr; Result
 - **Codon viewer**: WT/mutant reading frame comparison with frameshift and PTC markers (CDS from NM_003919.3)
@@ -176,6 +183,7 @@ All structural data from [UniProt O43556](https://www.uniprot.org/uniprot/O43556
 - [x] Audio narration (Web Speech API)
 - [x] External data integration (PubMed, ClinicalTrials, UniProt, STRING)
 - [x] DGC sarcoglycan subcomplex 3D overlay
+- [x] Multi-variant catalog + live consequence engine (599 variants, lollipop browser, deep-linking)
 - [ ] PWA support + export visualizations
 - [ ] Favicon, a11y polish, meta description
 
