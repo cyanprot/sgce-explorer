@@ -46,6 +46,8 @@ export const MUTATION: Variant = {
   significance: "pathogenic",
   exon: 3,
   edit: { kind: "dup", cdsStart: 108, cdsEnd: 108 },
+  wildType: "V",
+  mutatedType: "S",
   isPatient: true,
   source: "patient (DYT-SGCE)",
 };

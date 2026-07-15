@@ -76,7 +76,7 @@ export function LollipopMap({ variants, selectedId, onSelect }: LollipopMapProps
           const color = SIG_COLOR[v.significance];
           return (
             <g
-              key={v.id + v.aaPosition}
+              key={v.id}
               onClick={() => onSelect(v)}
               style={{ cursor: "pointer" }}
             >

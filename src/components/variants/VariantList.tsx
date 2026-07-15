@@ -35,7 +35,7 @@ const VariantRow = memo(function VariantRow({
       <span className="font-mono text-xs w-10 shrink-0" style={{ color: COLORS.textDim }}>
         {v.aaPosition}
       </span>
-      <span className="font-mono text-sm shrink-0 w-28" style={{ color: COLORS.text }}>
+      <span className="font-mono text-sm shrink-0 w-32 truncate" style={{ color: COLORS.text }} title={v.notation}>
         {v.notation}
       </span>
       <span className="text-xs shrink-0 w-24" style={{ color: COLORS.textDim }}>
@@ -71,7 +71,7 @@ export function VariantList({ variants, selectedId, onSelect }: VariantListProps
         role="list"
       >
         {capped.map((v) => (
-          <div role="listitem" key={v.id + v.aaPosition}>
+          <div role="listitem" key={v.id}>
             <VariantRow v={v} selected={v.id === selectedId} onSelect={onSelect} />
           </div>
         ))}

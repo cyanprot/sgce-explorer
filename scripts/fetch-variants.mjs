@@ -120,7 +120,8 @@ for (const f of features) {
   const xrefs = collectXrefs(f);
   const pNotation = wt && mut ? `p.${wt}${pos}${mut}` : `p.?${pos}`;
   catalog.push({
-    id: xrefs.find((x) => x.startsWith("dbSNP:")) || `${wt}${pos}${mut}`,
+    // Unique per (residue, substitution); rsIDs are NOT unique per variant.
+    id: `${wt || "?"}${pos}${mut || "fs"}`,
     cNotation: edit ? `c.${edit.cdsStart}${CDS[edit.cdsStart - 1]}>${edit.altBase}` : "",
     notation: pNotation,
     cdsPosition: edit ? edit.cdsStart : (pos - 1) * 3 + 1,
@@ -135,21 +136,33 @@ for (const f of features) {
   });
 }
 
+// Dedupe by id (same residue+substitution reported by multiple sources) — merge xrefs.
+const byId = new Map();
+for (const v of catalog) {
+  const existing = byId.get(v.id);
+  if (existing) {
+    existing.xrefs = [...new Set([...(existing.xrefs || []), ...(v.xrefs || [])])];
+  } else {
+    byId.set(v.id, v);
+  }
+}
+const deduped = [...byId.values()];
+
 // Sort by position, then significance severity
-catalog.sort(
+deduped.sort(
   (a, b) => a.aaPosition - b.aaPosition || SIG_ORDER.indexOf(a.significance) - SIG_ORDER.indexOf(b.significance),
 );
 
 mkdirSync(dirname(OUT), { recursive: true });
-writeFileSync(OUT, JSON.stringify(catalog, null, 2) + "\n");
+writeFileSync(OUT, JSON.stringify(deduped, null, 2) + "\n");
 
 const byClass = {};
 const bySig = {};
-for (const v of catalog) {
+for (const v of deduped) {
   byClass[v.consequence] = (byClass[v.consequence] || 0) + 1;
   bySig[v.significance] = (bySig[v.significance] || 0) + 1;
 }
-console.log(`Wrote ${catalog.length} variants -> ${OUT}`);
+console.log(`Wrote ${deduped.length} variants -> ${OUT}`);
 console.log(`  with engine-ready edit: ${withEdit}`);
 console.log(`  by class:`, byClass);
 console.log(`  by significance:`, bySig);
