@@ -1,4 +1,4 @@
-import type { ProteinDomain, MutationInfo, GlycosylationSite, CentralDogmaStep } from "@/types";
+import type { ProteinDomain, Variant, GlycosylationSite, CentralDogmaStep } from "@/types";
 
 // ── Color Palette ──
 export const COLORS = {
@@ -34,15 +34,20 @@ export const DOMAINS: Record<string, ProteinDomain> = {
   cytoplasmic:   { start: 339, end: 437, label: "Cytoplasmic",   color: COLORS.cytoplasmic },
 };
 
-// ── Mutation ──
-export const MUTATION: MutationInfo = {
+// ── Mutation (patient index variant) ──
+export const MUTATION: Variant = {
+  id: "c.108dup",
   cdsPosition: 108,
   aaPosition: 37,
   truncationAt: 68,
   notation: "p.Val37SerfsTer32",
   cNotation: "c.108dup",
-  type: "frameshift",
+  consequence: "frameshift",
+  significance: "pathogenic",
   exon: 3,
+  edit: { kind: "dup", cdsStart: 108, cdsEnd: 108 },
+  isPatient: true,
+  source: "patient (DYT-SGCE)",
 };
 
 // ── Post-translational modifications ──
@@ -104,13 +109,13 @@ export const CENTRAL_DOGMA_STEPS: CentralDogmaStep[] = [
     title: "5. Translation — Ribosome Reads mRNA",
     subtitle: "80S ribosome synthesizes polypeptide chain",
     detail: "Normal: ribosome reads 1,311 nucleotides (437 codons) → full-length ε-sarcoglycan with signal sequence → ER co-translational insertion.",
-    mutationNote: "At codon 37 (Val→Ser): reading frame shifts. 32 aberrant amino acids added before PTC at position 68. Only 15.6% of protein produced.",
+    mutationNote: "At codon 37 (Val→Ser): reading frame shifts. 31 aberrant amino acids added before PTC at position 68. Only 15.3% of protein produced.",
   },
   {
     title: "6. mRNA Surveillance — NMD",
     subtitle: "Nonsense-Mediated Decay destroys mutant mRNA",
     detail: "PTC at position 68 (exon 3) is far upstream of the last exon-exon junction. The exon junction complex (EJC) downstream triggers NMD via UPF1/UPF2/UPF3.",
-    mutationNote: "PTC in exon 3 with 10+ downstream EJCs → strong NMD trigger. Most mutant mRNA degraded. Any escaped mRNA → 68aa fragment → ER degradation.",
+    mutationNote: "PTC in exon 3 with 10+ downstream EJCs → strong NMD trigger. Most mutant mRNA degraded. Any escaped mRNA → 67aa fragment → ER degradation.",
   },
   {
     title: "7. Result — No Functional ε-Sarcoglycan",

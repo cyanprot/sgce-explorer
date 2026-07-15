@@ -7,6 +7,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import * as $3Dmol from "3dmol";
 import { COLORS, DOMAINS, MUTATION, PROTEIN_LENGTH, GLYCOSYLATION_SITES, SGCE_DGC_OFFSET } from "@/constants/protein-data";
+import { PATIENT_CONSEQUENCE } from "@/constants/codon-data";
 import { hexWithAlpha } from "@/utils/hexWithAlpha";
 import { ToggleButton } from "./ui/ToggleButton";
 import { useProteinData } from "@/hooks/useProteinData";
@@ -313,7 +314,7 @@ export function ProteinStructure3D() {
       {/* Controls */}
       <div className="flex gap-3 px-6 py-4 flex-wrap items-center">
         <ToggleButton active={!showMutant} onClick={() => setViewMode("wt")} label={`Wild-type (${PROTEIN_LENGTH} aa)`} color={COLORS.accent} />
-        <ToggleButton active={showMutant} onClick={() => setViewMode("mutant")} label={`Mutant (${MUTATION.truncationAt} aa)`} color={COLORS.danger} />
+        <ToggleButton active={showMutant} onClick={() => setViewMode("mutant")} label={`Mutant (${PATIENT_CONSEQUENCE.truncatedLength} aa)`} color={COLORS.danger} />
         <div className="w-px h-6" style={{ background: COLORS.panelBorder }} />
         <ToggleButton active={showDGC} onClick={() => setShowDGC(!showDGC)} label="DGC Complex" color={COLORS.cytoplasmic} />
         <ToggleButton active={autoRotate} onClick={() => setAutoRotate(!autoRotate)} label="Auto-rotate" color={COLORS.success} />
@@ -343,7 +344,7 @@ export function ProteinStructure3D() {
         role="img"
         aria-label={
           showMutant
-            ? `3D protein structure: mutant ε-sarcoglycan, truncated at residue ${MUTATION.truncationAt} of ${PROTEIN_LENGTH} (${((MUTATION.truncationAt / PROTEIN_LENGTH) * 100).toFixed(1)}%), red region shows frameshift`
+            ? `3D protein structure: mutant ε-sarcoglycan, truncated at residue ${MUTATION.truncationAt} of ${PROTEIN_LENGTH} (${(PATIENT_CONSEQUENCE.fractionOfWT * 100).toFixed(1)}%), red region shows frameshift`
             : `3D protein structure: wild-type ε-sarcoglycan, ${PROTEIN_LENGTH} amino acids. Blue: extracellular domain, amber: transmembrane helix, purple: cytoplasmic tail`
         }
       >
@@ -351,10 +352,10 @@ export function ProteinStructure3D() {
         <div className="absolute bottom-4 left-4 rounded-lg p-3 text-xs max-w-xs z-10 pointer-events-none" style={{ background: hexWithAlpha(COLORS.overlay, 0.7) }}>
           {showMutant ? (
             <>
-              <div className="font-bold mb-1" style={{ color: COLORS.danger }}>Truncated — {MUTATION.truncationAt} aa</div>
+              <div className="font-bold mb-1" style={{ color: COLORS.danger }}>Truncated — {PATIENT_CONSEQUENCE.truncatedLength} aa</div>
               <div style={{ color: COLORS.textDim }} className="leading-relaxed">
                 {MUTATION.cNotation} → frameshift at Val{MUTATION.aaPosition} → PTC at pos {MUTATION.truncationAt}.
-                Only {((MUTATION.truncationAt / PROTEIN_LENGTH) * 100).toFixed(1)}% of WT. No TM/cyto domain → NMD + degradation.
+                Only {(PATIENT_CONSEQUENCE.fractionOfWT * 100).toFixed(1)}% of WT. No TM/cyto domain → NMD + degradation.
               </div>
             </>
           ) : (
@@ -396,10 +397,11 @@ export function ProteinStructure3D() {
 
 // ── Domain Bar sub-component ──
 function DomainBar({ showMutant }: { showMutant: boolean }) {
+  const truncLen = PATIENT_CONSEQUENCE.truncatedLength ?? PROTEIN_LENGTH;
   const domains = showMutant
     ? [
-        { pct: (MUTATION.aaPosition / MUTATION.truncationAt) * 100, color: COLORS.extracellular, label: "WT" },
-        { pct: ((MUTATION.truncationAt - MUTATION.aaPosition) / MUTATION.truncationAt) * 100, color: COLORS.mutant, label: "Frameshifted" },
+        { pct: ((MUTATION.aaPosition - 1) / truncLen) * 100, color: COLORS.extracellular, label: "WT" },
+        { pct: (PATIENT_CONSEQUENCE.novelAaCount / truncLen) * 100, color: COLORS.mutant, label: "Frameshifted" },
       ]
     : [
         { pct: (317 / 437) * 100, color: COLORS.extracellular, label: "Extracellular" },
@@ -422,7 +424,7 @@ function DomainBar({ showMutant }: { showMutant: boolean }) {
         <span>1</span>
         {!showMutant && <span>317|318</span>}
         {!showMutant && <span>338|339</span>}
-        <span>{showMutant ? MUTATION.truncationAt : PROTEIN_LENGTH}</span>
+        <span>{showMutant ? truncLen : PROTEIN_LENGTH}</span>
       </div>
     </>
   );

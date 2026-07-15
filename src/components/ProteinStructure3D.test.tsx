@@ -83,22 +83,22 @@ describe("ProteinStructure3D", () => {
   it("switches to mutant overlay when clicking Mutant button", () => {
     mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
     render(<ProteinStructure3D />);
-    fireEvent.click(screen.getByText("Mutant (68 aa)"));
-    expect(screen.getByText(/Truncated — 68 aa/)).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Mutant (67 aa)"));
+    expect(screen.getByText(/Truncated — 67 aa/)).toBeInTheDocument();
   });
 
-  it("shows 15.6% in mutant overlay", () => {
+  it("shows 15.3% in mutant overlay", () => {
     mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
     render(<ProteinStructure3D />);
-    fireEvent.click(screen.getByText("Mutant (68 aa)"));
-    expect(screen.getByText(/15\.6%/)).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Mutant (67 aa)"));
+    expect(screen.getByText(/15\.3%/)).toBeInTheDocument();
   });
 
   it("toggles back to WT from mutant mode", () => {
     mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
     render(<ProteinStructure3D />);
-    fireEvent.click(screen.getByText("Mutant (68 aa)"));
-    expect(screen.getByText(/Truncated — 68 aa/)).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Mutant (67 aa)"));
+    expect(screen.getByText(/Truncated — 67 aa/)).toBeInTheDocument();
     fireEvent.click(screen.getByText("Wild-type (437 aa)"));
     expect(screen.getByText(/Wild-type ε-Sarcoglycan — 437 aa/)).toBeInTheDocument();
   });
@@ -120,7 +120,7 @@ describe("ProteinStructure3D", () => {
   it("shows Frameshifted label in DomainBar in mutant mode", () => {
     mockUseProteinData.mockReturnValue({ pdbData: "HEADER mock pdb", loading: false, error: null });
     render(<ProteinStructure3D />);
-    fireEvent.click(screen.getByText("Mutant (68 aa)"));
+    fireEvent.click(screen.getByText("Mutant (67 aa)"));
     expect(screen.getByText("Frameshifted")).toBeInTheDocument();
   });
 
@@ -243,7 +243,7 @@ describe("ProteinStructure3D", () => {
     });
     render(<ProteinStructure3D />);
     fireEvent.click(screen.getByText("DGC Complex"));
-    fireEvent.click(screen.getByText("Mutant (68 aa)"));
+    fireEvent.click(screen.getByText("Mutant (67 aa)"));
     expect(screen.getByText(/subcomplex disrupted/i)).toBeInTheDocument();
   });
 

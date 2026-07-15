@@ -5,14 +5,62 @@ export interface ProteinDomain {
   color: string;
 }
 
-export interface MutationInfo {
-  cdsPosition: number;    // c.108
-  aaPosition: number;     // Val37
-  truncationAt: number;   // position 68
-  notation: string;       // "p.Val37SerfsTer32"
-  cNotation: string;      // "c.108dup"
-  type: "frameshift";
-  exon: number;           // exon 3
+export type ConsequenceClass =
+  | "frameshift"
+  | "nonsense"
+  | "missense"
+  | "synonymous"
+  | "inframe-deletion"
+  | "inframe-insertion"
+  | "large-deletion";
+
+export type ClinicalSignificance =
+  | "pathogenic"
+  | "likely-pathogenic"
+  | "vus"
+  | "likely-benign"
+  | "benign"
+  | "unclassified";
+
+/** Structured edit describing the change in CDS coordinates, consumed by
+ *  deriveConsequence(). Kept separate from HGVS strings so the engine never
+ *  has to parse notation. All positions are 1-indexed CDS coordinates. */
+export interface VariantEdit {
+  kind: "dup" | "del" | "ins" | "sub";
+  cdsStart: number;
+  cdsEnd?: number;   // inclusive; defaults to cdsStart (dup/del ranges)
+  insSeq?: string;   // inserted nucleotides (ins)
+  altBase?: string;  // replacement base(s) (sub)
+}
+
+export interface Variant {
+  id: string;                       // stable key (cNotation, ClinVar VCV, or rsID)
+  cNotation: string;                // HGVS c. (e.g. "c.108dup")
+  notation: string;                 // HGVS p. (e.g. "p.Val37SerfsTer32")
+  cdsPosition: number;              // CDS coordinate of the change (1-indexed)
+  aaPosition: number;               // first affected amino acid (1-indexed)
+  consequence: ConsequenceClass;
+  significance: ClinicalSignificance;
+  exon: number;                     // clinical exon (13-exon SGCE gene model)
+  edit: VariantEdit;
+  truncationAt?: number;            // cached PTC codon position; also derivable
+  isPatient?: boolean;              // the DYT-SGCE index variant
+  source?: string;                  // "ClinVar", "UniProt", ...
+  citation?: string;
+}
+
+/** @deprecated use Variant. Kept as an alias during the migration. */
+export type MutationInfo = Variant;
+
+/** Everything deriveConsequence() computes for a variant against the CDS. */
+export interface DerivedConsequence {
+  truncated: boolean;
+  ptcPosition: number | null;       // aa position of the premature stop
+  truncatedLength: number | null;   // aa count of the truncated product
+  mutantProteinLength: number;      // final protein length (aa)
+  novelAaCount: number;             // aberrant residues introduced before the PTC
+  fractionOfWT: number;             // mutantProteinLength / PROTEIN_LENGTH
+  nmdPredicted: boolean;
 }
 
 export interface GlycosylationSite {

@@ -100,7 +100,7 @@ export function SequenceViewer({
                 isMutationSite={position === MUTATION.aaPosition}
                 isPTC={position === MUTATION.truncationAt}
                 isAberrant={
-                  position > MUTATION.aaPosition && position < MUTATION.truncationAt
+                  position > MUTATION.aaPosition && position < MUTATION.truncationAt!
                 }
                 onClick={onResidueClick}
                 onMouseEnter={onResidueHover}

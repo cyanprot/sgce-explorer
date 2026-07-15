@@ -57,12 +57,12 @@ describe("protein-data constants", () => {
     });
 
     it("truncationAt - aaPosition + 1 === 32 (fsTer32)", () => {
-      expect(MUTATION.truncationAt - MUTATION.aaPosition + 1).toBe(32);
+      expect(MUTATION.truncationAt! - MUTATION.aaPosition + 1).toBe(32);
     });
 
-    it("truncated protein is 15.6% of full length", () => {
-      const pct = ((MUTATION.truncationAt / PROTEIN_LENGTH) * 100).toFixed(1);
-      expect(pct).toBe("15.6");
+    it("truncated protein is 15.3% of full length (67/437)", () => {
+      const pct = (((MUTATION.truncationAt! - 1) / PROTEIN_LENGTH) * 100).toFixed(1);
+      expect(pct).toBe("15.3");
     });
   });
 

@@ -5,7 +5,32 @@ import {
   NMD_SUB_STEPS,
   NARRATION_SCRIPTS,
   CDS_SEQUENCE,
+  WT_PROTEIN_LENGTH,
+  deriveConsequence,
+  applyEdit,
+  PATIENT_CONSEQUENCE,
 } from "./codon-data";
+import { MUTATION } from "./protein-data";
+import type { Variant, ConsequenceClass } from "@/types";
+
+// Minimal Variant builder for engine tests
+function mkVariant(
+  consequence: ConsequenceClass,
+  aaPosition: number,
+  edit: Variant["edit"],
+): Variant {
+  return {
+    id: "test",
+    cNotation: "c.test",
+    notation: "p.test",
+    cdsPosition: edit.cdsStart,
+    aaPosition,
+    consequence,
+    significance: "vus",
+    exon: 1,
+    edit,
+  };
+}
 
 describe("codon-data", () => {
   describe("CDS_SEQUENCE", () => {
@@ -90,6 +115,73 @@ describe("codon-data", () => {
     it("no codons after position 68", () => {
       const after68 = MUTANT_CODONS.filter((c) => c.position > 68);
       expect(after68).toHaveLength(0);
+    });
+  });
+
+  describe("CDS is full-length", () => {
+    it("is 1314 nt (437 aa + stop)", () => {
+      expect(CDS_SEQUENCE.length).toBe(1314);
+      expect(WT_PROTEIN_LENGTH).toBe(437);
+    });
+    it("terminal codon is a stop", () => {
+      expect(["TAA", "TAG", "TGA"]).toContain(CDS_SEQUENCE.slice(-3));
+    });
+  });
+
+  describe("applyEdit", () => {
+    it("dup inserts a duplicate of the target nucleotide", () => {
+      const mut = applyEdit(CDS_SEQUENCE, { kind: "dup", cdsStart: 108, cdsEnd: 108 });
+      expect(mut.length).toBe(CDS_SEQUENCE.length + 1);
+      // codon 37 shifts from Val(GTG) to Ser(AGT)
+      expect(mut.slice(108, 111)).toBe("AGT");
+    });
+    it("sub replaces a single base", () => {
+      const mut = applyEdit(CDS_SEQUENCE, { kind: "sub", cdsStart: 18, altBase: "A" });
+      expect(mut.length).toBe(CDS_SEQUENCE.length);
+      expect(mut.slice(15, 18)).toBe("TGA"); // codon 6 -> stop
+    });
+    it("del removes the target range", () => {
+      const mut = applyEdit(CDS_SEQUENCE, { kind: "del", cdsStart: 10, cdsEnd: 12 });
+      expect(mut.length).toBe(CDS_SEQUENCE.length - 3);
+    });
+  });
+
+  describe("deriveConsequence", () => {
+    it("patient c.108dup: PTC 68, 67 aa, 31 novel, NMD", () => {
+      expect(PATIENT_CONSEQUENCE.truncated).toBe(true);
+      expect(PATIENT_CONSEQUENCE.ptcPosition).toBe(68);
+      expect(PATIENT_CONSEQUENCE.truncatedLength).toBe(67);
+      expect(PATIENT_CONSEQUENCE.novelAaCount).toBe(31);
+      expect(PATIENT_CONSEQUENCE.mutantProteinLength).toBe(67);
+      expect(PATIENT_CONSEQUENCE.nmdPredicted).toBe(true);
+      expect((PATIENT_CONSEQUENCE.fractionOfWT * 100).toFixed(1)).toBe("15.3");
+      expect(deriveConsequence(MUTATION)).toEqual(PATIENT_CONSEQUENCE);
+    });
+
+    it("nonsense (early stop): truncates, no novel residues", () => {
+      const v = mkVariant("nonsense", 6, { kind: "sub", cdsStart: 18, altBase: "A" });
+      const c = deriveConsequence(v);
+      expect(c.truncated).toBe(true);
+      expect(c.ptcPosition).toBe(6);
+      expect(c.truncatedLength).toBe(5);
+      expect(c.novelAaCount).toBe(0);
+      expect(c.nmdPredicted).toBe(true);
+    });
+
+    it("missense: not truncated, full length", () => {
+      const v = mkVariant("missense", 2, { kind: "sub", cdsStart: 6, altBase: "T" });
+      const c = deriveConsequence(v);
+      expect(c.truncated).toBe(false);
+      expect(c.ptcPosition).toBe(null);
+      expect(c.mutantProteinLength).toBe(437);
+      expect(c.nmdPredicted).toBe(false);
+    });
+
+    it("in-frame deletion: not truncated, one residue shorter", () => {
+      const v = mkVariant("inframe-deletion", 4, { kind: "del", cdsStart: 10, cdsEnd: 12 });
+      const c = deriveConsequence(v);
+      expect(c.truncated).toBe(false);
+      expect(c.mutantProteinLength).toBe(436);
     });
   });
 
