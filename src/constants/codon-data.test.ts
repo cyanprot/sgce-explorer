@@ -183,6 +183,17 @@ describe("codon-data", () => {
       expect(c.truncated).toBe(false);
       expect(c.mutantProteinLength).toBe(436);
     });
+
+    it("browse-only frameshift (no edit): declared class, never a fabricated truncation", () => {
+      // A catalogued frameshift with no exact CDS edit cannot have its PTC computed.
+      // The engine must NOT invent a truncation — it returns the full-length placeholder,
+      // and consumers (3D view, DomainBar) must render a "browse-only" state, not 437-aa WT.
+      const c = deriveConsequence(mkVariant("frameshift", 300, undefined));
+      expect(c.truncated).toBe(false);
+      expect(c.ptcPosition).toBe(null);
+      expect(c.mutantProteinLength).toBe(437);
+      expect(c.fractionOfWT).toBe(1);
+    });
   });
 
   describe("NMD_SUB_STEPS", () => {

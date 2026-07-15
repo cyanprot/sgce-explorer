@@ -1,8 +1,6 @@
-import { useMemo } from "react";
 import { COLORS } from "@/constants/protein-data";
 import { hexWithAlpha } from "@/utils/hexWithAlpha";
-import { WT_CODONS, buildMutantCodons } from "@/constants/codon-data";
-import { useVariantStore } from "@/store/variantStore";
+import { WT_CODONS, MUTANT_CODONS } from "@/constants/codon-data";
 import type { Codon } from "@/types";
 
 interface CodonViewerProps {
@@ -50,9 +48,9 @@ function CodonCell({
   );
 }
 
+// Fixed to the patient variant to match the c.108dup-specific walkthrough prose.
 export function CodonViewer({ visible = true }: CodonViewerProps) {
-  const variant = useVariantStore((s) => s.selected);
-  const mutantCodons = useMemo(() => buildMutantCodons(variant), [variant]);
+  const mutantCodons = MUTANT_CODONS;
 
   if (!visible) return null;
 

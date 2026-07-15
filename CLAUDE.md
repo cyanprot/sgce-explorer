@@ -24,8 +24,8 @@ Tech stack: Vite + React 18 + TypeScript + 3Dmol.js + Tailwind CSS.
 ### The Mutation: c.108dup
 - 1bp adenine duplication at CDS position 108 (exon 3)
 - Frameshift starts at Val37 → Ser
-- 32 aberrant amino acids before premature stop codon (PTC) at position 68
-- Truncated product = 68/437 aa (15.6%) — entirely within extracellular domain
+- 31 aberrant amino acids before premature stop codon (PTC) at position 68
+- Truncated product = 67/437 aa (15.3%) — entirely within extracellular domain
 - Missing: transmembrane domain, cytoplasmic tail → no membrane insertion
 - NMD: PTC in exon 3 with 10+ downstream EJCs → strong NMD trigger
 - Any escaped protein → ER quality control → proteasomal degradation

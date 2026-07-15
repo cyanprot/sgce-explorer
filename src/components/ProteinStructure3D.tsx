@@ -36,6 +36,19 @@ export function ProteinStructure3D() {
 
   const showMutant = viewMode === "mutant";
 
+  // Three mutant render states. `deriveConsequence` only computes a PTC for
+  // variants carrying an exact CDS edit; a declared frameshift/nonsense without
+  // one (browse-only catalog entry) has truncated=false and would otherwise be
+  // drawn as a full-length 437-aa protein — a scientifically false picture.
+  const isTruncatingClass =
+    variant.consequence === "frameshift" || variant.consequence === "nonsense";
+  const browseOnlyTruncation = isTruncatingClass && !consequence.truncated;
+  const mutantLabel = consequence.truncated
+    ? `${consequence.truncatedLength} aa`
+    : browseOnlyTruncation
+      ? "frameshift"
+      : `${consequence.mutantProteinLength} aa`;
+
   // Effect 1: Viewer lifecycle — uses dedicated div, not the React container
   useEffect(() => {
     const el = viewerDivRef.current;
@@ -107,15 +120,14 @@ export function ProteinStructure3D() {
 
     if (showMutant) {
       const ptc = consequence.ptcPosition;
-      // Hide everything first
-      viewer.setStyle({}, { cartoon: { hidden: true } });
-      // Show residues 1..aaPosition (WT region before the change)
-      viewer.setStyle(
-        { resi: `1-${variant.aaPosition}` } as any,
-        { cartoon: { color: hexToInt(COLORS.extracellular) } }
-      );
-
-      if (ptc != null) {
+      if (consequence.truncated && ptc != null) {
+        // Truncating variant with a computed PTC: WT region, aberrant tract, then hidden.
+        viewer.setStyle({}, { cartoon: { hidden: true } });
+        // Show residues 1..aaPosition (WT region before the change)
+        viewer.setStyle(
+          { resi: `1-${variant.aaPosition}` } as any,
+          { cartoon: { color: hexToInt(COLORS.extracellular) } }
+        );
         // Show the aberrant region up to the premature stop
         viewer.setStyle(
           { resi: `${variant.aaPosition + 1}-${ptc}` } as any,
@@ -140,9 +152,15 @@ export function ProteinStructure3D() {
             fontSize: 12,
           });
         }
+      } else {
+        // Non-truncating (missense / in-frame) or a frameshift whose exact PTC is
+        // not catalogued (browse-only): the mutant is full-length here, so draw the
+        // whole structure with domain coloring and mark only the changed residue.
+        // Never fabricate a truncation we have not computed.
+        viewer.setStyle({}, { cartoon: { colorfunc: domainColorFunc } });
       }
 
-      // Mutation site marker
+      // Mutation site marker (all mutant states)
       const mutAtoms = model.selectedAtoms({ resi: variant.aaPosition, atom: "CA" });
       if (mutAtoms.length > 0) {
         const pos = { x: mutAtoms[0].x!, y: mutAtoms[0].y!, z: mutAtoms[0].z! };
@@ -152,7 +170,7 @@ export function ProteinStructure3D() {
           color: hexToInt(COLORS.warn) as any,
           opacity: 0.7,
         });
-        viewer.addLabel(`Res ${variant.aaPosition} (${consequence.truncated ? "frameshift" : "mutation"})`, {
+        viewer.addLabel(`Res ${variant.aaPosition} (${variant.consequence})`, {
           position: pos,
           backgroundColor: hexToInt(COLORS.warn) as any,
           backgroundOpacity: 0.8,
@@ -320,7 +338,7 @@ export function ProteinStructure3D() {
       {/* Controls */}
       <div className="flex gap-3 px-6 py-4 flex-wrap items-center">
         <ToggleButton active={!showMutant} onClick={() => setViewMode("wt")} label={`Wild-type (${PROTEIN_LENGTH} aa)`} color={COLORS.accent} />
-        <ToggleButton active={showMutant} onClick={() => setViewMode("mutant")} label={`Mutant (${consequence.truncatedLength ?? consequence.mutantProteinLength} aa)`} color={COLORS.danger} />
+        <ToggleButton active={showMutant} onClick={() => setViewMode("mutant")} label={`Mutant (${mutantLabel})`} color={COLORS.danger} />
         <div className="w-px h-6" style={{ background: COLORS.panelBorder }} />
         <ToggleButton active={showDGC} onClick={() => setShowDGC(!showDGC)} label="DGC Complex" color={COLORS.cytoplasmic} />
         <ToggleButton active={autoRotate} onClick={() => setAutoRotate(!autoRotate)} label="Auto-rotate" color={COLORS.success} />
@@ -350,7 +368,11 @@ export function ProteinStructure3D() {
         role="img"
         aria-label={
           showMutant
-            ? `3D protein structure: mutant ε-sarcoglycan, ${consequence.truncated ? `truncated at residue ${consequence.ptcPosition} of ${PROTEIN_LENGTH}` : `${consequence.mutantProteinLength} of ${PROTEIN_LENGTH} residues`} (${(consequence.fractionOfWT * 100).toFixed(1)}%), red region shows the altered residues`
+            ? consequence.truncated
+              ? `3D protein structure: mutant ε-sarcoglycan, truncated at residue ${consequence.ptcPosition} of ${PROTEIN_LENGTH} (${(consequence.fractionOfWT * 100).toFixed(1)}%), red region shows the aberrant residues`
+              : browseOnlyTruncation
+                ? `3D protein structure: ${variant.consequence} variant ${variant.notation}; the exact premature-stop position is not catalogued, so the full-length structure is shown for reference with residue ${variant.aaPosition} highlighted`
+                : `3D protein structure: mutant ε-sarcoglycan, full-length ${consequence.mutantProteinLength} of ${PROTEIN_LENGTH} residues, changed residue ${variant.aaPosition} highlighted`
             : `3D protein structure: wild-type ε-sarcoglycan, ${PROTEIN_LENGTH} amino acids. Blue: extracellular domain, amber: transmembrane helix, purple: cytoplasmic tail`
         }
       >
@@ -358,11 +380,28 @@ export function ProteinStructure3D() {
         <div className="absolute bottom-4 left-4 rounded-lg p-3 text-xs max-w-xs z-10 pointer-events-none" style={{ background: hexWithAlpha(COLORS.overlay, 0.7) }}>
           {showMutant ? (
             <>
-              <div className="font-bold mb-1" style={{ color: COLORS.danger }}>{consequence.truncated ? `Truncated — ${consequence.truncatedLength} aa` : `Mutant — ${consequence.mutantProteinLength} aa`}</div>
+              <div className="font-bold mb-1" style={{ color: COLORS.danger }}>
+                {consequence.truncated
+                  ? `Truncated — ${consequence.truncatedLength} aa`
+                  : browseOnlyTruncation
+                    ? `${variant.consequence} — browse-only`
+                    : `Mutant — ${consequence.mutantProteinLength} aa`}
+              </div>
               <div style={{ color: COLORS.textDim }} className="leading-relaxed">
-                {variant.cNotation} → {variant.consequence} at residue {variant.aaPosition}
-                {consequence.ptcPosition != null ? ` → PTC at pos ${consequence.ptcPosition}` : ""}.
-                {" "}{(consequence.fractionOfWT * 100).toFixed(1)}% of WT.{consequence.nmdPredicted ? " NMD + degradation." : ""}
+                {consequence.truncated ? (
+                  <>
+                    {variant.cNotation} → {variant.consequence} at residue {variant.aaPosition} → PTC at pos {consequence.ptcPosition}.
+                    {" "}{(consequence.fractionOfWT * 100).toFixed(1)}% of WT.{consequence.nmdPredicted ? " NMD + degradation." : ""}
+                  </>
+                ) : browseOnlyTruncation ? (
+                  <>
+                    {variant.cNotation || variant.notation} → {variant.consequence} at residue {variant.aaPosition}. Exact truncation not in this catalog entry — full structure shown for reference.
+                  </>
+                ) : (
+                  <>
+                    {variant.cNotation || variant.notation} → {variant.consequence} at residue {variant.aaPosition}. Full-length product ({consequence.mutantProteinLength} aa).
+                  </>
+                )}
               </div>
             </>
           ) : (
@@ -406,11 +445,14 @@ export function ProteinStructure3D() {
 function DomainBar({ showMutant }: { showMutant: boolean }) {
   const variant = useVariantStore((s) => s.selected);
   const consequence = useVariantStore((s) => s.consequence);
+  // Only a computed truncation collapses the domain architecture. Full-length
+  // and browse-only mutants keep the reference domain bar.
+  const showTruncated = showMutant && consequence.truncated;
   const truncLen = consequence.truncatedLength ?? consequence.mutantProteinLength;
-  const domains = showMutant
+  const domains = showTruncated
     ? [
-        { pct: ((variant.aaPosition - 1) / truncLen) * 100, color: COLORS.extracellular, label: "WT" },
-        { pct: (consequence.novelAaCount / truncLen) * 100, color: COLORS.mutant, label: "Frameshifted" },
+        { pct: truncLen > 0 ? ((variant.aaPosition - 1) / truncLen) * 100 : 0, color: COLORS.extracellular, label: "WT" },
+        { pct: truncLen > 0 ? (consequence.novelAaCount / truncLen) * 100 : 0, color: COLORS.mutant, label: "Frameshifted" },
       ]
     : [
         { pct: (317 / 437) * 100, color: COLORS.extracellular, label: "Extracellular" },
@@ -431,9 +473,9 @@ function DomainBar({ showMutant }: { showMutant: boolean }) {
       </div>
       <div className="flex justify-between text-[10px] mt-0.5" style={{ color: COLORS.textDim }}>
         <span>1</span>
-        {!showMutant && <span>317|318</span>}
-        {!showMutant && <span>338|339</span>}
-        <span>{showMutant ? truncLen : PROTEIN_LENGTH}</span>
+        {!showTruncated && <span>317|318</span>}
+        {!showTruncated && <span>338|339</span>}
+        <span>{showTruncated ? truncLen : PROTEIN_LENGTH}</span>
       </div>
     </>
   );
