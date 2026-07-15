@@ -131,9 +131,9 @@ The subdomain wears the same brand chrome as `arcivus.ca/explorer`. Two color sy
 
 **Boundary rule**: never `import { COLORS }` inside the chrome zone; never use OKLCH classes (`text-ink`, etc.) inside the explorer-body zone. The boundary is enforced by `src/App.tsx` — Nav/Footer sit outside the dark `COLORS.bg` wrapper.
 
-**Canonical references** (load these before any design work):
-- Marketing chrome rules: `/home/cyan/projects/arcivus/.claude/skills/arcivus-design-ref/SKILL.md`
-- Explorer body rules: `.claude/skills/sci-design-ref/SKILL.md`
+**Canonical token sources** (read these before any design work — see the table above):
+- Marketing chrome tokens: `tailwind.config.js` (`theme.extend.colors`, OKLCH).
+- Explorer body tokens: `src/constants/protein-data.ts` (hex `COLORS`).
 
 **Nav link model**: `Explorer` is a self-link to `/` with `aria-current="page"`; all other links point to absolute `https://arcivus.ca/<route>`. No `target="_blank"`.
 
@@ -147,6 +147,8 @@ npm install           # Install dependencies
 npm run fetch-pdb     # Download AlphaFold PDB structure
 npm run dev           # Start dev server (localhost:3000)
 npm run build         # Production build
+npm test              # vitest run (unit/component)
+npm run test:coverage # vitest run with coverage
 ```
 
 ## Key Dependencies
