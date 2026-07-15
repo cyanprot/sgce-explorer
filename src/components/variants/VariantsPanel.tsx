@@ -2,12 +2,13 @@ import { useState } from "react";
 import type { ClinicalSignificance, ConsequenceClass, Variant } from "@/types";
 import { COLORS } from "@/constants/protein-data";
 import { CATALOG_STATS } from "@/constants/variant-catalog";
-import { SIG_COLOR, SIG_LABEL, CONSEQUENCE_LABEL } from "@/constants/variant-display";
+import { SIG_COLOR, SIG_LABEL } from "@/constants/variant-display";
 import { useVariants } from "@/hooks/useVariants";
 import { useVariantStore } from "@/store/variantStore";
 import { LollipopMap } from "./LollipopMap";
 import { VariantFilters } from "./VariantFilters";
 import { VariantList } from "./VariantList";
+import { VariantDetail } from "./VariantDetail";
 
 interface VariantsPanelProps {
   onViewStructure?: () => void;
@@ -55,30 +56,8 @@ export function VariantsPanel({ onViewStructure }: VariantsPanelProps) {
         ))}
       </div>
 
-      {/* Selected summary */}
-      <div
-        className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-3 py-2 my-3"
-        style={{ background: COLORS.panel, borderColor: COLORS.panelBorder }}
-      >
-        <span className="text-xs" style={{ color: COLORS.textDim }}>Selected:</span>
-        <span className="font-mono text-sm" style={{ color: COLORS.accent }}>{selected.notation}</span>
-        <span className="text-xs" style={{ color: COLORS.textDim }}>
-          {CONSEQUENCE_LABEL[selected.consequence]} · res {selected.aaPosition}
-        </span>
-        <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded" style={{ background: `${SIG_COLOR[selected.significance]}22`, color: SIG_COLOR[selected.significance] }}>
-          {SIG_LABEL[selected.significance]}
-        </span>
-        {onViewStructure && (
-          <button onClick={onViewStructure} className="text-xs font-semibold px-2 py-1 rounded ml-auto" style={{ background: COLORS.accent, color: COLORS.bg }}>
-            View in 3D →
-          </button>
-        )}
-        {!selected.isPatient && (
-          <button onClick={resetToPatient} className="text-xs px-2 py-1 rounded border" style={{ color: COLORS.textDim, borderColor: COLORS.panelBorder }}>
-            Reset to patient
-          </button>
-        )}
-      </div>
+      {/* Selected variant detail */}
+      <VariantDetail variant={selected} onViewStructure={onViewStructure} onReset={resetToPatient} />
 
       <VariantFilters
         query={query}

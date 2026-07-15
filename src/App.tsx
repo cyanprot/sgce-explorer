@@ -7,6 +7,7 @@ import { VariantsPanel } from "@/components/variants";
 import Nav from "@/components/layout/Nav";
 import Footer from "@/components/layout/Footer";
 import { COLORS } from "@/constants/protein-data";
+import { VARIANT_CATALOG } from "@/constants/variant-catalog";
 import { useVariantStore } from "@/store/variantStore";
 import type { TabId } from "@/types";
 
@@ -56,6 +57,27 @@ export default function App() {
   useEffect(() => {
     document.title = "Arcivus Explorer — SGCE ε-Sarcoglycan";
   }, []);
+
+  // Deep-link: hydrate tab + selected variant from the URL on first load.
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const t = p.get("tab");
+    if (t && TABS.some((x) => x.id === t)) setTab(t as TabId);
+    const v = p.get("v");
+    if (v) {
+      const found = VARIANT_CATALOG.find((x) => x.id === v);
+      if (found) useVariantStore.getState().setSelected(found);
+    }
+  }, []);
+
+  // Deep-link: reflect tab + selected variant back into the URL (clean defaults).
+  useEffect(() => {
+    const p = new URLSearchParams();
+    if (tab !== "structure") p.set("tab", tab);
+    if (!variant.isPatient) p.set("v", variant.id);
+    const qs = p.toString();
+    window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
+  }, [tab, variant]);
 
   return (
     <div className="overflow-x-hidden">
