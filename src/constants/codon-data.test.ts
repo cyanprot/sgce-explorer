@@ -23,7 +23,7 @@ function mkVariant(
     id: "test",
     cNotation: "c.test",
     notation: "p.test",
-    cdsPosition: edit.cdsStart,
+    cdsPosition: edit?.cdsStart ?? 0,
     aaPosition,
     consequence,
     significance: "vus",

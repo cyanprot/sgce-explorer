@@ -97,6 +97,7 @@ const NMD_DISTANCE_RULE = 50;
 
 /** Apply a structured variant edit to the CDS, returning the mutant CDS. */
 export function applyEdit(cds: string, edit: Variant["edit"]): string {
+  if (!edit) return cds;
   const { kind, cdsStart, cdsEnd = cdsStart, insSeq = "", altBase = "" } = edit;
   const s = cdsStart - 1; // 0-indexed start
   const e = cdsEnd;       // slice-exclusive end == inclusive 1-indexed cdsEnd
@@ -129,6 +130,24 @@ export function deriveConsequence(
   variant: Variant,
   cds: string = CDS_SEQUENCE,
 ): DerivedConsequence {
+  // No structured edit (e.g. an imported frameshift without an exact c. change):
+  // report the declared class without recomputing against the CDS.
+  if (!variant.edit) {
+    const declaredTruncating =
+      variant.consequence === "frameshift" || variant.consequence === "nonsense";
+    const ptc = variant.truncationAt ?? null;
+    const tl = ptc != null ? ptc - 1 : null;
+    return {
+      truncated: declaredTruncating && ptc != null,
+      ptcPosition: ptc,
+      truncatedLength: tl,
+      mutantProteinLength: tl ?? WT_PROTEIN_LENGTH,
+      novelAaCount: 0,
+      fractionOfWT: (tl ?? WT_PROTEIN_LENGTH) / WT_PROTEIN_LENGTH,
+      nmdPredicted:
+        declaredTruncating && ptc != null && (ptc - 1) * 3 + 1 < LAST_JUNCTION_CDS - NMD_DISTANCE_RULE,
+    };
+  }
   const mut = applyEdit(cds, variant.edit);
   const normalStopCodon = cds.length / 3; // 438
   const stop = firstStopCodon(mut);
@@ -194,7 +213,7 @@ export function buildMutantCodons(
 ): Codon[] {
   const mut = applyEdit(CDS_SEQUENCE, variant.edit);
   const fsCodon = variant.aaPosition;
-  const isFs = variant.consequence === "frameshift";
+  const isFs = variant.consequence === "frameshift" && !!variant.edit;
   const codons: Codon[] = [];
   for (let i = start; i <= end; i++) {
     const ntStart = (i - 1) * 3;

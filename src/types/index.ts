@@ -41,12 +41,15 @@ export interface Variant {
   aaPosition: number;               // first affected amino acid (1-indexed)
   consequence: ConsequenceClass;
   significance: ClinicalSignificance;
-  exon: number;                     // clinical exon (13-exon SGCE gene model)
-  edit: VariantEdit;
+  exon?: number;                    // clinical exon (13-exon SGCE gene model)
+  edit?: VariantEdit;               // present when the exact CDS change is known
   truncationAt?: number;            // cached PTC codon position; also derivable
+  wildType?: string;                // WT amino acid (1-letter)
+  mutatedType?: string;             // variant amino acid (1-letter) or "*"
   isPatient?: boolean;              // the DYT-SGCE index variant
   source?: string;                  // "ClinVar", "UniProt", ...
   citation?: string;
+  xrefs?: string[];                 // e.g. ["ClinVar:VCV...", "dbSNP:rs..."]
 }
 
 /** @deprecated use Variant. Kept as an alias during the migration. */
