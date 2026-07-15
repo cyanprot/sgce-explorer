@@ -18,6 +18,21 @@ const TABS: { id: TabId; label: string }[] = [
 export default function App() {
   const [tab, setTab] = useState<TabId>("structure");
   const headerRef = useRef<HTMLElement>(null);
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+  // WAI-ARIA tabs: Left/Right/Home/End move focus + selection (automatic activation).
+  const onTabKeyDown = (e: React.KeyboardEvent, idx: number) => {
+    const last = TABS.length - 1;
+    let next = idx;
+    if (e.key === "ArrowRight") next = idx === last ? 0 : idx + 1;
+    else if (e.key === "ArrowLeft") next = idx === 0 ? last : idx - 1;
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = last;
+    else return;
+    e.preventDefault();
+    setTab(TABS[next].id);
+    tabRefs.current[next]?.focus();
+  };
 
   useLayoutEffect(() => {
     const el = headerRef.current;
@@ -79,14 +94,17 @@ export default function App() {
               aria-label="Explorer sections"
               className="flex overflow-x-auto no-scrollbar"
             >
-              {TABS.map((t) => (
+              {TABS.map((t, idx) => (
                 <button
                   key={t.id}
+                  ref={(el) => { tabRefs.current[idx] = el; }}
                   role="tab"
                   aria-selected={tab === t.id}
                   aria-controls={`tabpanel-${t.id}`}
                   id={`tab-${t.id}`}
+                  tabIndex={tab === t.id ? 0 : -1}
                   onClick={() => setTab(t.id)}
+                  onKeyDown={(e) => onTabKeyDown(e, idx)}
                   className="px-3 sm:px-5 py-2.5 text-sm font-semibold cursor-pointer rounded-t-lg -mb-px transition-all whitespace-nowrap"
                   style={{
                     background: tab === t.id ? COLORS.panel : "transparent",

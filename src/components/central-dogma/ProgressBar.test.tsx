@@ -24,7 +24,7 @@ describe("ProgressBar", () => {
     const { container } = render(
       <ProgressBar activeStep={2} onStepClick={onStepClick} />
     );
-    const circles = container.querySelectorAll("circle");
+    const circles = container.querySelectorAll(".dogma-step__dot");
     // Step 2 (3rd circle) should be active
     expect(circles[2].getAttribute("fill")).toContain("60a5fa"); // COLORS.accent
   });
@@ -33,7 +33,7 @@ describe("ProgressBar", () => {
     const { container } = render(
       <ProgressBar activeStep={3} onStepClick={onStepClick} />
     );
-    const circles = container.querySelectorAll("circle");
+    const circles = container.querySelectorAll(".dogma-step__dot");
     // Steps 0,1,2 are completed
     expect(circles[0].getAttribute("fill")).toContain("1e3a5f"); // COLORS.accentDim
     expect(circles[1].getAttribute("fill")).toContain("1e3a5f");
@@ -44,7 +44,7 @@ describe("ProgressBar", () => {
     const { container } = render(
       <ProgressBar activeStep={0} onStepClick={onStepClick} />
     );
-    const circles = container.querySelectorAll("circle");
+    const circles = container.querySelectorAll(".dogma-step__dot");
     // Steps 1-6 are future
     expect(circles[1].getAttribute("fill")).toContain("131826"); // COLORS.panel
   });
