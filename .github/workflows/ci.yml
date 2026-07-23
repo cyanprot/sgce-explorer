@@ -1,0 +1,59 @@
+name: CI
+
+# There was no CI at all. Vercel builds with `tsc -b && vite build` and never
+# runs vitest, so a red test suite did not stop a deploy to a patient-facing URL.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Weekly, for the catalog-drift job below. Off-peak and off the hour.
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+
+  # Answers "would regenerating the catalog today reintroduce a violation?"
+  # before someone commits the result. Writes to a temp path and runs only the
+  # data invariants against it, so a UniProt change is visible as a red weekly
+  # run rather than as a surprise inside an unrelated PR.
+  catalog-drift:
+    # Scheduled and manual only: it hits an external API, so it has no business
+    # on the PR path.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - name: Regenerate catalog from the live UniProt feed
+        id: regen
+        # An EBI outage must not redden unrelated PRs.
+        continue-on-error: true
+        run: node scripts/fetch-variants.mjs --out src/data/variant-catalog.json
+      - name: Run data invariants against the regenerated catalog
+        if: steps.regen.outcome == 'success'
+        run: npx vitest run src/data/variant-catalog.invariants.test.ts
+      - name: Report drift against the committed catalog
+        if: steps.regen.outcome == 'success'
+        run: |
+          if git diff --quiet src/data/variant-catalog.json; then
+            echo "No drift: the committed catalog matches the live feed."
+          else
+            echo "::notice::UniProt has changed since the catalog was last built."
+            git diff --stat src/data/variant-catalog.json
+          fi
