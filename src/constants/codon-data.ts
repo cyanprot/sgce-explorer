@@ -9,6 +9,7 @@
  */
 import type {
   Codon,
+  ConsequenceClass,
   NMDSubStep,
   NarrationScript,
   Variant,
@@ -36,8 +37,15 @@ const CODON_TABLE: Record<string, string> = {
   GGT: "G", GGC: "G", GGA: "G", GGG: "G",
 };
 
-function translate(codon: string): string {
+/** Translate a single 3-nt codon. Exported so tests and invariants can reuse the
+ *  one genetic-code table rather than duplicating it. */
+export function translate(codon: string): string {
   return CODON_TABLE[codon] ?? "?";
+}
+
+/** Amino acid encoded at 1-indexed protein position `pos` in `cds`. */
+export function codonAt(cds: string, pos: number): string {
+  return translate(cds.slice((pos - 1) * 3, (pos - 1) * 3 + 3));
 }
 
 // Full CDS of NM_003919.3 (1314 nt incl. terminal stop codon).
@@ -95,10 +103,29 @@ const LAST_JUNCTION_CDS = EXON_MAP_CDS[EXON_MAP_CDS.length - 1].cdsStart - 1; //
 // EJC deposits ~20-24 nt upstream of a junction; the 50-55 nt rule is standard.
 const NMD_DISTANCE_RULE = 50;
 
-/** Apply a structured variant edit to the CDS, returning the mutant CDS. */
+/**
+ * Apply a structured variant edit to the CDS, returning the mutant CDS.
+ *
+ * COORDINATE CONVENTION — the two are deliberately different, matching HGVS:
+ *   dup / del / sub : `cdsStart` is the first *affected* base (1-indexed).
+ *   ins             : `cdsStart` is the base immediately *before* the insertion,
+ *                     so `c.37_38insA` is `{ kind: "ins", cdsStart: 37 }`.
+ * Producers of `ins` edits must emit against that convention.
+ *
+ * Out-of-range coordinates and unknown kinds throw. They used to pass silently:
+ * `cdsStart: 0` returned a sequence that derived to "875 aa, 200.2% of WT", and
+ * an unknown kind returned the wild-type sequence, i.e. reported a variant as
+ * having no effect at all.
+ */
 export function applyEdit(cds: string, edit: Variant["edit"]): string {
   if (!edit) return cds;
   const { kind, cdsStart, cdsEnd = cdsStart, insSeq = "", altBase = "" } = edit;
+  if (!Number.isInteger(cdsStart) || cdsStart < 1 || cdsStart > cds.length) {
+    throw new RangeError(`applyEdit: cdsStart ${cdsStart} outside CDS 1-${cds.length}`);
+  }
+  if (!Number.isInteger(cdsEnd) || cdsEnd < cdsStart || cdsEnd > cds.length) {
+    throw new RangeError(`applyEdit: cdsEnd ${cdsEnd} outside ${cdsStart}-${cds.length}`);
+  }
   const s = cdsStart - 1; // 0-indexed start
   const e = cdsEnd;       // slice-exclusive end == inclusive 1-indexed cdsEnd
   switch (kind) {
@@ -107,12 +134,35 @@ export function applyEdit(cds: string, edit: Variant["edit"]): string {
     case "del":
       return cds.slice(0, s) + cds.slice(e);
     case "ins":
+      if (!insSeq) throw new Error(`applyEdit: ins at ${cdsStart} has no insSeq`);
       return cds.slice(0, cdsStart) + insSeq + cds.slice(cdsStart);
     case "sub":
+      if (!altBase) throw new Error(`applyEdit: sub at ${cdsStart} has no altBase`);
       return cds.slice(0, s) + altBase + cds.slice(s + altBase.length);
     default:
-      return cds;
+      throw new Error(`applyEdit: unknown edit kind "${kind}"`);
   }
+}
+
+/** Exon of the transcript model containing a 1-indexed CDS coordinate. */
+export function exonForCds(cdsPos: number): number | null {
+  return EXON_MAP_CDS.find((e) => cdsPos >= e.cdsStart && cdsPos <= e.cdsEnd)?.exon ?? null;
+}
+
+/** Exon-exon junctions downstream of a 1-indexed CDS coordinate. */
+export function junctionsAfterCds(cdsPos: number): number {
+  return EXON_MAP_CDS.filter((e) => e.cdsStart > cdsPos).length;
+}
+
+/** Translate a full CDS to its peptide, stopping at the first stop codon. */
+export function translateCds(seq: string): string {
+  let out = "";
+  for (let i = 0; i + 3 <= seq.length; i += 3) {
+    const aa = translate(seq.slice(i, i + 3));
+    if (aa === "*") break;
+    out += aa;
+  }
+  return out;
 }
 
 function firstStopCodon(seq: string): number | null {
@@ -123,6 +173,62 @@ function firstStopCodon(seq: string): number | null {
 }
 
 /**
+ * The consequence class the mutant sequence produces, read entirely off the
+ * sequence. No annotation is consulted, so a mislabelled catalog row cannot
+ * propagate into what the UI shows.
+ */
+function classifyMutant({
+  cds,
+  mut,
+  truncated,
+  frameShifted,
+  aaPosition,
+}: {
+  cds: string;
+  mut: string;
+  truncated: boolean;
+  frameShifted: boolean;
+  aaPosition: number;
+}): ConsequenceClass {
+  if (frameShifted) return "frameshift";
+  if (truncated) return "nonsense";
+  if (mut.length > cds.length) return "inframe-insertion";
+  if (mut.length < cds.length) return "inframe-deletion";
+  return codonAt(mut, aaPosition) === codonAt(cds, aaPosition) ? "synonymous" : "missense";
+}
+
+const effectiveClassCache = new WeakMap<Variant, ConsequenceClass>();
+
+/**
+ * The consequence class to USE for a variant anywhere in the UI — filtering,
+ * labelling, sorting, colouring.
+ *
+ * Prefer this over `Variant.consequence`, which is the source database's label
+ * and has been wrong for 9 catalog rows including three pathogenic stop-gains.
+ * When the exact CDS change is known this returns what the sequence actually
+ * produces; only a browse-only entry falls back to the reported class.
+ *
+ * Memoized per variant object: the list and lollipop call it for every row on
+ * every keystroke, and catalog entries are stable module-level objects.
+ */
+export function effectiveClass(variant: Variant, cds: string = CDS_SEQUENCE): ConsequenceClass {
+  if (!variant.edit) return variant.reportedConsequence;
+  const hit = effectiveClassCache.get(variant);
+  if (hit) return hit;
+  const mut = applyEdit(cds, variant.edit);
+  const stop = firstStopCodon(mut);
+  const computed = classifyMutant({
+    cds,
+    mut,
+    truncated: stop !== null && stop < Math.floor(mut.length / 3),
+    frameShifted: (mut.length - cds.length) % 3 !== 0,
+    aaPosition: variant.aaPosition,
+  });
+  effectiveClassCache.set(variant, computed);
+  return computed;
+}
+
+/**
  * Translate the mutant CDS for a variant and report the consequence.
  * Works for frameshift, nonsense, missense, in-frame indels and synonymous.
  */
@@ -130,49 +236,66 @@ export function deriveConsequence(
   variant: Variant,
   cds: string = CDS_SEQUENCE,
 ): DerivedConsequence {
-  // No structured edit (e.g. an imported frameshift without an exact c. change):
-  // report the declared class without recomputing against the CDS.
+  // No structured edit: the catalog knows the class but not the exact CDS
+  // change, so there is nothing to translate. Return "not known" for every
+  // verdict rather than a full-length placeholder — reporting 437 aa / 100% of
+  // WT / no NMD for a pathogenic frameshift is worse than reporting nothing.
   if (!variant.edit) {
-    const declaredTruncating =
-      variant.consequence === "frameshift" || variant.consequence === "nonsense";
-    const ptc = variant.truncationAt ?? null;
-    const tl = ptc != null ? ptc - 1 : null;
     return {
-      truncated: declaredTruncating && ptc != null,
-      ptcPosition: ptc,
-      truncatedLength: tl,
-      mutantProteinLength: tl ?? WT_PROTEIN_LENGTH,
-      novelAaCount: 0,
-      fractionOfWT: (tl ?? WT_PROTEIN_LENGTH) / WT_PROTEIN_LENGTH,
-      nmdPredicted:
-        declaredTruncating && ptc != null && (ptc - 1) * 3 + 1 < LAST_JUNCTION_CDS - NMD_DISTANCE_RULE,
+      evidence: "reported",
+      derivedClass: null,
+      truncated: null,
+      ptcPosition: null,
+      truncatedLength: null,
+      mutantProteinLength: null,
+      novelAaCount: null,
+      fractionOfWT: null,
+      nmdPredicted: null,
+      ptcExon: null,
+      downstreamJunctions: null,
     };
   }
+
   const mut = applyEdit(cds, variant.edit);
-  const normalStopCodon = cds.length / 3; // 438
   const stop = firstStopCodon(mut);
-  // Only frameshift/nonsense truncate. In-frame indels shift the natural stop
-  // without producing a PTC, so comparing against the WT stop codon would
-  // misflag them — gate truncation on the consequence class instead.
-  const isTruncatingClass =
-    variant.consequence === "frameshift" || variant.consequence === "nonsense";
-  const truncated =
-    isTruncatingClass && stop !== null && stop < normalStopCodon;
-  const ptcPosition = truncated ? (stop as number) : null;
-  const truncatedLength = truncated ? (stop as number) - 1 : null;
-  // Protein length = codons translated before the first stop.
-  const mutantProteinLength = truncated
-    ? (truncatedLength as number)
-    : stop !== null
-      ? stop - 1
-      : Math.floor(mut.length / 3);
-  const novelAaCount =
-    variant.consequence === "frameshift" && truncated
-      ? (ptcPosition as number) - variant.aaPosition
-      : 0;
-  const ptcNt = truncated ? ((ptcPosition as number) - 1) * 3 + 1 : Infinity;
-  const nmdPredicted = truncated && ptcNt < LAST_JUNCTION_CDS - NMD_DISTANCE_RULE;
+
+  // Truncation is a property of the sequence, not of the annotation. Compare the
+  // first stop against where this mutant's OWN stop should fall: an in-frame
+  // indel shifts the natural stop without producing a PTC, so `expectedStop`
+  // moves with it, while a frameshift or stop-gain lands far short of it.
+  //
+  // This used to be gated on `variant.consequence === "frameshift" | "nonsense"`,
+  // which made the verdict only as good as the catalog's label. For R102* the
+  // engine found the stop at codon 102 and then discarded it, because the label
+  // said "missense" — while still reporting a 101-aa product.
+  const expectedStop = Math.floor(mut.length / 3);
+  const truncated = stop !== null && stop < expectedStop;
+
+  const ptcPosition = truncated ? stop : null;
+  const truncatedLength = truncated ? stop - 1 : null;
+  // Protein length = codons translated before the first stop. With no stop at
+  // all (a stop-lost read-through) translation runs to the end of the sequence.
+  const mutantProteinLength = stop !== null ? stop - 1 : Math.floor(mut.length / 3);
+
+  // Novel residues exist only when the reading frame actually moved — again read
+  // off the sequence, not off the declared class. A stop-gain introduces none.
+  const frameShifted = (mut.length - cds.length) % 3 !== 0;
+  const novelAaCount = truncated && frameShifted ? (ptcPosition as number) - variant.aaPosition : 0;
+
+  // NMD geometry is evaluated in WT exon coordinates; an indel shifts the PTC by
+  // at most a few nt, which never changes the verdict against a 50-nt rule.
+  const ptcNt = truncated ? ((ptcPosition as number) - 1) * 3 + 1 : null;
+  const nmdPredicted = ptcNt !== null && ptcNt < LAST_JUNCTION_CDS - NMD_DISTANCE_RULE;
+
   return {
+    evidence: "computed",
+    derivedClass: classifyMutant({
+      cds,
+      mut,
+      truncated,
+      frameShifted,
+      aaPosition: variant.aaPosition,
+    }),
     truncated,
     ptcPosition,
     truncatedLength,
@@ -180,6 +303,8 @@ export function deriveConsequence(
     novelAaCount,
     fractionOfWT: mutantProteinLength / WT_PROTEIN_LENGTH,
     nmdPredicted,
+    ptcExon: ptcNt !== null ? exonForCds(ptcNt) : null,
+    downstreamJunctions: ptcNt !== null ? junctionsAfterCds(ptcNt) : null,
   };
 }
 
@@ -213,7 +338,8 @@ export function buildMutantCodons(
 ): Codon[] {
   const mut = applyEdit(CDS_SEQUENCE, variant.edit);
   const fsCodon = variant.aaPosition;
-  const isFs = variant.consequence === "frameshift" && !!variant.edit;
+  // Shade from what the edit actually does, not from the catalog's label.
+  const isFs = !!variant.edit && effectiveClass(variant) === "frameshift";
   const codons: Codon[] = [];
   for (let i = start; i <= end; i++) {
     const ntStart = (i - 1) * 3;

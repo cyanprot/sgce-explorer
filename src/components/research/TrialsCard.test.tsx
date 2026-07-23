@@ -39,7 +39,7 @@ describe("TrialsCard", () => {
 
   it("renders empty state", () => {
     render(<TrialsCard trials={[]} loading={false} error={null} />);
-    expect(screen.getByText("No trials found")).toBeInTheDocument();
+    expect(screen.getByText("The registry returned no matching studies.")).toBeInTheDocument();
   });
 
   it("renders trial titles as links to clinicaltrials.gov", () => {

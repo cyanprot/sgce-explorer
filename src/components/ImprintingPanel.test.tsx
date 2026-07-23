@@ -39,7 +39,7 @@ describe("ImprintingPanel", () => {
     render(<ImprintingPanel />);
     expect(screen.getByText("Imprinting Control Region (ICR)")).toBeInTheDocument();
     expect(screen.getByText("Why this is NOT haploinsufficiency")).toBeInTheDocument();
-    expect(screen.getByText("Therapeutic implication")).toBeInTheDocument();
+    expect(screen.getByText("Therapeutic implication — design concept only")).toBeInTheDocument();
   });
 
   it("first allele column has right border for visual separation", () => {

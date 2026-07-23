@@ -31,10 +31,10 @@ This tool visualizes how a single-nucleotide duplication leads to complete loss 
 - **Bidirectional 3D sync** — click residue in sequence &rarr; 3D viewer zooms to that position
 
 ### Variant Browser
-- **599 catalogued SGCE variants** (UniProt) mapped on a lollipop needle plot across residues 1&ndash;437 with domain bands
+- **607 catalogued SGCE variants** (UniProt) mapped on a lollipop needle plot across residues 1&ndash;437 with domain bands
 - Filter by search / consequence class / clinical significance; selecting any variant drives every tab via a shared store
 - **Consequence engine** — recomputes truncation, PTC position, and NMD prediction live from the NM_003919.3 CDS for engine-ready variants
-- Honest three-state mutant rendering: computed-truncation, full-length, or browse-only (no fabricated geometry)
+- Honest three-state mutant rendering: computed-truncation, full-length, or browse-only. Coordinates are always the wild-type AlphaFold model recoloured by position — the mutant conformation is not modelled, and the viewer says so.
 - Patient index variant (**c.108dup**) leads the catalog; selected variant is **URL deep-linked** (`?tab=&v=`) for shareable states
 
 ### Central Dogma Animation
@@ -131,6 +131,7 @@ The app opens at [http://localhost:3000](http://localhost:3000).
 Coverage includes:
 - Component rendering and interaction (3D viewer, sequence viewer, central dogma, research cards)
 - Hook behavior (usePubMed, useClinicalTrials, useUniProt, useStringDB, useDGCProteins)
+- Catalog data invariants (INV-1..14): declared class vs re-translated sequence, HGVS provenance, agreement with the source feed
 - Codon data integrity (CDS sequence, frameshift math, PTC position)
 - Animation sub-components (ProgressBar, TranslationAnimation, NMDAnimation)
 - Utility functions (fetchCache, hexToInt, translatePdb, getDomainForPosition)
@@ -183,7 +184,7 @@ All structural data from [UniProt O43556](https://www.uniprot.org/uniprot/O43556
 - [x] Audio narration (Web Speech API)
 - [x] External data integration (PubMed, ClinicalTrials, UniProt, STRING)
 - [x] DGC sarcoglycan subcomplex 3D overlay
-- [x] Multi-variant catalog + live consequence engine (599 variants, lollipop browser, deep-linking)
+- [x] Multi-variant catalog + live consequence engine (607 variants, lollipop browser, deep-linking)
 - [ ] PWA support + export visualizations
 - [ ] Favicon, a11y polish, meta description
 

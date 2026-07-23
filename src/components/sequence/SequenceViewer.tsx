@@ -1,7 +1,10 @@
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useCallback, useState, useMemo } from "react";
 import { SEQUENCE, COLORS, DOMAINS } from "@/constants/protein-data";
 import { getDomainForPosition } from "@/utils/getDomainForPosition";
 import { useVariantStore } from "@/store/variantStore";
+import { CDS_SEQUENCE, applyEdit, translateCds } from "@/constants/codon-data";
+import { CONSEQUENCE_LABEL } from "@/constants/variant-display";
+import { effectiveClass } from "@/constants/codon-data";
 import { ResidueCell } from "./ResidueCell";
 import type { ViewMode } from "@/types";
 
@@ -24,7 +27,25 @@ export function SequenceViewer({
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
   const variant = useVariantStore((s) => s.selected);
-  const ptc = useVariantStore((s) => s.consequence.ptcPosition);
+  const consequence = useVariantStore((s) => s.consequence);
+  const ptc = consequence.ptcPosition;
+
+  // `viewMode` used to be accepted and then ignored: the track always mapped the
+  // wild-type SEQUENCE, so the frameshift tract displayed wild-type letters and
+  // announced them as "aberrant frameshift region". Translate the actual mutant
+  // CDS instead, exactly as CodonViewer already does.
+  const mutantPeptide = useMemo(
+    () => (viewMode === "mutant" && variant.edit ? translateCds(applyEdit(CDS_SEQUENCE, variant.edit)) : null),
+    [viewMode, variant.edit],
+  );
+  const siteNote = useMemo(
+    () => `${CONSEQUENCE_LABEL[effectiveClass(variant)].toLowerCase()} site`,
+    [variant],
+  );
+  // The aberrant tract starts AT the changed residue, not after it: residue
+  // `aaPosition` is the first novel one. The old `position > aaPosition` bound
+  // rendered 30 cells for a 31-residue tract the app's own copy describes.
+  const novel = consequence.novelAaCount ?? 0;
 
   // Scroll to selected residue when it changes externally
   useEffect(() => {
@@ -87,10 +108,14 @@ export function SequenceViewer({
             background: COLORS.panel,
           }}
         >
-          {Array.from(SEQUENCE).map((residue, idx) => {
+          {Array.from(SEQUENCE).map((wtResidue, idx) => {
             const position = idx + 1;
             const domain = getDomainForPosition(position);
             const color = domain?.color ?? COLORS.textDim;
+            // Past the premature stop the mutant protein simply does not exist;
+            // "·" is honest where a wild-type letter would be a fabrication.
+            const isUntranslated = mutantPeptide != null && position > mutantPeptide.length;
+            const residue = mutantPeptide ? (mutantPeptide[idx] ?? "·") : wtResidue;
 
             return (
               <ResidueCell
@@ -102,9 +127,9 @@ export function SequenceViewer({
                 isHovered={hoveredResidue === position}
                 isMutationSite={position === variant.aaPosition}
                 isPTC={ptc != null && position === ptc}
-                isAberrant={
-                  ptc != null && position > variant.aaPosition && position < ptc
-                }
+                isAberrant={ptc != null && novel > 0 && position >= variant.aaPosition && position < ptc}
+                isUntranslated={isUntranslated}
+                siteNote={siteNote}
                 onClick={onResidueClick}
                 onMouseEnter={onResidueHover}
                 onMouseLeave={handleMouseLeave}

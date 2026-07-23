@@ -96,7 +96,7 @@ export function CentralDogma() {
   const offPatient = !selected.isPatient;
 
   return (
-    <div data-testid="central-dogma" className="p-6 min-h-[calc(100dvh-var(--app-header-h)-80px)] flex flex-col">
+    <div data-testid="central-dogma" className="p-6 min-h-[calc(100dvh-var(--app-header-h)-var(--app-nav-h,80px))] flex flex-col">
       {offPatient && (
         <div
           className="rounded-lg px-4 py-2 mb-4 text-xs border"

@@ -47,7 +47,7 @@ Tech stack: Vite + React 18 + TypeScript + 3Dmol.js + Tailwind CSS.
 
 ### AlphaFold Structure
 - Predicted structure: AF-O43556-F1
-- Fetch: `npm run fetch-pdb` → downloads to data/AF-O43556-F1.pdb
+- Fetch: `npm run fetch-pdb` → downloads to `public/data/AF-O43556-F1.pdb` (served at `/data/` in dev; `/data/` at the repo root is gitignored)
 - URL: https://alphafold.ebi.ac.uk/files/AF-O43556-F1-model_v6.pdb
 
 ## Architecture
@@ -68,12 +68,14 @@ src/
 │   ├── useChEMBL.ts            # ChEMBL target pharmacology (disabled — no SGCE data)
 │   ├── useUniProt.ts           # UniProt REST API (O43556 annotations)
 │   ├── useStringDB.ts          # STRING DB protein interactions
-│   ├── useDGCProteins.ts       # DGC subcomplex AlphaFold PDB fetch (β/γ/δ/ε-SG)
+│   ├── useDGCProteins.ts       # Brain DGC partner AlphaFold PDB fetch (β/ζ/δ-SG; ε-SG itself is loaded separately)
 │   └── useVariants.ts          # Filtered view over the variant catalog (query/consequence/significance)
 ├── store/
 │   └── variantStore.ts         # zustand: selected Variant + derived consequence (default: patient c.108dup)
 ├── data/
-│   └── variant-catalog.json    # Build-time snapshot: 603 SGCE variants (UniProt). Regen: npm run fetch-variants
+│   ├── variant-catalog.json    # Build-time snapshot: {meta, variants[]} — 607 SGCE variants (UniProt). Regen: npm run fetch-variants
+│   ├── uniprot-groundtruth.fixture.json   # 16 pinned feed records where consequenceType contradicts locations
+│   └── variant-catalog.invariants.test.ts # Data invariants INV-1..14 over the shipped catalog
 ├── constants/
 │   ├── protein-data.ts         # Domains, MUTATION (a Variant), colors, sequence, DGC partners
 │   ├── codon-data.ts           # Full NM_003919.3 CDS, exon map, deriveConsequence() engine, codon strips, NMD, narration
@@ -124,15 +126,24 @@ src/
 └── data/                       # PDB files (gitignored)
 ```
 
-## Status (as of 2026-07-15)
+## Status (as of 2026-07-23)
 
-Priorities 1–5 complete. **Multi-variant feature complete** (branch `feat/multi-variant`): the app is no longer hardcoded to a single mutation. A `Variant` model + `deriveConsequence()` engine over the full CDS drives every tab from a zustand-selected variant; a build-time catalog of 603 known SGCE variants (UniProt) powers a Variants tab (lollipop + filter + list + detail) with URL deep-linking. Foundation work alongside: dead-dep removal, a11y (focus ring, roving tabs, dvh), HGVS off-by-one fix (67 aa / 31 novel / 15.3%), striatal-DGC hedge.
+Multi-variant feature complete: a `Variant` model + `deriveConsequence()` engine over the full CDS drives every tab from a zustand-selected variant, with a build-time catalog of 607 known SGCE variants (UniProt) behind the Variants tab and URL deep-linking.
+
+**2026-07-23 — correctness pass.** Triggered by a patient email asking to enrol in "your" AAV gene-replacement trial for `c.304C>T (p.Arg102*)`. That variant was in the catalog and rendered as *"Missense — no premature stop, full-length product (101 aa)"*. Root cause: UniProt's `consequenceType` contradicts its own `locations[]` HGVS on 13 of 611 features, the build script trusted the label, and `deriveConsequence()` then gated its truncation verdict on that same label — finding the stop at codon 102 and discarding it. What changed:
+
+- **Classification now reads `locations[].loc`**, never `consequenceType` or `alternativeSequence`. Fixes 9 misclassified rows; `p.Ile289SerfsTer4` is a frameshift, not the "stop gained" the feed calls it. Parse order is load-bearing (truncating tests before `dup`/`ins`/`del`).
+- **HGVS is taken from the feed, never synthesized.** Three rows shipped `c.` substitutions that exist in no database for variants that are really insertions.
+- **The engine compares against the mutant's own expected stop**, not the WT stop and not the declared class. Every derived field is now `number | null`; `null` means "not known" and no longer 437 aa / 100% of WT for pathogenic frameshifts.
+- **`effectiveClass(variant)` is the class the UI must use.** `Variant.consequence` was renamed `reportedConsequence` to mark it as a third party's opinion.
+- **`src/data/variant-catalog.invariants.test.ts`** pins INV-1..14 over the shipped data, including agreement with a fixture of the source feed. All fourteen failed before this pass.
+- Silent failures closed (research hooks now distinguish "API failed" from "none exist"; the trials card no longer filters to open-only statuses), an `ErrorBoundary` per tab, an explorer-body disclaimer, science-claim corrections with citations (brain DGC = β/ζ/δ-SG + β-DG + Dp71 per PMID 27535350; no CTCF boundary at this locus per PMID 18480470), and CI that actually runs the tests.
 
 ### Deferred
 
-- **Code-splitting** — bundle is ~1.16 MB (311 KB gzip) since the 603-variant catalog JSON ships in the main chunk; App imports it for deep-link hydration, so lazy-loading the Variants tab alone won't defer it. Revisit with a manualChunks/hydration split if size matters.
-- **Isoform framing** — the "+exon 11b brain isoform" narrative vs UniProt's 3-isoform annotation needs a literature check before editing (low harm as-is).
-- **Browse-only variants** — frameshift/indel catalog entries lack an exact CDS edit (not in the UniProt protein feed), so the engine can't recompute them; enrich from ClinVar c. notation to make them engine-ready.
+- **Code-splitting** — bundle is ~1.20 MB (316 KB gzip) since the catalog JSON ships in the main chunk; App imports it for deep-link hydration, so lazy-loading the Variants tab alone won't defer it. Revisit with a manualChunks/hydration split if size matters.
+- **Browse-only variants (71)** — indel/frameshift entries whose `c.` is not a simple substitution carry no engine-ready edit by design. Making them computable means expressing them as `ins`/`del` edits (the `applyEdit` convention is documented in `codon-data.ts`) sourced from the feed's own `c.` string.
+- **Stop-lost variants (2)** — dropped at build time; `ConsequenceClass` has no member for them and the UI assumes `aaPosition <= 437`.
 - **Conservation scores overlay** (Priority 2) — external data dependency (ConSurf). Newly valuable for missense interpretation.
 - **PWA / offline support**, **High-res PNG/SVG export** — revisit when field-use / presentations require.
 
@@ -148,7 +159,7 @@ The subdomain wears the same brand chrome as `arcivus.ca/explorer`. Two color sy
 | Marketing chrome (Nav, Footer, UI primitives) | OKLCH Tailwind classes (`text-ink`, `bg-surface`, `text-action`, etc.) | `src/components/layout/**`, `src/components/ui/Logo.tsx`, `src/components/ui/SocialLinks.tsx` | `tailwind.config.js` `theme.extend.colors` |
 | Explorer body (3D viewer, central dogma, imprinting, research, sequence, variants) | Hex `COLORS` via inline style | Everything else under `src/components/` | `src/constants/protein-data.ts` (+ `variant-display.ts` for significance/consequence colors) |
 
-**Boundary rule**: never `import { COLORS }` inside the chrome zone; never use OKLCH classes (`text-ink`, etc.) inside the explorer-body zone. The boundary is enforced by `src/App.tsx` — Nav/Footer sit outside the dark `COLORS.bg` wrapper.
+**Boundary rule**: never `import { COLORS }` inside the chrome zone; never use OKLCH classes (`text-ink`, etc.) inside the explorer-body zone. `src/App.tsx` keeps Nav/Footer outside the dark `COLORS.bg` wrapper, but nothing lints or tests the rule — it is a **convention held by discipline**, not an enforced boundary. Add an ESLint `no-restricted-imports` rule if it ever drifts.
 
 **Canonical token sources** (read these before any design work — see the table above):
 - Marketing chrome tokens: `tailwind.config.js` (`theme.extend.colors`, OKLCH).
@@ -158,7 +169,7 @@ The subdomain wears the same brand chrome as `arcivus.ca/explorer`. Two color sy
 
 **Fonts** (loaded via Google Fonts in `index.html`): Plus Jakarta Sans (display), Inter (body), JetBrains Mono (scientific notation).
 
-**Overflow convention**: the `<header>` height is published to `--app-header-h` via a `ResizeObserver` in `App.tsx`. Tab-panel containers read `calc(100dvh - var(--app-header-h) - 80px)` (80px = fixed Nav; `dvh` stays stable under mobile browser chrome). SequenceViewer and CodonViewer hide their native scrollbars via the `.no-scrollbar` utility in `src/index.css` — fade indicators already communicate scroll affordance.
+**Overflow convention**: `App.tsx` publishes two `ResizeObserver`-backed CSS variables — `--app-header-h` (the in-page `<header>`) and `--app-nav-h` (the fixed brand Nav, measured by DOM query since Nav is chrome-owned and must not be edited here). Tab-panel containers read `calc(100dvh - var(--app-header-h) - var(--app-nav-h, 80px))`. The old hardcoded 80px was wrong: the Nav is 98px unscrolled and 68px scrolled, so `main` underlapped it by ~18px at scroll 0. `dvh` stays stable under mobile browser chrome. SequenceViewer and CodonViewer hide their native scrollbars via the `.no-scrollbar` utility in `src/index.css` — fade indicators already communicate scroll affordance.
 
 ## Development Commands
 ```bash
@@ -175,7 +186,7 @@ npm run test:coverage # vitest run with coverage
 - `3dmol`: Primary molecular visualization (AlphaFold PDB cartoon/ribbon rendering)
 - `framer-motion`: Animation library for central dogma steps
 - `zustand`: State management — the selected-variant store (`src/store/variantStore.ts`) drives all tabs
-- `vitest` + `@testing-library/react`: Testing (362 tests across 40 files)
+- `vitest` + `@testing-library/react`: Testing (414 tests across 42 files)
 
 Note: `three`/`@react-three/*`/`recharts` were removed (unused). 3Dmol.js is the only viz lib.
 

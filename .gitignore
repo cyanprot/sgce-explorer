@@ -32,6 +32,7 @@ npm-debug.log*
 
 # QC artifacts
 qc-screenshots/
+.playwright-mcp/
 
 # Misc
 *.tgz

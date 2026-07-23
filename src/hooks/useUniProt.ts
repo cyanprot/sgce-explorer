@@ -25,12 +25,17 @@ function transformAnnotation(data: unknown): UniProtAnnotation {
     proteinName:
       d.proteinDescription?.recommendedName?.fullName?.value ?? "Unknown",
     geneName: d.genes?.[0]?.geneName?.value ?? "Unknown",
-    features: (d.features ?? []).map((f) => ({
-      type: f.type ?? "",
-      description: f.description ?? "",
-      start: f.location?.start?.value ?? 0,
-      end: f.location?.end?.value ?? 0,
-    })),
+    // Drop features with no usable location rather than defaulting them to 0.
+    // A missing location used to render as "residues 0-0", which reads like a
+    // real annotation at a real position and is neither.
+    features: (d.features ?? [])
+      .filter((f) => typeof f.location?.start?.value === "number" && typeof f.location?.end?.value === "number")
+      .map((f) => ({
+        type: f.type ?? "",
+        description: f.description ?? "",
+        start: f.location!.start!.value!,
+        end: f.location!.end!.value!,
+      })),
     keywords: (d.keywords ?? []).map((k) => k.name ?? ""),
     lastModified: d.entryAudit?.lastAnnotationUpdateDate ?? "",
   };

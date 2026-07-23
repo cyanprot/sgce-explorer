@@ -49,7 +49,7 @@ describe("ResearchPanel (unit)", () => {
   it("renders all 4 card headings", () => {
     render(<ResearchPanel />);
     expect(screen.getByText("PubMed Literature")).toBeInTheDocument();
-    expect(screen.getByText("Clinical Trials")).toBeInTheDocument();
+    expect(screen.getByText("Clinical Trials on ClinicalTrials.gov")).toBeInTheDocument();
     expect(screen.getByText("UniProt Annotation")).toBeInTheDocument();
     expect(screen.getByText(/Protein Interactions \(STRING\)/)).toBeInTheDocument();
   });
@@ -190,7 +190,9 @@ describe("ResearchPanel (integration)", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Epsilon-sarcoglycan")).toBeInTheDocument();
-      expect(screen.getByText(/SGCE/)).toBeInTheDocument();
+      // Exact match: the trials card's source/affiliation notice also mentions
+      // SGCE, so a loose /SGCE/ now matches more than the gene-name field.
+      expect(screen.getByText("SGCE", { exact: true })).toBeInTheDocument();
     });
   });
 

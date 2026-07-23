@@ -29,6 +29,15 @@ body {
   z-index: 1;
 }
 
+/* Variant list rows and detail actions: the one interactive surface that never
+   inherited the repo's focus-ring pattern, so keyboard users had no visible
+   position in a 600-row list. */
+.variant-row:focus-visible,
+.variant-action:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
 /* Central-dogma step selector: SVG <g> has no default focus box, so a
    dedicated ring circle is revealed on keyboard focus. */
 .dogma-step {

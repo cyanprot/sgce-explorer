@@ -64,8 +64,21 @@ export function VariantFilters({
           <option key={s} value={s}>{SIG_LABEL[s]}</option>
         ))}
       </select>
-      <span className="text-xs font-mono ml-auto" style={{ color: COLORS.textDim }}>
-        {shown} / {total}
+      {/* role="status" so a screen-reader user typing in the search box hears the
+          result count change. Without it, filtering was silent: the only feedback
+          was a number that never announced itself. */}
+      <span
+        className="text-xs font-mono ml-auto"
+        style={{ color: COLORS.textDim }}
+        role="status"
+        aria-live="polite"
+      >
+        <span aria-hidden="true">
+          {shown} / {total}
+        </span>
+        <span className="sr-only">
+          {shown} of {total} variants shown
+        </span>
       </span>
     </div>
   );

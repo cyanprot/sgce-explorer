@@ -6,9 +6,18 @@ const SEARCH_TERMS =
 
 const ESEARCH_URL = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&retmax=10&sort=date&term=${SEARCH_TERMS}`;
 
+// A malformed esearch body (common when NCBI rate-limits an unauthenticated
+// caller) used to yield `[]`, which made `esummaryUrl` null, which disabled the
+// second request, which left the hook returning `data: null, error: null`. Every
+// render branch in PubMedCard then fell through and the card body was BLANK —
+// not even "no results". Throw so the failure reaches the UI.
 function extractPmids(data: unknown): string[] {
   const d = data as { esearchresult?: { idlist?: string[] } };
-  return d?.esearchresult?.idlist ?? [];
+  const list = d?.esearchresult?.idlist;
+  if (!Array.isArray(list)) {
+    throw new Error("PubMed esearch returned an unexpected response (no idlist)");
+  }
+  return list;
 }
 
 function transformArticles(data: unknown): PubMedArticle[] {
@@ -16,7 +25,9 @@ function transformArticles(data: unknown): PubMedArticle[] {
     result?: Record<string, unknown> & { uids?: string[] };
   };
   const result = d?.result;
-  if (!result?.uids) return [];
+  if (!Array.isArray(result?.uids)) {
+    throw new Error("PubMed esummary returned an unexpected response (no uids)");
+  }
 
   return result.uids
     .filter((uid) => result[uid] != null)
@@ -57,7 +68,10 @@ export function usePubMed(): FetchState<PubMedArticle[]> {
   });
 
   return {
-    data: summary.data,
+    // A search that legitimately matched nothing is an empty result, not an
+    // absent one: report [] so the card can say "no results" instead of
+    // rendering nothing at all.
+    data: pmids !== null && pmids.length === 0 ? [] : summary.data,
     loading: search.loading || summary.loading,
     error: search.error || summary.error,
   };

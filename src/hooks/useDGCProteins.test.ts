@@ -35,7 +35,7 @@ describe("useDGCProteins", () => {
     }
   });
 
-  it("enabled=true: fetches 3 PDBs (beta, gamma, delta — not epsilon)", async () => {
+  it("enabled=true: fetches 3 PDBs (beta, zeta, delta — not epsilon)", async () => {
     const fetchSpy = mockFetchPdb();
     vi.stubGlobal("fetch", fetchSpy);
 
@@ -47,7 +47,7 @@ describe("useDGCProteins", () => {
     // Verify URLs contain sarcoglycan UniProt IDs
     const urls = fetchSpy.mock.calls.map((c: any[]) => c[0] as string);
     expect(urls.some((u: string) => u.includes("Q16585"))).toBe(true); // beta
-    expect(urls.some((u: string) => u.includes("Q13326"))).toBe(true); // gamma
+    expect(urls.some((u: string) => u.includes("Q96LD1"))).toBe(true); // zeta
     expect(urls.some((u: string) => u.includes("Q92629"))).toBe(true); // delta
     // Should NOT fetch epsilon (O43556)
     expect(urls.some((u: string) => u.includes("O43556"))).toBe(false);
@@ -95,10 +95,10 @@ describe("useDGCProteins", () => {
     expect(beta?.error).toBeTruthy();
     expect(beta?.pdbData).toBeNull();
 
-    // gamma and delta should succeed
-    const gamma = result.current.partners.find((p) => p.gene === "SGCG");
+    // zeta and delta should succeed
+    const zeta = result.current.partners.find((p) => p.gene === "SGCZ");
     const delta = result.current.partners.find((p) => p.gene === "SGCD");
-    expect(gamma?.pdbData).not.toBeNull();
+    expect(zeta?.pdbData).not.toBeNull();
     expect(delta?.pdbData).not.toBeNull();
   });
 
@@ -163,6 +163,6 @@ describe("useDGCProteins", () => {
     const { result } = renderHook(() => useDGCProteins(false));
 
     const genes = result.current.partners.map((p) => p.gene);
-    expect(genes).toEqual(["SGCB", "SGCG", "SGCD"]);
+    expect(genes).toEqual(["SGCB", "SGCZ", "SGCD"]);
   });
 });

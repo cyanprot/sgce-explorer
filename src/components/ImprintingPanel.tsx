@@ -8,17 +8,21 @@ import { useState } from "react";
 import { COLORS, MUTATION } from "@/constants/protein-data";
 import { ToggleButton } from "./ui/ToggleButton";
 import { InfoCard } from "./ui/InfoCard";
+import { PinnedToPatientNote } from "./ui/PinnedToPatientNote";
 import type { AlleleHighlight } from "@/types";
 
 // The imprinting mechanism + consequence flow describe the patient's frameshift
 // (c.108dup -> PTC -> NMD -> complete LoF). Pin to the patient variant rather than
 // the store selection, so a selected missense/benign isn't shown on a frameshift path.
+// PinnedToPatientNote makes that pin visible to the reader — without it this panel
+// presented one person's genotype as the reader's own.
 export function ImprintingPanel() {
   const [highlight, setHighlight] = useState<AlleleHighlight>("both");
   const variant = MUTATION;
 
   return (
     <div className="p-6">
+      <PinnedToPatientNote what="This imprinting walkthrough" />
       <div className="flex gap-2 mb-5">
         <ToggleButton active={highlight === "both"} onClick={() => setHighlight("both")} label="Both alleles" color={COLORS.accent} />
         <ToggleButton active={highlight === "paternal"} onClick={() => setHighlight("paternal")} label="Paternal (active)" color={COLORS.active} />
@@ -27,10 +31,14 @@ export function ImprintingPanel() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Left: SVG diagram */}
-        <div className="rounded-xl p-5 border lg:border-r lg:pr-5 flex items-center justify-center" style={{ background: COLORS.panel, borderColor: COLORS.panelBorder }}>
+        {/* The diagram carries 8px type inside a 500-unit viewBox. Letting it
+            scale down to a 390px viewport rendered that at roughly 4-5 physical
+            pixels — present but unreadable. Give it a floor and let the container
+            scroll instead, the same convention the sequence and codon tracks use. */}
+        <div className="rounded-xl p-5 border lg:border-r lg:pr-5 overflow-x-auto no-scrollbar" style={{ background: COLORS.panel, borderColor: COLORS.panelBorder }}>
           <svg
             viewBox="0 0 500 480"
-            style={{ width: "100%", maxWidth: 480, height: "auto" }}
+            style={{ width: "100%", minWidth: 440, maxWidth: 480, height: "auto" }}
             role="img"
             aria-label="SGCE genomic imprinting diagram at 7q21.3 showing paternal allele (active, carries mutation) and maternal allele (silenced by CpG methylation), resulting in complete loss of ε-sarcoglycan function"
           >
@@ -85,7 +93,7 @@ export function ImprintingPanel() {
 
             {/* Consequence flow */}
             <line x1={20} y1={270} x2={480} y2={270} stroke={COLORS.panelBorder} strokeWidth={1} />
-            <text x={250} y={295} textAnchor="middle" fontSize={13} fill={COLORS.text} fontWeight={700}>Consequence for Patient</text>
+            <text x={250} y={295} textAnchor="middle" fontSize={13} fill={COLORS.text} fontWeight={700}>Consequence — c.108dup</text>
 
             {/* Paternal path */}
             <rect x={30} y={310} width={130} height={45} rx={6} fill={COLORS.active} opacity={0.1} stroke={COLORS.active} strokeWidth={1} />
@@ -124,15 +132,28 @@ export function ImprintingPanel() {
 
         {/* Right: Info cards */}
         <div className="flex flex-col gap-4">
+          {/* Every claim here is from Monk et al., Genome Res 2008 (PMID 18480470),
+              which characterised this exact locus. Two edits were needed:
+              - the promoter separation was stated as "<100bp"; that figure is in
+                no source cited here, and the paper gives no distance. The shared
+                island and divergent orientation ARE its finding, so say that.
+              - "ICR acts as CTCF boundary" was removed outright. The paper does
+                not report CTCF at this locus; it concludes the opposite, that
+                "this domain may utilize a different silencing mechanism as
+                compared to other imprinted domains". The claim appears to have
+                been carried over from the H19/IGF2 model, where it is true. */}
           <InfoCard
             title="Imprinting Control Region (ICR)"
             items={[
-              "PEG10 and SGCE share a single CpG island at their divergent promoters (<100bp apart)",
-              "Maternal germline methylation established during oogenesis",
-              "ICR acts as CTCF boundary — regulates chromatin domain organization",
+              "PEG10 and SGCE are adjacent and divergently transcribed, sharing a single CpG island that spans both promoters",
+              "That island is the imprinting control region: maternal germline methylation is established during oogenesis and all imprinted expression in the cluster depends on it",
+              "Unlike H19/IGF2, no CTCF boundary has been demonstrated here — the domain shows no allele-specific repressive histone marks outside the ICR itself, suggesting a different silencing mechanism",
               "Methylation maintained through somatic divisions by DNMT1",
+              "Source: Monk et al., Genome Res 2008;18(8):1270-81 (PMID 18480470)",
             ]}
           />
+          {/* Histone marks in the diagram above (H3K9me3/H4K20me3 maternal,
+              H3K4me2/H3K9ac paternal) are a verbatim match to this source. */}
           <InfoCard
             title="Why this is NOT haploinsufficiency"
             items={[
@@ -144,8 +165,9 @@ export function ImprintingPanel() {
             ]}
           />
           <InfoCard
-            title="Therapeutic implication"
+            title="Therapeutic implication — design concept only"
             items={[
+              "Nothing below exists as a treatment. No gene-replacement therapy for DYT-SGCE has entered a clinical trial anywhere; this section describes what the biology would permit, not what is available.",
               "Demethylation of maternal allele: theoretically possible but risky (affects PEG10 + other imprinted genes)",
               "Gene replacement via AAV: deliver SGCE cDNA under neuron-specific promoter → bypass imprinting",
               "AAV construct: ITR — Promoter — Kozak — SGCE cDNA (~1.3kb) — WPRE — polyA — ITR",

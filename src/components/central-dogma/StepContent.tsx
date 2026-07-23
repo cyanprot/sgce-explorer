@@ -49,7 +49,7 @@ export function StepContent({ step }: StepContentProps) {
             className="text-sm font-bold mt-0 mb-2"
             style={{ color: COLORS.danger }}
           >
-            Your mutation — {variant.cNotation}
+            This mutation — {variant.cNotation}
           </h3>
           <p className="text-sm leading-relaxed m-0">{step.mutationNote}</p>
         </div>

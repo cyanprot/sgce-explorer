@@ -1,0 +1,244 @@
+[
+  {
+    "dbSNP": "rs766778442",
+    "begin": "13",
+    "end": "13",
+    "wildType": "C",
+    "alternativeSequence": "*",
+    "consequenceType": "stop gained",
+    "locations": [
+      "p.Cys13Ter",
+      "c.37_38insA"
+    ],
+    "feedCNotation": "c.37_38insA",
+    "simpleSub": false,
+    "expectedClass": "nonsense"
+  },
+  {
+    "dbSNP": "rs1064797339",
+    "begin": "65",
+    "end": "65",
+    "wildType": "E",
+    "alternativeSequence": "*",
+    "consequenceType": "missense",
+    "locations": [
+      "p.Glu65Ter",
+      "c.193G>T"
+    ],
+    "feedCNotation": "c.193G>T",
+    "simpleSub": true,
+    "expectedClass": "nonsense"
+  },
+  {
+    "dbSNP": "rs2116972508",
+    "begin": "66",
+    "end": "66",
+    "wildType": "Y",
+    "alternativeSequence": "*",
+    "consequenceType": "stop gained",
+    "locations": [
+      "p.Tyr66Ter",
+      "c.197_198insGAGAATA"
+    ],
+    "feedCNotation": "c.197_198insGAGAATA",
+    "simpleSub": false,
+    "expectedClass": "nonsense"
+  },
+  {
+    "dbSNP": "rs121908489",
+    "begin": "97",
+    "end": "97",
+    "wildType": "R",
+    "alternativeSequence": "*",
+    "consequenceType": "missense",
+    "locations": [
+      "p.R97*",
+      "p.Arg97Ter",
+      "c.289C>T"
+    ],
+    "feedCNotation": "c.289C>T",
+    "simpleSub": true,
+    "expectedClass": "nonsense"
+  },
+  {
+    "dbSNP": "rs121908490",
+    "begin": "102",
+    "end": "102",
+    "wildType": "R",
+    "alternativeSequence": "*",
+    "consequenceType": "missense",
+    "locations": [
+      "p.Arg102Ter",
+      "c.304C>T"
+    ],
+    "feedCNotation": "c.304C>T",
+    "simpleSub": true,
+    "expectedClass": "nonsense"
+  },
+  {
+    "dbSNP": "rs1584663425",
+    "begin": "148",
+    "end": "149",
+    "wildType": "IN",
+    "alternativeSequence": "*",
+    "consequenceType": "frameshift",
+    "locations": [
+      "p.Ile148_Asn149insTer"
+    ],
+    "feedCNotation": null,
+    "simpleSub": false,
+    "expectedClass": "nonsense"
+  },
+  {
+    "dbSNP": "rs398123812",
+    "begin": "237",
+    "end": "237",
+    "wildType": "R",
+    "alternativeSequence": "*",
+    "consequenceType": "missense",
+    "locations": [
+      "p.Arg237Ter",
+      "c.709C>T"
+    ],
+    "feedCNotation": "c.709C>T",
+    "simpleSub": true,
+    "expectedClass": "nonsense"
+  },
+  {
+    "dbSNP": "rs2116723386",
+    "begin": "251",
+    "end": "251",
+    "wildType": "E",
+    "alternativeSequence": "*",
+    "consequenceType": "missense",
+    "locations": [
+      "p.E251*",
+      "p.Glu251Ter",
+      "c.751G>T"
+    ],
+    "feedCNotation": "c.751G>T",
+    "simpleSub": true,
+    "expectedClass": "nonsense"
+  },
+  {
+    "dbSNP": "rs794727794",
+    "begin": "257",
+    "end": "258",
+    "wildType": "TC",
+    "alternativeSequence": "*",
+    "consequenceType": "frameshift",
+    "locations": [
+      "p.Thr257_Cys258insTer"
+    ],
+    "feedCNotation": null,
+    "simpleSub": false,
+    "expectedClass": "nonsense"
+  },
+  {
+    "dbSNP": "rs1562806273",
+    "begin": "280",
+    "end": "280",
+    "wildType": "K",
+    "alternativeSequence": "*",
+    "consequenceType": "missense",
+    "locations": [
+      "p.Lys280Ter",
+      "c.838A>T"
+    ],
+    "feedCNotation": "c.838A>T",
+    "simpleSub": true,
+    "expectedClass": "nonsense"
+  },
+  {
+    "dbSNP": "rs2116695697",
+    "begin": "289",
+    "end": "289",
+    "wildType": "I",
+    "alternativeSequence": "S",
+    "consequenceType": "stop gained",
+    "locations": [
+      "p.Ile289SerfsTer4",
+      "c.865_866insGCAGGAAGTGA"
+    ],
+    "feedCNotation": "c.865_866insGCAGGAAGTGA",
+    "simpleSub": false,
+    "expectedClass": "frameshift"
+  },
+  {
+    "dbSNP": "rs559353446",
+    "begin": "325",
+    "end": "325",
+    "wildType": "S",
+    "alternativeSequence": "*",
+    "consequenceType": "missense",
+    "locations": [
+      "p.S325*",
+      "p.Ser325Ter",
+      "c.974C>A"
+    ],
+    "feedCNotation": "c.974C>A",
+    "simpleSub": true,
+    "expectedClass": "nonsense"
+  },
+  {
+    "dbSNP": null,
+    "begin": "381",
+    "end": "382",
+    "wildType": "AW",
+    "alternativeSequence": "Y*",
+    "consequenceType": "stop gained",
+    "locations": [
+      "p.Ala381_Trp382insTyrTer",
+      "c.1144_1145insATTAATAATTAT"
+    ],
+    "feedCNotation": "c.1144_1145insATTAATAATTAT",
+    "simpleSub": false,
+    "expectedClass": "nonsense"
+  },
+  {
+    "dbSNP": "rs766199553",
+    "begin": "423",
+    "end": "423",
+    "wildType": "Q",
+    "alternativeSequence": "*",
+    "consequenceType": "missense",
+    "locations": [
+      "p.Q423*",
+      "p.Gln423Ter",
+      "c.1267C>T"
+    ],
+    "feedCNotation": "c.1267C>T",
+    "simpleSub": true,
+    "expectedClass": "nonsense"
+  },
+  {
+    "dbSNP": null,
+    "begin": "438",
+    "end": "438",
+    "wildType": "*",
+    "alternativeSequence": "C",
+    "consequenceType": "missense",
+    "locations": [
+      "p.Ter438CysextTer6",
+      "c.1314A>C"
+    ],
+    "feedCNotation": "c.1314A>C",
+    "simpleSub": true,
+    "expectedClass": "stop-lost"
+  },
+  {
+    "dbSNP": null,
+    "begin": "438",
+    "end": "438",
+    "wildType": "*",
+    "alternativeSequence": "S",
+    "consequenceType": "missense",
+    "locations": [
+      "p.Ter438SerextTer6",
+      "c.1313G>C"
+    ],
+    "feedCNotation": "c.1313G>C",
+    "simpleSub": true,
+    "expectedClass": "stop-lost"
+  }
+]
