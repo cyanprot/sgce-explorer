@@ -25,7 +25,7 @@ function mkVariant(
     notation: "p.test",
     cdsPosition: edit?.cdsStart ?? 0,
     aaPosition,
-    consequence,
+    reportedConsequence: consequence,
     significance: "vus",
     exon: 1,
     edit,
@@ -154,7 +154,9 @@ describe("codon-data", () => {
       expect(PATIENT_CONSEQUENCE.novelAaCount).toBe(31);
       expect(PATIENT_CONSEQUENCE.mutantProteinLength).toBe(67);
       expect(PATIENT_CONSEQUENCE.nmdPredicted).toBe(true);
-      expect((PATIENT_CONSEQUENCE.fractionOfWT * 100).toFixed(1)).toBe("15.3");
+      expect(PATIENT_CONSEQUENCE.evidence).toBe("computed");
+      expect(PATIENT_CONSEQUENCE.derivedClass).toBe("frameshift");
+      expect(((PATIENT_CONSEQUENCE.fractionOfWT ?? 0) * 100).toFixed(1)).toBe("15.3");
       expect(deriveConsequence(MUTATION)).toEqual(PATIENT_CONSEQUENCE);
     });
 
@@ -184,15 +186,189 @@ describe("codon-data", () => {
       expect(c.mutantProteinLength).toBe(436);
     });
 
-    it("browse-only frameshift (no edit): declared class, never a fabricated truncation", () => {
-      // A catalogued frameshift with no exact CDS edit cannot have its PTC computed.
-      // The engine must NOT invent a truncation — it returns the full-length placeholder,
-      // and consumers (3D view, DomainBar) must render a "browse-only" state, not 437-aa WT.
+    it("browse-only frameshift (no edit): reports nothing rather than a full-length placeholder", () => {
+      // A catalogued frameshift with no exact CDS edit cannot have its PTC
+      // computed. The engine must not answer the question it cannot answer:
+      // this used to return mutantProteinLength 437 / fractionOfWT 1 /
+      // nmdPredicted false for 58 pathogenic frameshifts, which reads as
+      // "full-length protein, no NMD" — a reassuring result, and a fabricated
+      // one. Null is the only honest value.
       const c = deriveConsequence(mkVariant("frameshift", 300, undefined));
-      expect(c.truncated).toBe(false);
+      expect(c.evidence).toBe("reported");
+      expect(c.derivedClass).toBe(null);
+      expect(c.truncated).toBe(null);
       expect(c.ptcPosition).toBe(null);
+      expect(c.mutantProteinLength).toBe(null);
+      expect(c.fractionOfWT).toBe(null);
+      expect(c.nmdPredicted).toBe(null);
+    });
+
+    it("a mislabelled stop-gain still truncates: the sequence overrules the catalog", () => {
+      // The bug this whole pass exists for. UniProt ships c.304C>T (p.Arg102Ter)
+      // typed `consequenceType: "missense"`, and the engine used to gate
+      // truncation on that label — finding the stop at codon 102 and discarding
+      // it, while still reporting a 101 aa product.
+      const v = mkVariant("missense", 102, { kind: "sub", cdsStart: 304, altBase: "T" });
+      const c = deriveConsequence(v);
+      expect(c.derivedClass).toBe("nonsense");
+      expect(c.truncated).toBe(true);
+      expect(c.ptcPosition).toBe(102);
+      expect(c.truncatedLength).toBe(101);
+      expect(c.novelAaCount).toBe(0);
+      expect(c.nmdPredicted).toBe(true);
+    });
+
+    it("in-frame indels are not misflagged now that the class gate is gone", () => {
+      // The reason the gate existed: comparing the mutant stop against the WT
+      // stop codon (438) would call every in-frame indel a truncation. Comparing
+      // against the mutant's own expected stop separates them without consulting
+      // any label.
+      const del = deriveConsequence(mkVariant("missense", 4, { kind: "del", cdsStart: 10, cdsEnd: 12 }));
+      expect(del.truncated).toBe(false);
+      expect(del.derivedClass).toBe("inframe-deletion");
+      expect(del.mutantProteinLength).toBe(436);
+
+      const ins = deriveConsequence(
+        mkVariant("missense", 4, { kind: "ins", cdsStart: 12, insSeq: "GCA" }),
+      );
+      expect(ins.truncated).toBe(false);
+      expect(ins.derivedClass).toBe("inframe-insertion");
+      expect(ins.mutantProteinLength).toBe(438);
+    });
+
+    it("applyEdit rejects out-of-range coordinates instead of inventing a protein", () => {
+      // cdsStart 0 used to derive to "875 aa, 200.2% of WT".
+      expect(() => applyEdit(CDS_SEQUENCE, { kind: "sub", cdsStart: 0, altBase: "A" })).toThrow(
+        RangeError,
+      );
+      expect(() =>
+        applyEdit(CDS_SEQUENCE, { kind: "sub", cdsStart: CDS_SEQUENCE.length + 1, altBase: "A" }),
+      ).toThrow(RangeError);
+      // An unknown kind used to return the wild-type sequence unchanged.
+      expect(() =>
+        applyEdit(CDS_SEQUENCE, { kind: "bogus" as never, cdsStart: 10 }),
+      ).toThrow();
+    });
+  });
+
+  // The engine's edges were entirely uncovered. An inverted comparison in the
+  // NMD rule flips a clinical prognosis ("mRNA is destroyed" vs "a truncated
+  // protein is made"), and nothing tested it.
+  describe("deriveConsequence — boundaries", () => {
+    it("a late PTC escapes NMD — this is Q423*, a real catalog variant", () => {
+      const v = mkVariant("missense", 423, { kind: "sub", cdsStart: 1267, altBase: "T" });
+      const c = deriveConsequence(v);
+      expect(c.derivedClass).toBe("nonsense");
+      expect(c.truncated).toBe(true);
+      expect(c.ptcPosition).toBe(423);
+      // Inverting this comparison would flip a clinical prognosis: "the mRNA is
+      // destroyed" vs "a truncated protein is made and has to be dealt with".
+      expect(c.nmdPredicted).toBe(false);
+    });
+
+    it("straddles the 50-nt rule: 1243 triggers NMD, 1249 does not", () => {
+      // Last junction 1297, rule 50 -> boundary at 1247. Two real stop-gains sit
+      // either side of it, six nucleotides apart.
+      const before = deriveConsequence(mkVariant("missense", 415, { kind: "sub", cdsStart: 1243, altBase: "T" }));
+      const after = deriveConsequence(mkVariant("missense", 417, { kind: "sub", cdsStart: 1249, altBase: "T" }));
+      expect(before.truncated).toBe(true);
+      expect(before.nmdPredicted).toBe(true);
+      expect(after.truncated).toBe(true);
+      expect(after.nmdPredicted).toBe(false);
+    });
+
+    it("a PTC far upstream of the last junction triggers NMD", () => {
+      expect(PATIENT_CONSEQUENCE.ptcPosition).toBe(68);
+      expect(PATIENT_CONSEQUENCE.nmdPredicted).toBe(true);
+    });
+
+    it("first codon", () => {
+      const c = deriveConsequence(mkVariant("missense", 1, { kind: "sub", cdsStart: 1, altBase: "T" }));
+      expect(c.evidence).toBe("computed");
+      expect(c.mutantProteinLength).toBeGreaterThan(0);
+    });
+
+    it("last codon", () => {
+      const c = deriveConsequence(mkVariant("missense", 437, { kind: "sub", cdsStart: 1311, altBase: "T" }));
+      expect(c.truncated).toBe(false);
       expect(c.mutantProteinLength).toBe(437);
-      expect(c.fractionOfWT).toBe(1);
+    });
+
+    it("stop-lost: no stop anywhere, so nothing is reported as truncated", () => {
+      // The null-stop branch was completely uncovered.
+      const v = mkVariant("missense", 438, { kind: "sub", cdsStart: 1312, altBase: "C" });
+      const c = deriveConsequence(v);
+      expect(c.ptcPosition).toBe(null);
+      expect(c.truncated).toBe(false);
+      expect(c.mutantProteinLength).toBe(438);
+    });
+
+    it("synonymous: no catalog instance exists, so pin the behaviour here", () => {
+      // CDS codon 5 is CGG (Arg); CGA is also Arg.
+      const wt = CDS_SEQUENCE.slice(12, 15);
+      expect(wt).toBe("CGG");
+      const c = deriveConsequence(mkVariant("missense", 5, { kind: "sub", cdsStart: 15, altBase: "A" }));
+      expect(c.derivedClass).toBe("synonymous");
+      expect(c.truncated).toBe(false);
+      expect(c.mutantProteinLength).toBe(437);
+    });
+
+    it("every class returns nulls, not numbers, when there is no edit", () => {
+      const classes = [
+        "frameshift",
+        "nonsense",
+        "missense",
+        "synonymous",
+        "inframe-deletion",
+        "inframe-insertion",
+      ] as const;
+      for (const cls of classes) {
+        const c = deriveConsequence(mkVariant(cls, 200, undefined));
+        expect(c.evidence).toBe("reported");
+        expect(c.mutantProteinLength).toBe(null);
+        expect(c.fractionOfWT).toBe(null);
+        expect(c.nmdPredicted).toBe(null);
+        expect(c.truncated).toBe(null);
+      }
+    });
+
+    it("exhaustive substitution sweep: 437 codons x 3 positions x 4 bases", () => {
+      // ~5,000 cases, small enough to enumerate rather than sample. Nothing in
+      // the space may produce an impossible result: a protein longer than the
+      // wild type, a fraction above 1, a PTC outside the sequence, or a
+      // truncation flag that disagrees with the reported PTC.
+      const bases = ["A", "C", "G", "T"] as const;
+      const violations: string[] = [];
+      let checked = 0;
+      for (let aa = 1; aa <= WT_PROTEIN_LENGTH; aa++) {
+        for (let off = 0; off < 3; off++) {
+          const cdsStart = (aa - 1) * 3 + off + 1;
+          for (const b of bases) {
+            if (CDS_SEQUENCE[cdsStart - 1] === b) continue;
+            checked++;
+            const c = deriveConsequence(mkVariant("missense", aa, { kind: "sub", cdsStart, altBase: b }));
+            const len = c.mutantProteinLength;
+            if (len === null || len < 0 || len > 438) {
+              violations.push(`aa${aa}/${cdsStart}${b}: length ${len}`);
+            }
+            if (c.fractionOfWT !== null && (c.fractionOfWT < 0 || c.fractionOfWT > 1.01)) {
+              violations.push(`aa${aa}/${cdsStart}${b}: fraction ${c.fractionOfWT}`);
+            }
+            if (c.truncated !== (c.ptcPosition !== null)) {
+              violations.push(`aa${aa}/${cdsStart}${b}: truncated/ptc disagree`);
+            }
+            if (c.ptcPosition !== null && (c.ptcPosition < 1 || c.ptcPosition > 438)) {
+              violations.push(`aa${aa}/${cdsStart}${b}: ptc ${c.ptcPosition}`);
+            }
+            // A substitution changes one codon; it can never shift the frame.
+            if (c.novelAaCount !== 0) {
+              violations.push(`aa${aa}/${cdsStart}${b}: novelAaCount ${c.novelAaCount}`);
+            }
+          }
+        }
+      }
+      expect(checked).toBeGreaterThan(3000);
+      expect(violations.slice(0, 10)).toEqual([]);
     });
   });
 

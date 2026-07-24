@@ -27,9 +27,18 @@ export function TrialsCard({ trials, loading, error }: Props) {
       className="rounded-xl p-4 border"
       style={{ background: COLORS.panel, borderColor: COLORS.panelBorder }}
     >
-      <h4 className="text-sm font-bold mb-2.5" style={{ color: COLORS.accent }}>
-        Clinical Trials{trialCount}
+      <h4 className="text-sm font-bold mb-1" style={{ color: COLORS.accent }}>
+        Clinical Trials on ClinicalTrials.gov{trialCount}
       </h4>
+      {/* A patient emailed asking to enrol in "your" trial after reading this
+          card. It lists other people's studies, from a public registry, and the
+          list has to say so before the first row. */}
+      <p className="text-[10px] mb-2.5 leading-snug" style={{ color: COLORS.textDim }}>
+        Registered studies matching SGCE / myoclonus-dystonia, pulled live from the public
+        registry. These are run by other institutions — this site has no affiliation with any of
+        them and does not recruit. Check each study's own record for eligibility and contact
+        details.
+      </p>
 
       {loading && (
         <p className="text-xs" style={{ color: COLORS.textDim }}>
@@ -45,7 +54,7 @@ export function TrialsCard({ trials, loading, error }: Props) {
 
       {!loading && !error && trials && trials.length === 0 && (
         <p className="text-xs" style={{ color: COLORS.textDim }}>
-          No trials found
+          The registry returned no matching studies.
         </p>
       )}
 

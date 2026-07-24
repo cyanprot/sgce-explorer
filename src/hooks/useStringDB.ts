@@ -14,7 +14,13 @@ function transformInteractions(data: unknown): StringInteraction[] {
     dscore?: number;
   }[];
 
-  if (!Array.isArray(raw)) return [];
+  // STRING answers rate limits and errors with a 200 and a non-array body.
+  // Coercing that to [] rendered "Protein Interactions (STRING) (0)" — i.e.
+  // "ε-sarcoglycan has no known partners", the exact opposite of this site's own
+  // DGC story, presented as a result rather than a failure.
+  if (!Array.isArray(raw)) {
+    throw new Error("STRING returned an unexpected response (not an array)");
+  }
 
   const seen = new Set<string>();
   const result: StringInteraction[] = [];

@@ -4,10 +4,11 @@
  * Uses 3Dmol.js to render actual AlphaFold PDB structure
  * with domain coloring, mutation/glycosylation markers, and WT/Mutant toggle.
  */
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import * as $3Dmol from "3dmol";
 import { COLORS, DOMAINS, PROTEIN_LENGTH, GLYCOSYLATION_SITES, SGCE_DGC_OFFSET } from "@/constants/protein-data";
 import { useVariantStore } from "@/store/variantStore";
+import { describeVariant } from "@/constants/variant-display";
 import { hexWithAlpha } from "@/utils/hexWithAlpha";
 import { ToggleButton } from "./ui/ToggleButton";
 import { useProteinData } from "@/hooks/useProteinData";
@@ -36,17 +37,19 @@ export function ProteinStructure3D() {
 
   const showMutant = viewMode === "mutant";
 
-  // Three mutant render states. `deriveConsequence` only computes a PTC for
-  // variants carrying an exact CDS edit; a declared frameshift/nonsense without
-  // one (browse-only catalog entry) has truncated=false and would otherwise be
-  // drawn as a full-length 437-aa protein — a scientifically false picture.
-  const isTruncatingClass =
-    variant.consequence === "frameshift" || variant.consequence === "nonsense";
-  const browseOnlyTruncation = isTruncatingClass && !consequence.truncated;
-  const mutantLabel = consequence.truncated
+  // Three mutant render states, resolved once from the shared descriptor so this
+  // view and the detail card cannot drift apart again:
+  //   computed + truncated  -> WT region, aberrant tract, PTC marker
+  //   computed, no PTC      -> full-length with the changed residue marked
+  //   reported (no edit)    -> full-length shown FOR REFERENCE ONLY; the exact
+  //                            coding change is unknown, so no truncation is drawn
+  //                            and the caption must say so.
+  const facts = useMemo(() => describeVariant(variant, consequence), [variant, consequence]);
+  const evidenceOnly = consequence.evidence === "reported";
+  const mutantLabel = facts.truncated
     ? `${consequence.truncatedLength} aa`
-    : browseOnlyTruncation
-      ? "frameshift"
+    : evidenceOnly
+      ? `${facts.classLabel.toLowerCase()} (length not computed)`
       : `${consequence.mutantProteinLength} aa`;
 
   // Effect 1: Viewer lifecycle — uses dedicated div, not the React container
@@ -56,9 +59,19 @@ export function ProteinStructure3D() {
 
     // Defer creation to next frame so the div has layout dimensions
     const raf = requestAnimationFrame(() => {
-      const viewer = $3Dmol.createViewer(el, {
-        backgroundColor: COLORS.bg,
-      });
+      // createViewer throws on a WebGL context failure rather than returning
+      // null. Uncaught inside rAF it escaped React entirely: `viewerError`
+      // stayed null, so the UI showed no error, and the render loop below
+      // re-armed forever behind a blank black box.
+      let viewer: $3Dmol.GLViewer | undefined;
+      try {
+        viewer = $3Dmol.createViewer(el, { backgroundColor: COLORS.bg });
+      } catch (e) {
+        setViewerError(
+          `3D viewer could not start: ${e instanceof Error ? e.message : String(e)}`,
+        );
+        return;
+      }
 
       if (!viewer) {
         setViewerError("WebGL not available");
@@ -92,9 +105,18 @@ export function ProteinStructure3D() {
     if (!pdbData) return;
 
     let retryTimer: ReturnType<typeof setTimeout>;
+    // Bounded: the viewer is created one animation frame after mount, so a
+    // handful of 50 ms polls is generous. This used to re-arm indefinitely, so a
+    // viewer that never appeared produced a blank box and no error, forever.
+    const MAX_ATTEMPTS = 40; // ~2 s
+    let attempts = 0;
     const tryRender = () => {
       const viewer = viewerRef.current;
       if (!viewer) {
+        if (++attempts > MAX_ATTEMPTS) {
+          setViewerError("3D viewer did not initialize (WebGL may be unavailable)");
+          return;
+        }
         retryTimer = setTimeout(tryRender, 50);
         return;
       }
@@ -122,17 +144,28 @@ export function ProteinStructure3D() {
       const ptc = consequence.ptcPosition;
       if (consequence.truncated && ptc != null) {
         // Truncating variant with a computed PTC: WT region, aberrant tract, then hidden.
+        //
+        // Both boundaries are half-open, and both used to be off by one. Residue
+        // `aaPosition` is the FIRST changed residue, so the wild-type stretch ends
+        // at aaPosition-1; codon `ptc` is the stop itself and is not a residue, so
+        // the aberrant tract ends at ptc-1. The old ranges drew 68 residues for the
+        // patient's 67-aa product and painted residue 37 as wild-type.
         viewer.setStyle({}, { cartoon: { hidden: true } });
-        // Show residues 1..aaPosition (WT region before the change)
-        viewer.setStyle(
-          { resi: `1-${variant.aaPosition}` } as any,
-          { cartoon: { color: hexToInt(COLORS.extracellular) } }
-        );
-        // Show the aberrant region up to the premature stop
-        viewer.setStyle(
-          { resi: `${variant.aaPosition + 1}-${ptc}` } as any,
-          { cartoon: { color: hexToInt(COLORS.mutant) } }
-        );
+        if (variant.aaPosition > 1) {
+          viewer.setStyle(
+            { resi: `1-${variant.aaPosition - 1}` } as any,
+            { cartoon: { color: hexToInt(COLORS.extracellular) } }
+          );
+        }
+        // A stop-gain introduces no aberrant residues at all — drawing a tract
+        // there would invent protein the variant never produces.
+        const novel = consequence.novelAaCount ?? 0;
+        if (novel > 0) {
+          viewer.setStyle(
+            { resi: `${variant.aaPosition}-${ptc - 1}` } as any,
+            { cartoon: { color: hexToInt(COLORS.mutant) } }
+          );
+        }
 
         // STOP marker at truncation site
         const stopAtoms = model.selectedAtoms({ resi: ptc, atom: "CA" });
@@ -170,7 +203,7 @@ export function ProteinStructure3D() {
           color: hexToInt(COLORS.warn) as any,
           opacity: 0.7,
         });
-        viewer.addLabel(`Res ${variant.aaPosition} (${variant.consequence})`, {
+        viewer.addLabel(`Res ${variant.aaPosition} (${facts.classLabel.toLowerCase()})`, {
           position: pos,
           backgroundColor: hexToInt(COLORS.warn) as any,
           backgroundOpacity: 0.8,
@@ -334,7 +367,7 @@ export function ProteinStructure3D() {
   }, []);
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-var(--app-header-h)-80px)] min-h-[400px] sm:min-h-[500px]">
+    <div className="flex flex-col h-[calc(100dvh-var(--app-header-h)-var(--app-nav-h,80px))] min-h-[400px] sm:min-h-[500px]">
       {/* Controls */}
       <div className="flex gap-3 px-6 py-4 flex-wrap items-center">
         <ToggleButton active={!showMutant} onClick={() => setViewMode("wt")} label={`Wild-type (${PROTEIN_LENGTH} aa)`} color={COLORS.accent} />
@@ -368,12 +401,18 @@ export function ProteinStructure3D() {
         role="img"
         aria-label={
           showMutant
-            ? consequence.truncated
-              ? `3D protein structure: mutant ε-sarcoglycan, truncated at residue ${consequence.ptcPosition} of ${PROTEIN_LENGTH} (${(consequence.fractionOfWT * 100).toFixed(1)}%), red region shows the aberrant residues`
-              : browseOnlyTruncation
-                ? `3D protein structure: ${variant.consequence} variant ${variant.notation}; the exact premature-stop position is not catalogued, so the full-length structure is shown for reference with residue ${variant.aaPosition} highlighted`
+            ? facts.truncated
+              ? `3D protein structure: mutant ε-sarcoglycan, truncated at residue ${consequence.ptcPosition} of ${PROTEIN_LENGTH}` +
+                (consequence.fractionOfWT !== null
+                  ? ` (${(consequence.fractionOfWT * 100).toFixed(1)}%)`
+                  : "") +
+                ((consequence.novelAaCount ?? 0) > 0
+                  ? `, red region shows the ${consequence.novelAaCount} aberrant residues`
+                  : ", no aberrant residues — translation stops at the changed codon")
+              : evidenceOnly
+                ? `3D protein structure: ${facts.classLabel.toLowerCase()} variant ${variant.notation}; the exact coding change is not in the source feed, so the wild-type structure is shown for reference only, with residue ${variant.aaPosition} highlighted`
                 : `3D protein structure: mutant ε-sarcoglycan, full-length ${consequence.mutantProteinLength} of ${PROTEIN_LENGTH} residues, changed residue ${variant.aaPosition} highlighted`
-            : `3D protein structure: wild-type ε-sarcoglycan, ${PROTEIN_LENGTH} amino acids. Blue: extracellular domain, amber: transmembrane helix, purple: cytoplasmic tail`
+            : `3D protein structure: AlphaFold prediction of wild-type ε-sarcoglycan, ${PROTEIN_LENGTH} amino acids. Blue: extracellular domain, amber: transmembrane helix, purple: cytoplasmic tail`
         }
       >
         <div ref={viewerDivRef} className="absolute inset-0" aria-hidden="true" />
@@ -381,27 +420,34 @@ export function ProteinStructure3D() {
           {showMutant ? (
             <>
               <div className="font-bold mb-1" style={{ color: COLORS.danger }}>
-                {consequence.truncated
+                {facts.truncated
                   ? `Truncated — ${consequence.truncatedLength} aa`
-                  : browseOnlyTruncation
-                    ? `${variant.consequence} — browse-only`
+                  : evidenceOnly
+                    ? `${facts.classLabel} — browse-only`
                     : `Mutant — ${consequence.mutantProteinLength} aa`}
               </div>
               <div style={{ color: COLORS.textDim }} className="leading-relaxed">
-                {consequence.truncated ? (
+                {facts.truncated ? (
                   <>
-                    {variant.cNotation} → {variant.consequence} at residue {variant.aaPosition} → PTC at pos {consequence.ptcPosition}.
-                    {" "}{(consequence.fractionOfWT * 100).toFixed(1)}% of WT.{consequence.nmdPredicted ? " NMD + degradation." : ""}
-                  </>
-                ) : browseOnlyTruncation ? (
-                  <>
-                    {variant.cNotation || variant.notation} → {variant.consequence} at residue {variant.aaPosition}. Exact truncation not in this catalog entry — full structure shown for reference.
+                    {variant.cNotation || variant.notation} → {facts.classLabel.toLowerCase()} at residue{" "}
+                    {variant.aaPosition} → PTC at pos {consequence.ptcPosition}.
+                    {consequence.fractionOfWT !== null
+                      ? ` ${(consequence.fractionOfWT * 100).toFixed(1)}% of WT.`
+                      : ""}
+                    {consequence.nmdPredicted ? " NMD + degradation." : ""}
                   </>
                 ) : (
                   <>
-                    {variant.cNotation || variant.notation} → {variant.consequence} at residue {variant.aaPosition}. Full-length product ({consequence.mutantProteinLength} aa).
+                    {variant.cNotation || variant.notation} → {facts.classLabel.toLowerCase()} at residue{" "}
+                    {variant.aaPosition}. {facts.outcome}
                   </>
                 )}
+              </div>
+              {/* The coordinates are always the wild-type AlphaFold model recoloured;
+                  no mutant structure is predicted anywhere in this app. */}
+              <div className="mt-1 text-[10px]" style={{ color: COLORS.textDim }}>
+                Positions mapped onto the wild-type AlphaFold model — the mutant conformation is
+                not modelled.
               </div>
             </>
           ) : (
@@ -411,6 +457,15 @@ export function ProteinStructure3D() {
                 Type I TM glycoprotein. DGC sarcoglycan subcomplex member.
                 <span style={{ color: COLORS.success }}> ● </span>Asn200 glycosylation
                 <span style={{ color: COLORS.danger }}> ◆ </span>Res {variant.aaPosition} mutation site
+              </div>
+              {/* This is a prediction, drawn with the same authority everywhere
+                  along the chain even though confidence is not uniform: the
+                  transmembrane helix is high-confidence while the cytoplasmic
+                  tail is effectively disordered in the model. */}
+              <div className="mt-1 text-[10px]" style={{ color: COLORS.textDim }}>
+                AlphaFold prediction (AF-O43556-F1), not an experimental structure. Confidence
+                varies along the chain — the cytoplasmic tail (339-437) is low-confidence and its
+                shape should not be read as real.
               </div>
             </>
           )}
@@ -446,13 +501,14 @@ function DomainBar({ showMutant }: { showMutant: boolean }) {
   const variant = useVariantStore((s) => s.selected);
   const consequence = useVariantStore((s) => s.consequence);
   // Only a computed truncation collapses the domain architecture. Full-length
-  // and browse-only mutants keep the reference domain bar.
-  const showTruncated = showMutant && consequence.truncated;
-  const truncLen = consequence.truncatedLength ?? consequence.mutantProteinLength;
+  // mutants and browse-only entries (where truncatedLength is null, not 0) keep
+  // the reference domain bar.
+  const truncLen = consequence.truncatedLength;
+  const showTruncated = showMutant && consequence.truncated === true && truncLen !== null && truncLen > 0;
   const domains = showTruncated
     ? [
-        { pct: truncLen > 0 ? ((variant.aaPosition - 1) / truncLen) * 100 : 0, color: COLORS.extracellular, label: "WT" },
-        { pct: truncLen > 0 ? (consequence.novelAaCount / truncLen) * 100 : 0, color: COLORS.mutant, label: "Frameshifted" },
+        { pct: ((variant.aaPosition - 1) / truncLen) * 100, color: COLORS.extracellular, label: "WT" },
+        { pct: ((consequence.novelAaCount ?? 0) / truncLen) * 100, color: COLORS.mutant, label: "Frameshifted" },
       ]
     : [
         { pct: (317 / 437) * 100, color: COLORS.extracellular, label: "Extracellular" },

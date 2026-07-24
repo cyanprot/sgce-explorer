@@ -15,7 +15,7 @@ describe("variant-catalog", () => {
   it("every entry has position, consequence and significance", () => {
     for (const v of VARIANT_CATALOG) {
       expect(v.aaPosition).toBeGreaterThan(0);
-      expect(v.consequence).toBeTruthy();
+      expect(v.reportedConsequence).toBeTruthy();
       expect(v.significance).toBeTruthy();
     }
   });
@@ -30,7 +30,7 @@ describe("variant-catalog", () => {
   });
 
   it("browse-only variants (no edit) still derive a declared consequence", () => {
-    const noEdit = VARIANT_CATALOG.find((v) => !v.edit && v.consequence === "frameshift");
+    const noEdit = VARIANT_CATALOG.find((v) => !v.edit && v.reportedConsequence === "frameshift");
     if (noEdit) {
       expect(() => deriveConsequence(noEdit)).not.toThrow();
     }
@@ -40,6 +40,16 @@ describe("variant-catalog", () => {
     expect(CATALOG_STATS.total).toBe(VARIANT_CATALOG.length);
     expect(CATALOG_STATS.engineReady).toBeGreaterThan(0);
     expect(CATALOG_STATS.pathogenic).toBeGreaterThan(0);
+  });
+
+  // The UI credits `fromUniProt` to the feed by name, so it must never include a
+  // row the feed did not supply. Exactly one row here is local: the patient's.
+  it("fromUniProt excludes the locally-added patient variant", () => {
+    expect(CATALOG_STATS.total - CATALOG_STATS.fromUniProt).toBe(1);
+    expect(VARIANT_CATALOG.filter((v) => v.isPatient)).toHaveLength(1);
+    expect(VARIANT_CATALOG.filter((v) => !v.isPatient).every((v) => v.source === "UniProt")).toBe(
+      true,
+    );
   });
 
   it("all ids are unique (distinct variants never collapse into one row)", () => {
@@ -56,7 +66,7 @@ describe("variant-catalog", () => {
   it("distinct frameshifts at one residue keep distinct ids", () => {
     // Group frameshift ids by residue; each group must have as many unique ids as entries.
     const byPos = new Map<number, string[]>();
-    for (const v of VARIANT_CATALOG.filter((x) => x.consequence === "frameshift")) {
+    for (const v of VARIANT_CATALOG.filter((x) => x.reportedConsequence === "frameshift")) {
       const arr = byPos.get(v.aaPosition) ?? [];
       arr.push(v.id);
       byPos.set(v.aaPosition, arr);

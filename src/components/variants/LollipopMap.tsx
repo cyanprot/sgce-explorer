@@ -1,7 +1,8 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import type { Variant } from "@/types";
 import { COLORS, DOMAINS, PROTEIN_LENGTH } from "@/constants/protein-data";
 import { SIG_COLOR, significanceTier } from "@/constants/variant-display";
+import { effectiveClass } from "@/constants/codon-data";
 
 interface LollipopMapProps {
   variants: Variant[];
@@ -24,9 +25,19 @@ function xFor(pos: number): number {
 
 /**
  * Needle/lollipop map of all catalogued variants along residues 1-437.
- * Visual aid only (aria-hidden); the accessible path is the variant list.
+ *
+ * Visual aid only: the <svg> is aria-hidden and the needles are mouse-only, so
+ * the accessible equivalent is the variant list below, which carries every entry
+ * shown here and is fully keyboard-operable. The caption states that rather than
+ * leaving a screen-reader user to discover a graphic they cannot reach.
+ *
+ * Memoized: ~2,400 SVG nodes were re-rendering on every search keystroke.
  */
-export function LollipopMap({ variants, selectedId, onSelect }: LollipopMapProps) {
+export const LollipopMap = memo(function LollipopMap({
+  variants,
+  selectedId,
+  onSelect,
+}: LollipopMapProps) {
   // Draw severe-on-bottom so pathogenic heads paint last (on top).
   const ordered = useMemo(
     () => [...variants].sort((a, b) => significanceTier(b.significance) - significanceTier(a.significance)),
@@ -80,7 +91,7 @@ export function LollipopMap({ variants, selectedId, onSelect }: LollipopMapProps
               onClick={() => onSelect(v)}
               style={{ cursor: "pointer" }}
             >
-              <title>{`${v.notation} · ${v.consequence} · ${v.significance} (res ${v.aaPosition})`}</title>
+              <title>{`${v.notation} · ${effectiveClass(v)} · ${v.significance} (res ${v.aaPosition})`}</title>
               <line x1={x} y1={BASELINE} x2={x} y2={y} stroke={color} strokeWidth={isSel || isPatient ? 1.6 : 0.7} opacity={isSel || isPatient ? 1 : 0.5} />
               {isPatient ? (
                 <circle cx={x} cy={y} r={7} fill={color} stroke={COLORS.text} strokeWidth={1.5} />
@@ -103,6 +114,11 @@ export function LollipopMap({ variants, selectedId, onSelect }: LollipopMapProps
           </text>
         ))}
       </svg>
+      <p className="sr-only">
+        Scatter plot of all catalogued SGCE variants by residue position and clinical
+        significance. It is a visual summary only — every variant plotted here also appears in the
+        variant list below, which is keyboard-operable and screen-reader accessible.
+      </p>
     </div>
   );
-}
+});

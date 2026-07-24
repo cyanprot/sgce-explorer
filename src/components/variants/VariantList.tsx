@@ -3,6 +3,7 @@ import type { Variant } from "@/types";
 import { COLORS } from "@/constants/protein-data";
 import { hexWithAlpha } from "@/utils/hexWithAlpha";
 import { SIG_COLOR, SIG_LABEL, CONSEQUENCE_LABEL } from "@/constants/variant-display";
+import { effectiveClass } from "@/constants/codon-data";
 
 const CAP = 200; // keep the list responsive; refine search to see more
 
@@ -23,10 +24,14 @@ const VariantRow = memo(function VariantRow({
 }) {
   const sig = SIG_COLOR[v.significance];
   return (
+    // flex-wrap, and no fixed widths below `sm`. The fixed-width shrink-0 columns
+    // overflowed a 390px viewport (382px of content in a 337px row) inside a
+    // parent with overflow-x: visible, so the significance badge was clipped off
+    // the right edge with no way to scroll to it.
     <button
       onClick={() => onSelect(v)}
       aria-current={selected ? "true" : undefined}
-      className="w-full flex items-center gap-3 px-3 py-2 text-left rounded-md border transition-colors"
+      className="variant-row w-full flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 text-left rounded-md border transition-colors"
       style={{
         background: selected ? hexWithAlpha(COLORS.accent, 0.14) : COLORS.panel,
         borderColor: selected ? COLORS.accent : COLORS.panelBorder,
@@ -35,11 +40,15 @@ const VariantRow = memo(function VariantRow({
       <span className="font-mono text-xs w-10 shrink-0" style={{ color: COLORS.textDim }}>
         {v.aaPosition}
       </span>
-      <span className="font-mono text-sm shrink-0 w-32 truncate" style={{ color: COLORS.text }} title={v.notation}>
+      <span
+        className="font-mono text-sm truncate min-w-0 flex-1 sm:flex-none sm:w-32"
+        style={{ color: COLORS.text }}
+        title={v.notation}
+      >
         {v.notation}
       </span>
-      <span className="text-xs shrink-0 w-24" style={{ color: COLORS.textDim }}>
-        {CONSEQUENCE_LABEL[v.consequence]}
+      <span className="text-xs shrink-0 sm:w-24" style={{ color: COLORS.textDim }}>
+        {CONSEQUENCE_LABEL[effectiveClass(v)]}
       </span>
       <span
         className="text-[10px] font-semibold px-1.5 py-0.5 rounded shrink-0"

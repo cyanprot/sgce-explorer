@@ -94,9 +94,9 @@ describe("protein-data constants", () => {
   });
 
   describe("DGC_PARTNERS", () => {
-    it("sarcoglycan entries (SGCB, SGCG, SGCD) have uniprot and xOffset fields", () => {
+    it("sarcoglycan entries (SGCB, SGCZ, SGCD) have uniprot and xOffset fields", () => {
       const sarcoglycans = DGC_PARTNERS.filter((p) =>
-        ["SGCB", "SGCG", "SGCD"].includes(p.gene),
+        ["SGCB", "SGCZ", "SGCD"].includes(p.gene),
       );
       expect(sarcoglycans).toHaveLength(3);
       for (const sg of sarcoglycans) {

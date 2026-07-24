@@ -17,6 +17,11 @@ export function translatePdb(
       const y = parseFloat(line.substring(38, 46)) + offset.y;
       const z = parseFloat(line.substring(46, 54)) + offset.z;
 
+      // A short or malformed ATOM line used to write the literal string "NaN"
+      // into the coordinate columns, producing a PDB that parses but places
+      // atoms nowhere. Leave the line untouched instead.
+      if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) return line;
+
       return (
         line.substring(0, 30) +
         x.toFixed(3).padStart(8) +

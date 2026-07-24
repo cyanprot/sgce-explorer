@@ -22,6 +22,11 @@ export function useProteinData(): UseProteinDataResult {
   const [retryCount, setRetryCount] = useState(0);
 
   const retry = useCallback(() => {
+    // Clear the previous failure up front. Without this the error banner stayed
+    // on screen through the whole retry, so a retry that succeeded still looked
+    // like a failure until something else re-rendered.
+    setError(null);
+    setLoading(true);
     setRetryCount((c) => c + 1);
   }, []);
 

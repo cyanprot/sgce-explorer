@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ProteinStructure3D } from "@/components/ProteinStructure3D";
 import { CentralDogma } from "@/components/CentralDogma";
 import { ImprintingPanel } from "@/components/ImprintingPanel";
@@ -9,6 +9,8 @@ import Footer from "@/components/layout/Footer";
 import { COLORS } from "@/constants/protein-data";
 import { VARIANT_CATALOG } from "@/constants/variant-catalog";
 import { useVariantStore } from "@/store/variantStore";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { Disclaimer } from "@/components/ui/Disclaimer";
 import type { TabId } from "@/types";
 
 const TABS: { id: TabId; label: string }[] = [
@@ -19,8 +21,37 @@ const TABS: { id: TabId; label: string }[] = [
   { id: "research", label: "Research" },
 ];
 
+/**
+ * Read tab + variant out of the query string.
+ *
+ * Called from a useState initializer rather than an effect: an effect-based read
+ * races the effect that writes the URL back, and the write ran first with
+ * pre-hydration state. That worked only by declaration order, and it dropped
+ * `?tab=` from every incoming deep link.
+ */
+function readUrl() {
+  const p = new URLSearchParams(window.location.search);
+  const t = p.get("tab");
+  const v = p.get("v");
+  const found = v ? VARIANT_CATALOG.find((x) => x.id === v) : undefined;
+  return {
+    tab: t && TABS.some((x) => x.id === t) ? (t as TabId) : ("structure" as TabId),
+    found,
+    // A ?v= that matched nothing in this snapshot. Kept so the UI can say so
+    // rather than silently showing the site author's variant under a clean URL.
+    unresolved: v && !found ? v : null,
+  };
+}
+
 export default function App() {
-  const [tab, setTab] = useState<TabId>("structure");
+  const [initial] = useState(readUrl);
+  const [tab, setTab] = useState<TabId>(initial.tab);
+  const [unresolvedVariant, setUnresolvedVariant] = useState<string | null>(initial.unresolved);
+  const appliedRef = useRef(false);
+  if (!appliedRef.current) {
+    appliedRef.current = true;
+    if (initial.found) useVariantStore.getState().setSelected(initial.found);
+  }
   const headerRef = useRef<HTMLElement>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const variant = useVariantStore((s) => s.selected);
@@ -54,36 +85,78 @@ export default function App() {
     return () => ro.disconnect();
   }, []);
 
+  // Publish the fixed Nav's real height. Every layout here assumed a flat 80px,
+  // but the Nav is 98px unscrolled and 68px scrolled, so `main` underlapped it by
+  // ~18px at scroll 0 and the tab panels were sized against the wrong number.
+  //
+  // Deliberately a DOM query rather than a prop: Nav lives in the brand-chrome
+  // zone, which is mirrored from the `arcivus` repo, so this reads it without
+  // modifying it.
+  useLayoutEffect(() => {
+    const nav = document.querySelector("nav");
+    if (!nav) return;
+    const apply = () =>
+      document.documentElement.style.setProperty(
+        "--app-nav-h",
+        `${nav.getBoundingClientRect().height}px`,
+      );
+    apply();
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(apply);
+    ro.observe(nav);
+    return () => ro.disconnect();
+  }, []);
+
   useEffect(() => {
     document.title = "Arcivus Explorer — SGCE ε-Sarcoglycan";
   }, []);
 
-  // Deep-link: hydrate tab + selected variant from the URL on first load.
+  // Keep the active tab visible in the horizontally scrolling tab strip. On a
+  // 390px viewport the strip overflows, so arriving at ?tab=research showed no
+  // active tab at all — the indicator was scrolled off to the right.
   useEffect(() => {
-    const p = new URLSearchParams(window.location.search);
-    const t = p.get("tab");
-    if (t && TABS.some((x) => x.id === t)) setTab(t as TabId);
-    const v = p.get("v");
-    if (v) {
-      const found = VARIANT_CATALOG.find((x) => x.id === v);
-      if (found) useVariantStore.getState().setSelected(found);
-    }
+    const idx = TABS.findIndex((t) => t.id === tab);
+    tabRefs.current[idx]?.scrollIntoView({ block: "nearest", inline: "center" });
+  }, [tab]);
+
+  // Back/Forward: re-read the URL when the browser moves through history.
+  const applyUrl = useCallback(() => {
+    const next = readUrl();
+    setTab(next.tab);
+    setUnresolvedVariant(next.unresolved);
+    if (next.found) useVariantStore.getState().setSelected(next.found);
   }, []);
 
-  // Deep-link: reflect tab + selected variant back into the URL (clean defaults).
   useEffect(() => {
-    const p = new URLSearchParams();
+    window.addEventListener("popstate", applyUrl);
+    return () => window.removeEventListener("popstate", applyUrl);
+  }, [applyUrl]);
+
+  // Deep-link: reflect tab + selected variant back into the URL.
+  useEffect(() => {
+    // Seed from the live query string so params this app does not own (campaign
+    // tags, analytics) survive a tab change instead of being dropped.
+    const p = new URLSearchParams(window.location.search);
+    p.delete("tab");
+    p.delete("v");
     if (tab !== "structure") p.set("tab", tab);
     if (!variant.isPatient) p.set("v", variant.id);
     const qs = p.toString();
-    window.history.replaceState(null, "", qs ? `?${qs}` : window.location.pathname);
+    const next = qs ? `?${qs}` : window.location.pathname;
+    if (next === `${window.location.search || window.location.pathname}`) return;
+    // pushState, not replaceState: selecting a variant is a navigation the reader
+    // expects Back to undo.
+    window.history.pushState(null, "", next);
   }, [tab, variant]);
 
   return (
     <div className="overflow-x-hidden">
       <Nav />
-      <main id="main-content" className="pt-[80px]">
-        <div style={{ background: COLORS.bg, color: COLORS.text }}>
+      <main id="main-content" className="pt-[var(--app-nav-h,80px)]">
+        {/* pb-6, not a bottom margin on the last child: a child margin collapses
+            out of this wrapper and exposes the bare white `body` as a band
+            between the explorer and the Footer. */}
+        <div className="pb-6" style={{ background: COLORS.bg, color: COLORS.text }}>
           <a
             href={`#tabpanel-${tab}`}
             className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:rounded focus:text-sm"
@@ -91,6 +164,31 @@ export default function App() {
           >
             Skip to content
           </a>
+
+          {unresolvedVariant && (
+            <div
+              className="mx-6 mt-4 rounded-lg px-4 py-2 text-xs border"
+              style={{
+                background: COLORS.dangerDim,
+                borderColor: COLORS.danger,
+                color: COLORS.text,
+              }}
+              role="alert"
+            >
+              Variant <span className="font-mono font-bold">{unresolvedVariant}</span> was not found
+              in this catalog snapshot, so the index variant is shown instead — the panels below are
+              NOT describing the variant you linked to. Try the{" "}
+              <button
+                onClick={() => setTab("variants")}
+                className="underline font-semibold"
+                style={{ color: COLORS.accent }}
+              >
+                Variants tab
+              </button>{" "}
+              and search by HGVS notation (either <span className="font-mono">p.Arg102Ter</span> or{" "}
+              <span className="font-mono">p.R102*</span> style).
+            </div>
+          )}
 
           <header
             ref={headerRef}
@@ -157,7 +255,11 @@ export default function App() {
               aria-labelledby="tab-structure"
               hidden={tab !== "structure"}
             >
-              {tab === "structure" && <ProteinStructure3D />}
+              {tab === "structure" && (
+                <ErrorBoundary label="The 3D structure view">
+                  <ProteinStructure3D />
+                </ErrorBoundary>
+              )}
             </div>
             <div
               id="tabpanel-variants"
@@ -165,7 +267,11 @@ export default function App() {
               aria-labelledby="tab-variants"
               hidden={tab !== "variants"}
             >
-              {tab === "variants" && <VariantsPanel onViewStructure={() => setTab("structure")} />}
+              {tab === "variants" && (
+                <ErrorBoundary label="The variant browser">
+                  <VariantsPanel onViewStructure={() => setTab("structure")} />
+                </ErrorBoundary>
+              )}
             </div>
             <div
               id="tabpanel-dogma"
@@ -173,7 +279,11 @@ export default function App() {
               aria-labelledby="tab-dogma"
               hidden={tab !== "dogma"}
             >
-              {tab === "dogma" && <CentralDogma />}
+              {tab === "dogma" && (
+                <ErrorBoundary label="The central dogma walkthrough">
+                  <CentralDogma />
+                </ErrorBoundary>
+              )}
             </div>
             <div
               id="tabpanel-imprinting"
@@ -181,7 +291,11 @@ export default function App() {
               aria-labelledby="tab-imprinting"
               hidden={tab !== "imprinting"}
             >
-              {tab === "imprinting" && <ImprintingPanel />}
+              {tab === "imprinting" && (
+                <ErrorBoundary label="The imprinting panel">
+                  <ImprintingPanel />
+                </ErrorBoundary>
+              )}
             </div>
             <div
               id="tabpanel-research"
@@ -189,9 +303,15 @@ export default function App() {
               aria-labelledby="tab-research"
               hidden={tab !== "research"}
             >
-              {tab === "research" && <ResearchPanel />}
+              {tab === "research" && (
+                <ErrorBoundary label="The research panel">
+                  <ResearchPanel />
+                </ErrorBoundary>
+              )}
             </div>
           </section>
+
+          <Disclaimer />
         </div>
       </main>
       <Footer />

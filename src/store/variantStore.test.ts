@@ -9,7 +9,7 @@ const missense: Variant = {
   notation: "p.Ala2Val",
   cdsPosition: 6,
   aaPosition: 2,
-  consequence: "missense",
+  reportedConsequence: "missense",
   significance: "vus",
   exon: 1,
   edit: { kind: "sub", cdsStart: 6, altBase: "T" },

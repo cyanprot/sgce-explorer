@@ -68,7 +68,7 @@ describe("useClinicalTrials", () => {
     vi.restoreAllMocks();
   });
 
-  it("constructs correct API URL with conditions and status filter", () => {
+  it("constructs correct API URL with conditions", () => {
     const fetchSpy = setupFetchMock();
     vi.stubGlobal("fetch", fetchSpy);
 
@@ -80,12 +80,15 @@ describe("useClinicalTrials", () => {
     expect(url).toContain("DYT-SGCE");
     expect(url).toContain("myoclonus-dystonia");
     expect(url).toContain("SGCE");
-    expect(url).toContain("filter.overallStatus=RECRUITING,ACTIVE_NOT_RECRUITING,ENROLLING_BY_INVITATION");
-    expect(url).not.toContain("COMPLETED");
-    expect(url).toContain("pageSize=10");
   });
 
-  it("does not request completed clinical trials for active-trials card", async () => {
+  it("does NOT filter to open statuses", async () => {
+    // This used to assert the opposite. The old URL pinned
+    // `filter.overallStatus=RECRUITING,ACTIVE_NOT_RECRUITING,ENROLLING_BY_INVITATION`,
+    // so the card could only ever display studies that look joinable — a patient
+    // reading it saw a list of open trials and no indication that completed or
+    // terminated ones existed. On a site someone may read as a route into a
+    // trial, the filter has to go, and the test that enforced it with it.
     const fetchSpy = setupFetchMock();
     vi.stubGlobal("fetch", fetchSpy);
     renderHook(() => useClinicalTrials());
@@ -93,8 +96,7 @@ describe("useClinicalTrials", () => {
     await waitFor(() => expect(fetchSpy).toHaveBeenCalled());
     const url = fetchSpy.mock.calls[0][0] as string;
 
-    expect(url).toContain("filter.overallStatus=RECRUITING,ACTIVE_NOT_RECRUITING,ENROLLING_BY_INVITATION");
-    expect(url).not.toContain("COMPLETED");
+    expect(url).not.toContain("filter.overallStatus");
   });
 
   it("transforms study response into ClinicalTrial array", async () => {
@@ -140,13 +142,27 @@ describe("useClinicalTrials", () => {
     expect(result.current.data![0].status).toBe("UNKNOWN");
   });
 
-  it("handles missing studies key (returns empty array)", async () => {
+  it("reports a missing studies key as an error, not as zero trials", async () => {
+    // Previously this returned [] and the card rendered "No trials found" — a
+    // claim about the world, made from a malformed response. `[]` must mean the
+    // API said there are none, and nothing else.
     vi.stubGlobal("fetch", setupFetchMock({}));
+
+    const { result } = renderHook(() => useClinicalTrials());
+
+    await waitFor(() => expect(result.current.error).not.toBeNull());
+    expect(result.current.data).toBeNull();
+    expect(result.current.error).toMatch(/unexpected response/i);
+  });
+
+  it("still reports a genuinely empty result as an empty array", async () => {
+    vi.stubGlobal("fetch", setupFetchMock({ studies: [] }));
 
     const { result } = renderHook(() => useClinicalTrials());
 
     await waitFor(() => expect(result.current.data).not.toBeNull());
     expect(result.current.data).toEqual([]);
+    expect(result.current.error).toBeNull();
   });
 
   it("handles missing designModule.phases (returns N/A)", async () => {

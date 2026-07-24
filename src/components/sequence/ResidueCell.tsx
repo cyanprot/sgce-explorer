@@ -10,6 +10,14 @@ export interface ResidueCellProps {
   isMutationSite: boolean;
   isPTC: boolean;
   isAberrant: boolean;
+  /** Past the premature stop: this residue is not translated at all in the mutant. */
+  isUntranslated?: boolean;
+  /**
+   * What the variant does at `isMutationSite`, e.g. "frameshift start".
+   * Previously hardcoded to "frameshift start" for every consequence class, so a
+   * missense site was announced to screen readers as a frameshift.
+   */
+  siteNote?: string;
   onClick: (position: number) => void;
   onMouseEnter: (position: number) => void;
   onMouseLeave: () => void;
@@ -24,6 +32,8 @@ export const ResidueCell = React.memo(function ResidueCell({
   isMutationSite,
   isPTC,
   isAberrant,
+  isUntranslated = false,
+  siteNote = "variant site",
   onClick,
   onMouseEnter,
   onMouseLeave,
@@ -43,8 +53,18 @@ export const ResidueCell = React.memo(function ResidueCell({
   if (isAberrant) classNames.push("aberrant");
   if (isMutationSite) classNames.push("mutation-site");
   if (isPTC) classNames.push("ptc");
+  if (isUntranslated) classNames.push("untranslated");
 
-  const ariaLabel = `${residue}${position}${isMutationSite ? " (frameshift start)" : isPTC ? " (premature stop codon)" : isAberrant ? " (aberrant frameshift region)" : ""}`;
+  const note = isPTC
+    ? " (premature stop codon)"
+    : isUntranslated
+      ? " (not translated in the mutant)"
+      : isMutationSite
+        ? ` (${siteNote})`
+        : isAberrant
+          ? " (aberrant residue)"
+          : "";
+  const ariaLabel = `${residue}${position}${note}`;
 
   return (
     <div
@@ -68,7 +88,7 @@ export const ResidueCell = React.memo(function ResidueCell({
         position: "relative",
         border: isMutationSite || isPTC ? "2px solid currentColor" : "none",
         transform: isSelected ? "scale(1.15)" : "none",
-        opacity: isAberrant ? 0.6 : 1,
+        opacity: isUntranslated ? 0.22 : isAberrant ? 0.6 : 1,
         transition: "transform 0.1s, opacity 0.1s",
       }}
       onClick={() => onClick(position)}
