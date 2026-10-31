@@ -4,7 +4,7 @@
 [![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178C6?logo=typescript)](https://www.typescriptlang.org/)
 [![3Dmol.js](https://img.shields.io/badge/3Dmol.js-2.x-green)](https://3dmol.csb.pitt.edu/)
-[![Tests](https://img.shields.io/badge/Tests-366_passing-brightgreen)]()
+[![Tests](https://img.shields.io/badge/Tests-Vitest-brightgreen)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
 Interactive web visualization of the SGCE (epsilon-sarcoglycan) protein, built for understanding the molecular consequences of a **DYT-SGCE** mutation (**c.108dup**, p.Val37SerfsTer32).
@@ -126,7 +126,7 @@ The app opens at [http://localhost:3000](http://localhost:3000).
 
 ## Testing
 
-366 tests across 40 test files using **Vitest** + **React Testing Library**.
+Tests live in 41 test files using **Vitest** + **React Testing Library**.
 
 Coverage includes:
 - Component rendering and interaction (3D viewer, sequence viewer, central dogma, research cards)
